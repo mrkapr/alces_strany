@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Vedení | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<!-- Google font Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+/* ===== horní lišta ===== */
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+    .logo {
+    display: flex;
+    align-items: center;
+    }
+
+    .logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+    }
+
+.menu {
+    display: flex;
+    align-items: center;
+}
+
+.menu a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.divider {
+    height: 22px;
+    width: 3px;
+    background: rgb(255,255,255);
+    margin: 0 16px;
+    border-radius: 2.5px;
+}
+
+.logout {
+    margin-left: 20px;
+    background: darkred;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    border-radius: 20px;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+/* ===== obsah ===== */
+.page {
+    padding: 40px;
+}
+
+/* nadpisy */
+h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    color: #000;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 8px 0 30px 0;
+    color: #777;
+}
+
+/* grid karet */
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 30px;
+    border-radius: 50px;
+}
+
+/* karta */
+.card {
+    background: #7a7a7a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* kolečko */
+.avatar {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* info */
+.info {
+    margin-left: 16px;
+    flex-grow: 1;
+}
+
+.name {
+    font-weight: 600;
+    color: #000;
+}
+
+.details {
+    font-size: 14px;
+    color: #222;
+}
+
+/* pozice */
+.role {
+    font-weight: 600;
+    color: #000;
+    margin-left: 20px;
+}
+
+.rolemajitel {
+    font-weight: 600;
+    color: #bf0000;
+    margin-left: 20px;
+}
+
+.rolevedeni {
+    font-weight: 600;
+    color: #ff56e0;
+    margin-left: 20px;
+}
+
+.roledispecink {
+    font-weight: 600;
+    color: #f08c00;
+    margin-left: 20px;
+}
+
+.roleprovozak {
+    font-weight: 600;
+    color: #fdec00;
+    margin-left: 20px;
+}
+
+.profile {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;        /* tohle je KLÍČOVÉ */
+    background: white;
+    flex-shrink: 0;
+}
+
+.profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;       /* správné oříznutí */
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- horní lišta -->
+<div class="topbar">
+
+    <div class="logo">
+        <a href="home.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+
+
+    <div class="menu">
+        <a href="vedeni.html">Vedení</a>
+        <a href="newsletter.html">Newsletter</a>
+        <span class="divider"></span>
+        <a href="https://docs.google.com/spreadsheets/d/1ewUKP4LB_Zl_Aip1_vp96N7belTMEPZat7EdSEEEbuA/edit?gid=1993545442#gid=1993545442">Výkazy (MZVŘ)</a>
+        <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783">Vozidla + výpravy</a>
+        <a href="https://drive.google.com/drive/u/3/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT">Repainty</a>
+        <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
+        <span class="divider"></span>
+        <button class="logout" onclick="logout()">Odhlásit se</button>
+    </div>
+</div>
+
+<!-- obsah stránky -->
+<div class="page">
+    <h1>Vedení – alces, a. s.</h1>
+    <h2>Kontakty</h2>
+
+    <div class="cards">
+
+        <!-- 1 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7001.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Karel P. M.</div>
+                <div class="details">O.č.: 7001<br>@mrkapr</div>
+            </div>
+            <div class="rolemajitel">Majitel</div>
+        </div>
+
+        <!-- 2 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7002.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Vašek K.</div>
+                <div class="details">O.č.: 7002<br>@janevym00</div>
+            </div>
+            <div class="rolevedeni">Management</div>
+        </div>
+
+        <!-- 3 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7003.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Vít V.</div>
+                <div class="details">O.č.: 7003<br>@vilux12realcz</div>
+            </div>
+            <div class="rolevedeni">Management</div>
+        </div>
+
+        <!-- 4 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7011.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Lukáš B.</div>
+                <div class="details">O.č.: 7011<br>@milovicak.</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <!-- 5 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7021.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Adam V.</div>
+                <div class="details">O.č.: 7021<br>@tenadamko</div>
+            </div>
+            <div class="roleprovozak">Provozní ředitel</div>
+        </div>
+
+        <!-- 6 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7054.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Tomáš M.</div>
+                <div class="details">O.č.: 7054<br>@topivec</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <!-- 7 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7055.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">David M.</div>
+                <div class="details">O.č.: 7055<br>@meda123_cz</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <!-- 8 -->
+        <div class="card">
+            <div class="profile">
+                <img src="profilovky/7102.jpg" alt="Profilovka">
+            </div>
+            <div class="info">
+                <div class="name">Matěj F.</div>
+                <div class="details">O.č.: 7102<br>@matejcz</div>
+            </div>
+            <div class="roleprovozak">Provozní ředitel</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const username = localStorage.getItem("username");
+if (!username) window.location.href = "index.html";
+
+function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

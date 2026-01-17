@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Domů | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<!-- Google font Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background-image: url("fade.jpg");
+    background-size: cover;
+    background-position: center top;
+    }
+
+
+    /* horní lišta */
+    .topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+    }
+
+
+    .menu {
+    display: flex;
+    align-items: center;
+    gap: 25px; /* rozestupy mezi položkami */
+    margin-right: 20px; /* posune celé menu doleva */
+    }
+
+    .divider {
+    height: 20px;
+    width: 2.5px;
+    background: rgb(255, 255, 255);
+    margin: 0 3px;
+    }
+
+    .menu a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    }
+
+
+    .logout {
+        font-family: 'Poppins', Arial, sans-serif;
+        background: darkred;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        cursor: pointer;
+        margin-left: 20px;
+        border-radius: 20px;
+    }
+
+    /* obsah */
+    .content {
+    margin: 60px;
+    color: white;
+    }
+
+    .welcome {
+    font-size: 48px;
+    font-weight: 600;
+    }
+
+    .username {
+    font-size: 36px;
+    font-weight: 400;
+    }
+
+    .logo {
+    display: flex;
+    align-items: center;
+    }
+
+    .logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <div class="logo">
+        <a href="home.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+
+
+    <div class="menu">
+        <a href="vedeni.html">Vedení</a>
+        <a href="newsletter.html">Newsletter</a>
+        <span class="divider"></span>
+        <a href="https://docs.google.com/spreadsheets/d/1ewUKP4LB_Zl_Aip1_vp96N7belTMEPZat7EdSEEEbuA/edit?gid=1993545442#gid=1993545442">Výkazy (MZVŘ)</a>
+        <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783">Vozidla + výpravy</a>
+        <a href="https://drive.google.com/drive/u/3/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT">Repainty</a>
+        <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
+        <span class="divider"></span>
+        <button class="logout" onclick="logout()">Odhlásit se</button>
+    </div>
+</div>
+
+<div class="content">
+    <div class="welcome">Vítej,</div>
+    <div class="username" id="name"></div>
+</div>
+
+<script>
+    const username = localStorage.getItem("username");
+
+    if (!username) {
+        // když někdo otevře home.html bez loginu
+        window.location.href = "index.html";
+    } else {
+        document.getElementById("name").innerText = username;
+    }
+
+    function logout() {
+        localStorage.removeItem("username");
+        window.location.href = "index.html";
+    }
+</script>
+
+</body>
+</html>
