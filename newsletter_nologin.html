@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Newsletter | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<!-- Google font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f2f2f2;
+    color: #000;
+}
+
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 30px;
+    margin-top: 4px; /* lehké posunutí dolů */
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* ===== obsah ===== */
+.page {
+    padding: 40px;
+    max-width: 900px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: 400;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* ===== příspěvky ===== */
+.posts {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.post {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 22px;
+    text-decoration: none;
+    color: black;
+    transition: 0.2s;
+    border-left: 6px solid #555;
+}
+
+.post:hover {
+    background: #eaeaea;
+    transform: translateY(-2px);
+}
+
+.post-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.post-meta {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.login-btn {
+    background: darkgreen;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+.divider {
+    height: 20px;
+    width: 2.5px;
+    background: white;
+    border-radius: 3px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- horní lišta -->
+<div class="topbar">
+    <div class="logo">
+        <a href="index.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+
+    <div class="menu">
+        <a href="vedeni_nologin.html">Vedení</a>
+        <a href="index.html">O nás</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdSNt-1qtoKVx83WBIdIClf4MA_PcJxLeXajdFPQgqdOwcZ3A/viewform?usp=dialog">Nábor</a>
+        <span class="divider"></span>
+        <a href="login.html">
+            <button class="login-btn"><b>Přihlásit se</b></button>
+        </a>
+    </div>
+</div>
+
+<!-- obsah -->
+<div class="page">
+    <h1>Newsletter</h1>
+    <h2>Přehled všech příspěvků</h2>
+
+    <div class="posts">
+
+        <a href="post-1.html" class="post">
+            <div class="post-title">Nové vozidlo ve flotile</div>
+            <div class="post-meta">Přidal: Karel P. M. • 20. 1. 2026</div>
+        </a>
+
+        <a href="post-2.html" class="post">
+            <div class="post-title">Změna provozních pravidel</div>
+            <div class="post-meta">Přidal: Vašek K. • 18. 1. 2026</div>
+        </a>
+
+        <a href="post-3.html" class="post">
+            <div class="post-title">Plán výprav na únor</div>
+            <div class="post-meta">Přidal: Adam V. • 15. 1. 2026</div>
+        </a>
+
+    </div>
+</div>
+
+</body>
+</html>

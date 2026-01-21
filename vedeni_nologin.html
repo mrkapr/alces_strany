@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Vedení | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+
+<!-- Google font Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+/* ================= HORNÍ LIŠTA (STEJNÁ JAKO LANDING) ================= */
+
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.logo img {
+    height: 30px;
+    display: block;
+    margin-top: 3px;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.divider {
+    height: 20px;
+    width: 2.5px;
+    background: white;
+    border-radius: 3px;
+}
+
+/* ================= OBSAH ================= */
+
+.page {
+    padding: 40px;
+}
+
+h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 8px 0 30px;
+    color: #777;
+}
+
+/* grid */
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 30px;
+}
+
+/* karta */
+.card {
+    background: #7a7a7a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* profilovka */
+.profile {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: white;
+    flex-shrink: 0;
+}
+
+.profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* info */
+.info {
+    margin-left: 16px;
+    flex-grow: 1;
+}
+
+.name {
+    font-weight: 600;
+}
+
+.details {
+    font-size: 14px;
+}
+
+/* role */
+.rolemajitel { color: #bf0000; font-weight: 600; }
+.rolevedeni { color: #ff56e0; font-weight: 600; }
+.roledispecink { color: #f08c00; font-weight: 600; }
+.roleprovozak { color: #fdec00; font-weight: 600; }
+.login-btn {
+    background: darkgreen;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= HORNÍ LIŠTA ================= -->
+<div class="topbar">
+
+    <div class="logo">
+        <a href="index.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+
+    <div class="menu">
+        <a href="vedeni_nologin.html">Vedení</a>
+        <a href="index.html">O nás</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdSNt-1qtoKVx83WBIdIClf4MA_PcJxLeXajdFPQgqdOwcZ3A/viewform?usp=dialog">Nábor</a>
+        <span class="divider"></span>
+        <a href="login.html">
+            <button class="login-btn"><b>Přihlásit se</b></button>
+        </a>
+    </div>
+
+</div>
+
+<!-- ================= OBSAH ================= -->
+<div class="page">
+    <h1>Vedení – alces, a. s.</h1>
+    <h2>Kontakty</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7001.jpg"></div>
+            <div class="info">
+                <div class="name">Karel P. M.</div>
+                <div class="details">O.č.: 7001<br>@mrkapr</div>
+            </div>
+            <div class="rolemajitel">Majitel</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7002.jpg"></div>
+            <div class="info">
+                <div class="name">Vašek K.</div>
+                <div class="details">O.č.: 7002<br>@janevym00</div>
+            </div>
+            <div class="rolevedeni">Management</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7003.jpg"></div>
+            <div class="info">
+                <div class="name">Vít V.</div>
+                <div class="details">O.č.: 7003<br>@vilux12realcz</div>
+            </div>
+            <div class="rolevedeni">Management</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7011.jpg"></div>
+            <div class="info">
+                <div class="name">Lukáš B.</div>
+                <div class="details">O.č.: 7011<br>@milovicak.</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7021.jpg"></div>
+            <div class="info">
+                <div class="name">Adam V.</div>
+                <div class="details">O.č.: 7021<br>@tenadamko</div>
+            </div>
+            <div class="roleprovozak">Provozní ředitel</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7054.jpg"></div>
+            <div class="info">
+                <div class="name">Tomáš M.</div>
+                <div class="details">O.č.: 7054<br>@topivec</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7055.jpg"></div>
+            <div class="info">
+                <div class="name">David M.</div>
+                <div class="details">O.č.: 7055<br>@meda123_cz</div>
+            </div>
+            <div class="roledispecink">Dispečink</div>
+        </div>
+
+        <div class="card">
+            <div class="profile"><img src="profilovky/7102.jpg"></div>
+            <div class="info">
+                <div class="name">Matěj F.</div>
+                <div class="details">O.č.: 7102<br>@matejcz</div>
+            </div>
+            <div class="roleprovozak">Provozní ředitel</div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

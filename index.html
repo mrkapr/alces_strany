@@ -2,160 +2,178 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Přihlášení | alces, a. s.</title>
+<title>O nás | alces, a. s.</title>
 <link rel="icon" href="favicon.png" type="image/png">
-<!-- Poppins -->
+<!-- Google font Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-* {
-    box-sizing: border-box;
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #222;
+    color: white;
+}
+
+/* ================= HORNÍ LIŠTA ================= */
+
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.logo img {
+    height: 30px;
+    margin-top: 6px; /* POSUN DOLŮ – klidně 2–6px podle chuti */
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.divider {
+    height: 20px;
+    width: 2.5px;
+    background: white;
+}
+
+.login-btn {
+    background: darkgreen;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
     font-family: 'Poppins', Arial, sans-serif;
 }
 
-body {
-    margin: 0;
-    height: 100vh;
-    background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
-                url("bus.jpg") center / cover no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
+/* ================= HERO ================= */
 
-.login {
+.hero {
+    background: linear-gradient(
+        rgba(0,0,0,0.6),
+        rgba(0,0,0,0.6)
+    ),
+    url("bus.jpg");
+    background-size: cover;
+    background-position: center;
+    padding: 100px 40px;
     text-align: center;
-    width: 320px;
 }
 
-.login img {
-    width: 160px;
-    margin-bottom: 10px;
-}
-
-.login p {
-    margin: 0 0 30px;
-    opacity: 0.8;
-}
-
-input {
+.hero-logo {
+    max-width: 320px;
     width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    font-size: 14px;
+    height: auto;
+    margin-top: 20px; /* posune celé logo dolů */
 }
 
-button {
+.hero h1 {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+/* ================= OBSAH ================= */
+
+.section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 60px;
+    align-items: center;
+}
+
+.section img {
     width: 100%;
-    padding: 12px;
     border-radius: 12px;
-    border: none;
-    background: #08ac26;
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
 }
 
-button:hover {
-    background: #008318;
+.text-block {
+    line-height: 1.6;
 }
 
-.error {
-    margin-top: 15px;
-    color: #ffb3b3;
-    font-size: 14px;
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+    .section {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="login">
-    <!-- LOGO -->
-    <img src="logo.png" alt="alces">
+<!-- ===== HORNÍ LIŠTA ===== -->
+<div class="topbar">
 
-    <!-- SLOGAN -->
-    <p>Interní systém společnosti</p>
+    <div class="logo">
+        <img src="logo.png" alt="alces">
+    </div>
 
-    <input type="text" id="username" placeholder="Uživatelské jméno">
-    <input type="password" id="password" placeholder="Heslo">
-
-    <button onclick="login()">Přihlásit se</button>
-
-    <div class="error" id="error"></div>
+    <div class="menu">
+        <a href="vedeni_nologin.html">Vedení</a>
+        <a href="#">O nás</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdSNt-1qtoKVx83WBIdIClf4MA_PcJxLeXajdFPQgqdOwcZ3A/viewform?usp=dialog">Nábor</a>
+        <span class="divider"></span>
+        <a href="login.html">
+            <button class="login-btn"><b>Přihlásit se</b></button>
+        </a>
+    </div>
 </div>
 
-<script>
-/* ===============================
-   UŽIVATELÉ – TADY SE PŘIDÁVAJÍ
-   =============================== */
-const users = [
-    { username: "admin", password: "admin123", name: "admin" },
-    { username: "universal", password: "AlCeS__1234_universe_/al", name: "universal" },
-    { username: "7001", password: "cauahejalcesjenej", name: "Karel P. M." },
-    { username: "7002", password: "josijehotas67", name: "Vašek K." },
-    { username: "7003", password: "kamen730", name: "Vít V." },
-    { username: "7011", password: "mrak56", name: "Lukáš B." },
-    { username: "7014", password: "silnice804", name: "Jakub K." },
-    { username: "7015", password: "reka239", name: "Jakub S." },
-    { username: "7021", password: "efn67", name: "Adam V." },
-    { username: "7028", password: "most665", name: "Jan Š." },
-    { username: "7026", password: "pole402", name: "Stanislav K." },
-    { username: "7029", password: "les998", name: "Jiří Š." },
-    { username: "7045", password: "mesto214", name: "Patrik H." },
-    { username: "7048", password: "skola73", name: "Patrik A." },
-    { username: "7052", password: "lavice560", name: "<Vytvoř si ticket pro zadání správného jména>" },
-    { username: "7054", password: "okno189", name: "Tomáš M." },
-    { username: "7055", password: "dvere902", name: "David M." },
-    { username: "7059", password: "slunce44", name: "Marek N." },
-    { username: "7067", password: "vitr311", name: "Jan H." },
-    { username: "7063", password: "vlak777", name: "Jakub S." },
-    { username: "7068", password: "mapa628", name: "Jakub K." },
-    { username: "7071", password: "hodiny95", name: "Jiří H." },
-    { username: "7074", password: "papir340", name: "Michal H." },
-    { username: "7076", password: "kniha816", name: "Lukáš H." },
-    { username: "7070", password: "mobil507", name: "Jakub H." },
-    { username: "7079", password: "server58", name: "Lucas Z." },
-    { username: "7006", password: "mys682", name: "Jan Ž." },
-    { username: "7087", password: "klavesnice129", name: "Lukáš P." },
-    { username: "7098", password: "stul451", name: "David M." },
-    { username: "7090", password: "zidle888", name: "Pavel K." },
-    { username: "7092", password: "lampa36", name: "Jakub A." },
-    { username: "7057", password: "kabel970", name: "Pavel S." },
-    { username: "7094", password: "signal204", name: "Michal T." },
-    { username: "7100", password: "program615", name: "Marek Z." },
-    { username: "7101", password: "router399", name: "David V." },
-    { username: "7089", password: "disk721", name: "Matěj Š." },
-    { username: "7097", password: "soubor146", name: "Adam S." },
-    { username: "7085", password: "obrazek903", name: "Viktor S." },
-    { username: "7088", password: "video274", name: "Tomáš N." },
-    { username: "7041", password: "iamsteve321", name: "Mirek Ř." },
-    { username: "7102", password: "mikrofon12", name: "Matěj F." },
-    { username: "7093", password: "kamera835", name: "Adam K." },
-    { username: "7024", password: "demon007", name: "Lukáš M." }
-];
+<!-- ===== HERO ===== -->
+<div class="hero">
+    <img src="logo.png" alt="logo" class="hero-logo">
+</div>
 
-function login() {
-    const u = document.getElementById("username").value;
-    const p = document.getElementById("password").value;
-    const error = document.getElementById("error");
 
-    const user = users.find(user => user.username === u && user.password === p);
+<!-- ===== OBSAH 1 ===== -->
+<div class="section">
+    <div class="text-block">
+        <p>
+            <b>alces, a. s. je virtuální dopravní podnik zajišťující dopravu v rámci Pražské integrované dopravy, IDOL a IDS JMK. Byl založen na počátku roku 2025 a je spolehlivým dopravcem v oblasti středních a severních Čech a jižní Moravy.</b>
+        </p>
+        <p>
+            <b>Naše vozidla jsou pravidelně kontrolována proškolenými techniky, abychom zajistili, že se do své destinace dostanete v pořádku. Vaše bezpečnost a pohodlí je naší prioritou a samozřejmostí.</b>
+        </p>
+    </div>
 
-    if (user) {
-        localStorage.setItem("username", user.name);
-        window.location.href = "home.html";
-    } else {
-        error.innerText = "Nesprávné uživatelské jméno nebo heslo";
-    }
-}
-</script>
+    <img src="horrys1.jpg" alt="bus">
+</div>
+
+<!-- ===== OBSAH 2 ===== -->
+<div class="section">
+    <img src="kapr2.jpg" alt="bus">
+
+    <div class="text-block">
+        <p>
+            <b>Pro naše zaměstantance často pořádáme různé eventy a soutěže, takže se nemusíte bát, že se u nás budete nudit!</b>
+        </p>
+        <p>
+            <b>V blízké době plánujeme spustit nábor do naší společnosti. Mějte oči na stopkách, budeme se na vás těšit!</b>
+        </p>
+    </div>
+</div>
 
 </body>
 </html>
