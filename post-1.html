@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Příspěvek | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+
+<!-- Google font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f2f2f2;
+    color: #000;
+}
+
+/* ===== horní lišta (stejná jako landing) ===== */
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.logo img {
+    height: 30px;
+    margin-top: 4px;
+}
+
+/* ===== obsah ===== */
+.page {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* nadpis */
+h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+/* autor */
+.author {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.author img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: white;
+}
+
+.author-info {
+    font-size: 14px;
+    color: #555;
+}
+
+/* obsah příspěvku */
+.post-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.post-text {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.post-image img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* responzivita */
+@media (max-width: 900px) {
+    .post-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.back-btn {
+    display: inline-block;
+    margin: 20px;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.back-btn:hover {
+    text-decoration: underline;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- horní lišta -->
+<div class="topbar">
+    <div class="logo">
+        <a href="index.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+</div>
+
+
+<a href="newsletter.html" class="back-btn">← Zpět</a>
+
+<!-- obsah -->
+<div class="page">
+
+    <h1>Nové alces stránky</h1>
+
+    <div class="author">
+        <img src="profilovky/7001.jpg" alt="Autor">
+        <div class="author-info">
+            <strong>Karel P. M.</strong><br>
+            Přidáno: 21. 1. 2026
+        </div>
+    </div>
+
+    <div class="post-content">
+
+        <!-- vlevo text -->
+        <div class="post-text">
+            <p>
+                Vážení řidiči, přinášíme Vám nové stránky.
+            </p>
+
+            <p>
+                Vše, (jak tato stránka funguje, co přes ní můžete dělat atd. atd.) máte na Discord serveru.
+            </p>
+
+            <p>
+                Jsem hrozně rád, že jsme se do tohoto projektu s Vášou pustili a vytvořili Vám tuto platformu. Stránka určitě není takto ve finálním stavu a budeme ji do budoucna rozšiřovat :D
+            </p>
+        </div>
+
+        <!-- vpravo obrázek -->
+<!--        <div class="post-image">
+            <img src="obrazky/post-1.jpg" alt="Ilustrační obrázek">
+            </div>          -->
+
+    </div>
+</div>
+
+</body>
+</html>
