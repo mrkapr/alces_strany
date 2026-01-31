@@ -206,6 +206,18 @@ body {
 
 <body>
 
+<div id="recruitment-overlay">
+    <div id="recruitment-popup">
+        <button class="close-btn" onclick="closePopup()">✕</button>
+        <h2>Momentálně probíhá nábor!</h2>
+        <p>Čas na vyplnění formuláře máte do 1. 2. do 5. 2.</p>
+        <p>Formulář je k nalezení v hlavičce stránky.</p>
+    </div>
+</div>
+
+
+
+
 <!-- ===== HORNÍ LIŠTA ===== -->
 <div class="topbar">
 
@@ -259,6 +271,21 @@ body {
         </p>
     </div>
 </div>
+
+<script>
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        document.getElementById("recruitment-overlay").classList.add("active");
+    }, 300); // malé zpoždění = hezčí efekt
+});
+
+function closePopup() {
+    document.getElementById("recruitment-overlay").classList.remove("active");
+}
+</script>
+
+
+
 
 </body>
 </html>
