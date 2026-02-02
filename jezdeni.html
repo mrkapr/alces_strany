@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Ježdění | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+
+<!-- Google font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+/* ===== horní lišta ===== */
+.topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.logo img {
+    height: 30px;
+    margin-top: 4px;
+}
+
+.logout {
+    background: darkred;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+/* ===== obsah ===== */
+.page {
+    padding: 40px;
+    max-width: 900px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+/* ===== rozcestník ===== */
+.links {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.link-box {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    text-decoration: none;
+    color: black;
+    font-weight: 600;
+    font-size: 18px;
+    transition: 0.2s;
+    border-left: 6px solid #555;
+}
+
+.link-box:hover {
+    background: #eaeaea;
+    transform: translateY(-3px);
+}
+
+.back-btn {
+    display: inline-block;
+    margin: 20px;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.back-btn:hover {
+    text-decoration: underline;
+}
+
+/* ===== mobil ===== */
+@media (max-width: 800px) {
+    .links {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- horní lišta -->
+<div class="topbar">
+    <div class="logo">
+        <a href="home.html">
+            <img src="logo.png" alt="alces">
+        </a>
+    </div>
+
+    <button class="logout" onclick="logout()">Odhlásit se</button>
+</div>
+
+<a href="home.html" class="back-btn">← Zpět</a>
+
+<!-- obsah -->
+<div class="page">
+    <h1>Ježdění</h1>
+
+    <div class="links">
+        <a class="link-box" href="https://docs.google.com/spreadsheets/d/1qCduRC5-yFyiMSXTDjfBZjgpS-rmyU8L31LrnyCxc4c/edit?gid=1145918713#gid=1145918713">
+            Přehled turnusů
+        </a>
+
+        <a class="link-box" href="https://docs.google.com/forms/d/1GfkbKMtVY1Qln-P7NAt4HYgQgpVVoZjiqM67x8iKauk/edit">
+            Registrace
+        </a>
+
+        <a class="link-box" href="">
+            Provozní výkazy (WIP)
+        </a>
+    </div>
+</div>
+
+<script>
+function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
