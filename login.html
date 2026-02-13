@@ -120,7 +120,6 @@ const users = [
     { username: "7001", password: "cauahejalcesjenej", name: "Karel P. M." },
     { username: "7002", password: "josijehotas67", name: "Vašek K." },
     { username: "7003", password: "kamen730", name: "Vít V." },
-    { username: "7011", password: "mrak56", name: "Lukáš B." },
     { username: "7014", password: "silnice804", name: "Jakub K." },
     { username: "7015", password: "reka239", name: "Jakub S." },
     { username: "7021", password: "efn67", name: "Adam V." },
@@ -129,7 +128,6 @@ const users = [
     { username: "7029", password: "les998", name: "Jiří Š." },
     { username: "7045", password: "mesto214", name: "Patrik H." },
     { username: "7048", password: "skola73", name: "Patrik A." },
-    { username: "7052", password: "lavice560", name: "<Vytvoř si ticket pro zadání správného jména>" },
     { username: "7054", password: "okno189", name: "Tomáš M." },
     { username: "7055", password: "dvere902", name: "David M." },
     { username: "7059", password: "slunce44", name: "Marek N." },
@@ -138,7 +136,6 @@ const users = [
     { username: "7068", password: "mapa628", name: "Jakub K." },
     { username: "7071", password: "hodiny95", name: "Jiří H." },
     { username: "7074", password: "papir340", name: "Michal H." },
-    { username: "7076", password: "kniha816", name: "Lukáš H." },
     { username: "7070", password: "mobil507", name: "Jakub H." },
     { username: "7079", password: "server58", name: "Lucas Z." },
     { username: "7006", password: "mys682", name: "Jan Ž." },
@@ -150,7 +147,6 @@ const users = [
     { username: "7094", password: "signal204", name: "Michal T." },
     { username: "7100", password: "program615", name: "Marek Z." },
     { username: "7101", password: "router399", name: "David V." },
-    { username: "7089", password: "disk721", name: "Matěj Š." },
     { username: "7097", password: "soubor146", name: "Adam S." },
     { username: "7085", password: "obrazek903", name: "Viktor S." },
     { username: "7088", password: "video274", name: "Tomáš N." },
@@ -171,10 +167,15 @@ function login() {
         localStorage.setItem("username", user.name);
         window.location.href = "home.html";
     } else {
-        error.innerText = "Nesprávné uživatelské jméno nebo heslo";
+        error.innerText = "Nesprávné uživatelské jméno nebo heslo!";
     }
 }
 </script>
 
+<!--{ username: "7011", password: "mrak56", name: "Lukáš B." }, -->
+<!--{ username: "7089", password: "disk721", name: "Matěj Š." }, -->
+<!--{ username: "7089", password: "disk721", name: "Matěj Š." }, -->
+<!--{ username: "7076", password: "kniha816", name: "Lukáš H." }, -->
+<!--{ username: "7052", password: "lavice560", name: "<Vytvoř si ticket pro zadání správného jména>" },-->
 </body>
 </html>
