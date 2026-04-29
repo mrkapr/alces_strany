@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>pid halo)) | alces</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #111;
+    color: white;
+}
+
+/* ===== horní lišta ===== */
+    .topbar {
+    height: 50px;
+    background: #555;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+    }
+
+    .menu {
+    display: flex;
+    align-items: center;
+    gap: 25px; /* rozestupy mezi položkami */
+    margin-right: 20px; /* posune celé menu doleva */
+    }
+
+    .divider {
+    height: 20px;
+    width: 2.5px;
+    background: rgb(255, 255, 255);
+    margin: 0 3px;
+    }
+
+    .menu a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    }
+
+    .logo {
+    display: flex;
+    align-items: center;
+    }
+
+    .logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+    }
+
+    .logout {
+        font-family: 'Poppins', Arial, sans-serif;
+        background: darkred;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        cursor: pointer;
+        margin-left: 20px;
+        border-radius: 20px;
+    }
+
+button.logout {
+    background: #d32f2f;
+    color: white;
+}
+
+button.logout:hover {
+    background: #b71c1c;
+}
+
+/* ===== layout ===== */
+.container {
+    display: flex;
+}
+
+/* vlevo */
+.left {
+    width: 45%;
+    padding: 20px;
+}
+
+/* tlačítka */
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#ridePopup {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 999;
+}
+
+.ride-box {
+    background: white;
+    color: black;
+    padding: 20px;
+    border-radius: 15px;
+    width: 260px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    animation: popupFade 0.3s ease;
+}
+
+.ride-box button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: green;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.start { background: green; color: green; }
+.finish { background: orange; color: white; }
+.cancel { background: red; color: white; }
+
+#summaryOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.summary-box {
+    background: white;
+    color: black;
+    padding: 30px;
+    border-radius: 15px;
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    animation: popupFade 0.3s ease;
+}
+
+.summary-item {
+    background: #eee;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+/* ===== pravé okno ===== */
+.calls {
+    position: fixed;
+    right: 20px;
+    top: 70px;
+    width: 320px;
+    height: 500px;
+    background: #222;
+    border-radius: 15px;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+/* jednotlivý hovor */
+.call {
+    background: #333;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* ===== indikátor ===== */
+.status-indicator {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+}
+
+.off { background: gray; }
+.waiting { background: rgb(0, 207, 35); }
+.drive { background: rgb(255, 0, 0); }
+
+#introLogo {
+    position: fixed;
+    top: 170px;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(2.5);
+    z-index: 9999;
+    transition: all 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#introLogo img {
+    width: 250px;
+}
+
+/* TADY je ten posun víc nahoru */
+#introLogo.move {
+    top: 0px;      /* bylo 15px → teď víc nahoře */
+    left: -50px;
+    margin-top: -22px;
+    transform: translate(0, 0) scale(0.38);
+}
+
+#startPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.start-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+#startPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+.start-box {
+    background: rgb(58, 58, 58);
+    padding: 25px 30px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* mezera mezi select a button */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: popupFade 0.3s ease;
+}
+
+.start-box h3 {
+    margin: 0;
+    margin-right: 10px;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+/* select */
+.start-box select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+/* tlačítko */
+.start-box button {
+    background: #555;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+    transition: 0.2s;
+}
+
+.start-box button:hover {
+    background: #333;
+}
+
+#confirmOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeBg 0.3s ease;
+}
+
+.confirm-box {
+    background: #555;
+    padding: 20px 25px;
+    border-radius: 12px;
+    text-align: center;
+    font-family: 'Poppins', Arial, sans-serif;
+    animation: popupFade 0.3s ease;
+}
+
+.confirm-buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm-box button {
+    padding: 6px 12px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+}
+
+.confirm-box button:first-child {
+    background: darkgreen;
+    color: white;
+}
+
+.confirm-box button:last-child {
+    background: #ccc;
+}
+
+@keyframes popupFadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.main {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+
+.stops-container {
+    margin-top: 60px; /* 👈 místo pro header */
+    padding-left: 60px;
+}
+
+/* čára */
+.stops-line {
+    position: absolute;
+    left: 30px;
+    top: 80px;
+    bottom: 40px;
+    width: 6px;
+    background: #ddd;
+    border-radius: 10px;
+}
+
+/* levá část */
+.left-panel {
+    width: 40%;
+}
+
+/* pravá část (zprávy) */
+.right-panel {
+    width: 60%;
+}
+
+.calls-box {
+    background: #222;
+    color: white;
+    padding: 15px;
+    border-radius: 15px;
+    height: 500px;
+    overflow-y: auto;
+}
+
+#calls-box {
+    background: #222;
+    color: white;
+    padding: 15px;
+    border-radius: 15px;
+    height: 500px;
+    overflow-y: auto;
+}
+
+button {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    padding: 14px 26px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+
+    transition: all 0.25s ease; /* 👈 fade */
+}
+
+/* aktuální jízda */
+#activeRide {
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+/* aktuální jízda */
+.activeRide {
+    margin-bottom: 15px;
+}
+
+/* historie jízd */
+#rideHistory {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* historie jízd */
+.rideHistory {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fade-out {
+    animation: popupFadeOut 0.25s ease forwards;
+}
+
+.route-header {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+
+    background: white;
+    color: black;
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    padding: 12px 20px;
+    font-weight: 600;
+
+    transform: translateX(-100%);
+    animation: slideIn 0.7s ease forwards;
+    z-index: 5;
+}
+
+/* animace zleva */
+@keyframes slideIn {
+    to {
+        transform: translateX(0);
+    }
+}
+
+.ride-card {
+    opacity: 0;
+    transform: translateX(120px);
+    transition: all 0.4s ease;
+
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.ride-card.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.summary-card {
+    background: #444;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.ride-item {
+    background: #333;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+#timeBox {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+}
+
+#time {
+    font-size: 30px;
+    margin-right: 10px;
+}
+
+#date {
+    font-size: 19px;
+    opacity: 0.7;
+}
+
+button {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    padding: 14px 26px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+
+    transition: all 0.25s ease; 
+}
+
+button:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+button:not(.cancel) {
+    background: #00c853;
+    color: white;
+}
+
+button.cancel {
+    background: #d32f2f;
+    color: white;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* animace posunu */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* animace */
+@keyframes popupFade {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+#ridesFeed {
+    position: fixed;
+    inset: 60px 0 0 0;
+    padding: 80px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+/* karta jízdy */
+.ride-card {
+    background: #222;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 16px;
+    animation: slideIn 0.4s ease;
+}
+
+/* souhrn */
+.ride-summary {
+    background: #00c853;
+    color: white;
+    padding: 10px;       /* 👈 bylo 18 */
+    border-radius: 10px;
+    font-size: 15px;     /* 👈 bylo 18 */
+    font-weight: 600;
+}
+
+.stops-view {
+    position: absolute;
+    right: 0;
+    top: 60px; /* 👈 odsazení od topbaru */
+    width: 45%; /* 👈 trochu menší */
+    height: calc(100% - 60px); /* ať neleze do topbaru */
+
+    background: #4a4a52;
+
+    display: flex;
+    flex-direction: column; /* 👈 KLÍČOVÉ - pod sebe */
+    justify-content: center;
+
+    padding-left: 60px;
+}
+
+/* vertikální linka */
+.stops-line {
+    position: absolute;
+    left: 40px;
+    top: 50px;
+    bottom: 50px;
+    width: 8px;
+    background: #ddd;
+    border-radius: 10px;
+}
+
+/* zastávky */
+.stop {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.4s ease;
+
+    margin-bottom: 40px;
+    font-size: 32px;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.stop.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.stop::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.fade-screen {
+    animation: fadeScreen 0.4s ease;
+}
+
+@keyframes fadeScreen {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.start-ride-btn {
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
+.stops-view {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.stops-view.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#welcomeScreen {
+    position: fixed;
+    inset: 0;
+    background: #111;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-family: 'Poppins', sans-serif;
+    z-index: 9999;
+}
+
+#welcomeText {
+    font-size: 28px;
+    margin-bottom: 30px;
+}
+
+/* tlačítko */
+.start-btn {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    padding: 15px 30px;
+    border-radius: 12px;
+    border: none;
+    background: #00c853;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.start-btn:hover {
+    background: #00a844;
+    transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+<div id="welcomeScreen">
+    <h2 id="welcomeText"></h2>
+
+    <button class="start-btn" onclick="chooseStart()">
+        Přihlásit se do služby
+    </button>
+</div>
+    
+    <div id="introLogo">
+    <a href="home.html"><img src="halo.png" alt="logo"></a>
+    </div>
+
+<div class="topbar">
+
+    <div class="logo">
+        
+        </a>
+    </div>
+
+
+    <div class="menu">
+        <a href="vedeni.html">Vedení</a>
+        <a href="newsletter.html">Newsletter</a>
+        <a href="halo.html">halo</a>
+        <span class="divider"></span>
+        <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211">Výkazy (MZVŘ)</a>
+        <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783">Vozidla + výpravy</a>
+        <a href="https://drive.google.com/drive/u/3/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT">Repainty</a>
+        <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
+        <span class="divider"></span>
+        <button class="logout" onclick="logout()">Odhlásit se</button>
+    </div>
+</div>
+
+
+<div class="status-indicator off" id="statusLight"></div>
+
+<div id="timeBox">
+    <span id="time"></span>
+    <span id="date"></span>
+</div>
+
+<div class="container">
+
+    <!-- LEVÁ STRANA -->
+    <div class="left">
+        <div id="controls"></div>
+
+        <!-- 👇 PŘIDEJ -->
+        <div id="activeRide"></div>
+        <div id="rideHistory"></div>
+    </div>
+
+</div>
+
+<div id="ridesFeed"></div>
+
+<!-- stav -->
+<div id="statusLight" class="status-indicator"></div>
+
+<div id="activeRide" style="margin-top:20px;"></div>
+
+<script>
+
+window.addEventListener("load", () => {
+    const logo = document.getElementById("introLogo");
+
+    // chvilku stojí velké
+    setTimeout(() => {
+        logo.classList.add("move");
+    }, 800);
+
+    // po přesunu zmizí
+    setTimeout(() => {
+        logo.classList.add("hide");
+    }, 1800);
+});
+
+window.onload = () => {
+    const name = localStorage.getItem("username") || "řidiči";
+    document.getElementById("welcomeText").innerText = `Dobrý den, ${name}`;
+};
+
+let state = "off";
+let cycleTimeouts = [];
+let currentRide = null;
+let ridesHistory = [];
+let currentLocation = null;
+let currentNextLocation = null;
+let rideStartTime = null;
+let localRideHistory = [];
+let currentCycle = [];
+let pendingCycle = null;
+
+
+function chooseStart() {
+
+    const screen = document.getElementById("welcomeScreen");
+
+    if (screen) {
+        screen.style.opacity = "0";
+
+        setTimeout(() => {
+            screen.style.display = "none";
+        }, 300);
+    }
+
+    const popup = document.createElement("div");
+    popup.id = "startPopup";
+
+    popup.innerHTML = `
+    <div class="start-box">
+        <h3>Kde jsi?:</h3>
+        <select id="locationSelect">
+            <option>Štěchovice</option>
+            <option>Benešov</option>
+            <option>Svinov</option>
+            <option>Vítkovice</option>
+            <option>Hrabůvka</option>
+        </select>
+        <button onclick="confirmStart()">Potvrdit</button>
+    </div>
+`;
+
+    document.body.appendChild(popup);
+}
+
+function confirmStart() {
+    const select = document.getElementById("locationSelect");
+    currentLocation = select.value;
+
+    document.getElementById("startPopup").remove();
+
+    state = "waiting";
+    updateUI();
+    startCycle();
+}
+
+const cycles = [
+{
+    id: 1,
+    start: "Štěchovice",
+    end: "Benešov",
+    stops: ["Štěchovice", "Chleby", "Benešov, Konopiště", "Václavice, Vatěkov", "Benešov, Terminál"],
+    messages: ["Chleby", "Václavice, Vatěkov", "Benešov, Konopiště"],
+    ride: "Štěch → BeneT | pid halo/1 - XXX/XX",
+
+    passengers: [
+        { name: "Alena Maszlagová", from: "Štěchovice", to: "Chleby" },
+        { name: "Jirka Bedrna", from: "Štěchovice", to: "Benešov, Terminál" },
+        { name: "Radmila Pelnářová", from: "Štěchovice", to: "Václavice, Vatěkov" }
+    ]
+},
+{
+    id: 2,
+    start: "Poruba",
+    end: "Svinov",
+    stops: ["Poruba", "Zastávka A", "Zastávka B", "Svinov"],
+    messages: ["📞 Taxi", "📍 Poruba", "👍 Ok"],
+    ride: "Poruba → Svinov | tarif 1",
+
+    passengers: [
+        { name: "Jan Novák", from: "Poruba", to: "Zastávka B" },
+        { name: "Eva Kovářová", from: "Poruba", to: "Svinov" }
+    ]
+},
+{
+    id: 3,
+    start: "Svinov",
+    end: "Vítkovice",
+    stops: ["Svinov", "Zastávka X", "Zastávka Y", "Vítkovice"],
+    messages: ["📞 Odvoz", "📍 Svinov", "👍 Díky"],
+    ride: "Svinov → Vítkovice | tarif 2",
+
+    passengers: [
+        { name: "Petr Svoboda", from: "Svinov", to: "Zastávka Y" },
+        { name: "Lucie Malá", from: "Svinov", to: "Vítkovice" }
+    ]
+}
+];
+
+/* ===== pomocné ===== */
+function clearCycle() {
+    cycleTimeouts.forEach(t => clearTimeout(t));
+    cycleTimeouts = [];
+}
+
+/* ===== spuštění cyklu ===== */
+function startCycle() {
+    if (state !== "waiting") return;
+
+    clearCycle();
+
+    const selected = cycles[0]; // zatím fixně
+    pendingCycle = selected;
+    currentCycle = selected;
+
+    const feed = document.getElementById("ridesFeed");
+    feed.innerHTML = ""; // 👈 vyčistí obrazovku
+
+    const passengers = selected.passengers;
+
+    passengers.forEach((p, i) => {
+        const t = setTimeout(() => {
+            if (state !== "waiting") return;
+
+            addRideCard(p);
+
+            if (i === passengers.length - 1) {
+                showSummaryCard(selected);
+            }
+
+        }, i * 600);
+
+        cycleTimeouts.push(t);
+    });
+}
+
+/* ===== přidání zprávy ===== */
+
+/* ===== fullscreen zakázka ===== */
+function showRide(rideText) {
+    const popup = document.createElement("div");
+    popup.id = "ridePopup";
+
+    popup.innerHTML = `
+        <div class="ride-box">
+            <b>Nová jízda</b>
+            <p>${rideText}</p>
+            <button onclick="acceptRide()">Přijmout</button>
+        </div>
+    `;
+
+    document.body.appendChild(popup);
+}
+
+/* ===== přijmutí ===== */
+function acceptRide() {
+    const popup = document.getElementById("ridePopup");
+
+    document.body.classList.add("fade-screen");
+
+    setTimeout(() => {
+        document.body.classList.remove("fade-screen");
+    }, 400);
+
+    const selected = pendingCycle;
+
+    currentCycle = selected.stops;
+    currentMessages = selected.messages;
+    currentRide = selected.ride;
+
+    renderStops();
+    renderRideFeed(selected);
+
+    rideStartTime = Date.now();
+
+    ridesHistory.push(currentRide);
+
+    popup.remove();
+
+    state = "drive";
+    updateUI();
+}
+
+function getNextDeparture() {
+    const now = new Date();
+
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+
+    if (minutes >= 20) {
+        hours += 1;
+    }
+
+    if (hours === 24) hours = 0;
+
+    return `${String(hours).padStart(2, "0")}:20`;
+}
+
+function renderStops() {
+    const box = document.getElementById("stopsView");
+
+    box.innerHTML = `
+        <div class="route-header">
+            <span id="routeEnd"></span>
+        </div>
+
+        <div class="stops-container">
+            <div class="stops-line"></div>
+        </div>
+    `;
+
+    // 👇 konečná
+    const end = currentCycle[currentCycle.length - 1];
+    document.getElementById("routeEnd").innerText = end;
+
+    const container = box.querySelector(".stops-container");
+
+    currentCycle.forEach((stop, index) => {
+        const div = document.createElement("div");
+        div.className = "stop";
+        div.innerText = stop;
+
+        container.appendChild(div);
+
+        // 👇 pomalejší + plynulejší animace
+        setTimeout(() => {
+            div.classList.add("show");
+        }, index * 600); // 👈 zpomaleno
+    });
+}
+
+function renderRideFeed(cycle) {
+    const feed = document.getElementById("ridesFeed");
+
+    feed.innerHTML = "";
+
+    // 👇 souhrn nahoře
+    const summary = document.createElement("div");
+    summary.className = "ride-summary";
+    summary.innerText = `${cycle.ride}`;
+    feed.appendChild(summary);
+
+    // 👇 jednotliví cestující
+    cycle.passengers.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "ride-card";
+        div.innerText = `${p.name} | ${p.from} → ${p.to}`;
+
+        feed.appendChild(div);
+    });
+}
+
+function waitForDepartureAndStart() {
+    const now = new Date();
+
+    let target = new Date();
+    target.setMinutes(20);
+    target.setSeconds(0);
+    target.setMilliseconds(0);
+
+    // pokud už je po :20 → další hodina
+    if (now.getMinutes() >= 20) {
+        target.setHours(target.getHours() + 1);
+    }
+
+    const delay = target - now;
+
+    setTimeout(() => {
+        acceptRide();
+    }, delay);
+}
+
+function addRideCard(p) {
+    const feed = document.getElementById("ridesFeed");
+
+    const div = document.createElement("div");
+    div.className = "ride-card";
+
+    div.innerHTML = `
+        <div><b>${p.name}</b></div>
+        <div>${p.from} → ${p.to}</div>
+    `;
+
+    feed.appendChild(div);
+
+    setTimeout(() => {
+        div.classList.add("show");
+    }, 50);
+}
+
+function showSummaryCard(cycle) {
+    const feed = document.getElementById("ridesFeed");
+
+    const time = getNextDeparture();
+
+    const div = document.createElement("div");
+    div.className = "ride-summary";
+
+    div.innerHTML = `
+        🚌 ${cycle.ride}<br>
+        ⏱ Odjezd: ${time}
+    `;
+
+    feed.prepend(div);
+
+    // 👇 TADY SPUSTÍŠ AUTO START
+    waitForDepartureAndStart();
+}
+
+/* ===== UI ===== */
+function updateUI() {
+    const controls = document.getElementById("controls");
+    const light = document.getElementById("statusLight");
+    const stopsView = document.getElementById("stopsView");
+
+    if (!controls || !light) return;
+
+    controls.innerHTML = "";
+    light.className = "status-indicator " + state;
+
+    // tlačítka podle stavu
+    if (state === "off") {
+        controls.innerHTML = `
+            <button onclick="chooseStart()">Přihlásit do služby</button>
+        `;
+    }
+
+    if (state === "waiting") {
+        controls.innerHTML = `
+            <button class="cancel" onclick="stopService()">Konec služby</button>
+        `;
+    }
+
+    if (state === "drive") {
+        controls.innerHTML = `
+            <button onclick="confirmFinish()">Dokončit jízdu</button>
+        `;
+    }
+
+    if (stopsView) {
+    if (state === "drive") {
+        stopsView.style.display = "flex"; // nejdřív zobrazit
+
+        setTimeout(() => {
+            stopsView.classList.add("active"); // fade IN
+        }, 10);
+
+    } else {
+        stopsView.classList.remove("active"); // fade OUT
+
+        setTimeout(() => {
+            stopsView.style.display = "none"; // schovat až po animaci
+        }, 400);
+    }
+    }
+}
+
+function startService() {
+    state = "waiting";
+    updateUI();
+    startCycle();
+}
+
+function stopService() {
+    state = "off";
+    clearCycle();
+    updateUI();
+
+    showSummary();
+}
+
+
+function finishRide() {
+    closeConfirm();
+
+    if (currentRide) {
+        localRideHistory.unshift(currentRide);
+        updateRideHistory();
+    }
+
+    currentRide = null;
+
+    state = "waiting";
+    updateUI();
+
+    let btn = document.getElementById("nextRideBtn");
+
+    if (!btn) {
+        btn = document.createElement("button");
+        btn.id = "nextRideBtn";
+        btn.innerText = "Další spoj";
+
+        btn.style.position = "fixed";
+        btn.style.bottom = "20px";
+        btn.style.right = "20px";
+        btn.style.zIndex = "9999";
+
+        btn.onclick = () => {
+            btn.remove();
+            startCycle();
+        };
+
+        document.body.appendChild(btn);
+    }
+}
+
+function updateRideHistory() {
+    const box = document.getElementById("rideHistory");
+
+    box.innerHTML = "";
+
+    localRideHistory.forEach(ride => {
+        const div = document.createElement("div");
+        div.className = "ride-item";
+        div.innerText = ride;
+
+        box.appendChild(div);
+    });
+}
+
+function confirmFinish() {
+    const overlay = document.createElement("div");
+    overlay.id = "confirmOverlay";
+
+    overlay.innerHTML = `
+        <div class="confirm-box">
+            <p>Opravdu chceš ukončit jízdu?</p>
+            <div class="confirm-buttons">
+                <button onclick="finishRide()">Ano</button>
+                <button onclick="closeConfirm()">Ne</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+}
+
+function closeConfirm() {
+    const overlay = document.getElementById("confirmOverlay");
+    overlay.classList.add("fade-out");
+
+    setTimeout(() => {
+        overlay.remove();
+    }, 250); // musí sedět s animací
+}
+
+function showSummary() {
+    const overlay = document.createElement("div");
+    overlay.id = "summaryOverlay";
+
+    let list = "";
+
+    if (ridesHistory.length === 0) {
+        list = "<p>Žádné jízdy</p>";
+    } else {
+        ridesHistory.forEach(r => {
+            list += `<div class="summary-item">${r}</div>`;
+        });
+    }
+
+    overlay.innerHTML = `
+        <div class="summary-box">
+            <h3>Přehled jízd</h3>
+            ${list}
+            <button onclick="closeSummary()">Zavřít</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+}
+
+function closeSummary() {
+    document.getElementById("summaryOverlay").remove();
+    ridesHistory = []; // reset po session
+}
+
+function updateTime() {
+    const now = new Date();
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    document.getElementById("time").innerText = `${hours}:${minutes}`;
+    document.getElementById("date").innerText = `${day}.${month}.${year}`;
+}
+
+// každou sekundu refresh
+setInterval(updateTime, 1000);
+updateTime();
+
+function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+}
+
+/* kontrola loginu */
+const user = localStorage.getItem("username");
+if (!user) window.location.href = "login.html";
+
+updateUI();
+</script>
+
+</body>
+</html>

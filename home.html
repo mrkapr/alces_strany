@@ -222,6 +222,35 @@
     font-weight: 600;
 } 
 
+.user-rank {
+    margin-top: 10px;
+    font-size: 20px;
+    opacity: 0.9;
+}
+
+.rank-box {
+    display: none;
+    margin-top: 35px;
+    background: rgba(0,0,0,0.45);
+    padding: 20px;
+    border-radius: 18px;
+    max-width: 520px;
+}
+
+.rank-box h2 {
+    margin-top: 0;
+}
+
+.rank-ridic,
+.rank-zaslouzily-ridic,
+.rank-team-manager,
+.rank-dispecer,
+.rank-provozni-reditel,
+.rank-management,
+.rank-majitel {
+    display: none;
+}
+
 </style>
 </head>
 
@@ -250,13 +279,16 @@
 
 
     <div class="menu">
+        <a href="jezdeni.html" class="rank-zaslouzily-ridic">JEŽDĚNÍ 30. 5. 2026</a>
+        <b><span class="divider rank-zaslouzily-ridic"></span></b>      
+        <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
+        <span class="divider"></span>
         <a href="vedeni.html">Vedení</a>
         <a href="newsletter.html">Newsletter</a>
         <span class="divider"></span>
-        <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211">Výkazy (MZVŘ)</a>
         <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783">Vozidla + výpravy</a>
-        <a href="https://drive.google.com/drive/u/3/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT">Repainty</a>
-        <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
+        <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211">Výkazy (MZVŘ)</a>        
+        <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing">Repainty</a>
         <span class="divider"></span>
         <button class="logout" onclick="logout()">Odhlásit se</button>
     </div>
@@ -265,22 +297,87 @@
 <div class="content">
     <div class="welcome">Vítej,</div>
     <div class="username" id="name"></div>
+    <div class="user-rank" id="rank"></div>
+
+    <div class="rank-box rank-zaslouzily-ridic">
+        <h2>Ježdění 30.5.2026</h2>
+        <p>Vážení zasloužilí řidiči, nahoře v liště se můžete předběžně přihlásit na ježdění, které se bude konat 30. 5. 2026. Budeme zajišťovat smluvní linky k výročí 27. narozenin rádia Blaník v Benešově.</p>
+    </div>
+</div>
 </div>
 
 <script>
-    const username = localStorage.getItem("username");
+const username = localStorage.getItem("username");
+const rank = localStorage.getItem("rank");
+const rankName = localStorage.getItem("rankName");
 
-    if (!username) {
-        // když někdo otevře home.html bez loginu
-        window.location.href = "login.html";
-    } else {
-        document.getElementById("name").innerText = username;
+if (!username || !rank || !rankName) {
+    window.location.href = "login.html";
+} else {
+    document.getElementById("name").innerText = username;
+    document.getElementById("rank").innerText = rankName;
+
+    showRankContent(rank);
+}
+
+function showRankContent(rank) {
+    const allRankElements = document.querySelectorAll(
+        ".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management, .rank-majitel"
+    );
+
+    allRankElements.forEach(element => {
+        element.style.display = "none";
+    });
+
+    if (rank === "ridic") {
+        document.querySelectorAll(".rank-ridic").forEach(element => {
+            element.style.display = "block";
+        });
     }
 
-    function logout() {
-        localStorage.removeItem("username");
-        window.location.href = "index.html";
+    if (rank === "zasloužily-ridic") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic").forEach(element => {
+            element.style.display = "block";
+        });
     }
+
+    if (rank === "team-manager") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager").forEach(element => {
+            element.style.display = "block";
+        });
+    }
+
+    if (rank === "dispecer") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer").forEach(element => {
+            element.style.display = "block";
+        });
+    }
+
+    if (rank === "provozni-reditel") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel").forEach(element => {
+            element.style.display = "block";
+        });
+    }
+
+    if (rank === "management") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management").forEach(element => {
+            element.style.display = "block";
+        });
+    }
+
+    if (rank === "majitel") {
+        document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management, .rank-majitel").forEach(element => {
+            element.style.display = "block";
+        });
+    }
+}
+
+function logout() {
+    localStorage.removeItem("username");
+    localStorage.removeItem("rank");
+    localStorage.removeItem("rankName");
+    window.location.href = "index.html";
+}
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
