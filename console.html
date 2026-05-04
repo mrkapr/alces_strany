@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Console | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #050505;
+    color: #00ff66;
+    font-family: "Courier New", Consolas, monospace;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.console {
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.line {
+    white-space: pre-wrap;
+}
+
+.input-line {
+    display: flex;
+    align-items: center;
+}
+
+.prompt {
+    margin-right: 8px;
+    color: #00ff66;
+}
+
+input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #00ff66;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 15px;
+    width: 100%;
+}
+
+.error {
+    color: #ff4d4d;
+}
+
+.success {
+    color: #00ff66;
+}
+
+.info {
+    color: #00ccff;
+}
+
+.warning {
+    color: #ffd84d;
+}
+
+.fake-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: #00ff66;
+    margin-left: 4px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+
+    51%, 100% {
+        opacity: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="console" id="console"></div>
+
+<script>
+const users = [
+    { username: "admin", password: "admin123123123", name: "admin", rank: "majitel", rankName: "ADMIN" },
+    { username: "universal", password: "AlCeS__1234_universe_/al", name: "universal", rank: "ridic", rankName: "Řidič - zkušební doba" },
+    { username: "7001", password: "cauahejalcesjenej", name: "Karel P. M.", rank: "majitel", rankName: "Majitel" },
+    { username: "7002", password: "josijehotas67", name: "Vašek K.", rank: "majitel", rankName: "Majitel - poloviční úvazek" },
+    { username: "7003", password: "kamen730", name: "Vít V.", rank: "management", rankName: "Management" },
+    { username: "7014", password: "silnice804", name: "Jakub K.", rank: "ridic", rankName: "Řidič" },
+    { username: "7015", password: "reka239", name: "Jakub S.", rank: "ridic", rankName: "Řidič" },
+    { username: "7021", password: "efn67", name: "Adam V.", rank: "provozni-reditel", rankName: "Provozní ředitel" },
+    { username: "7026", password: "pole402", name: "Stanislav K.", rank: "ridic", rankName: "Řidič" },
+    { username: "7028", password: "most665", name: "Jan Š.", rank: "zasloužily-ridic", rankName: "Zasloužilý řidič" },    
+    { username: "7045", password: "mesto214", name: "Patrik H.", rank: "zasloužily-ridic", rankName: "Zasloužilý řidič (pauza)" },
+    { username: "7048", password: "skola73", name: "Patrik A.", rank: "zasloužily-ridic", rankName: "Zasloužilý řidič" },
+    { username: "7054", password: "okno189", name: "Tomáš M.", rank: "ridic", rankName: "Řidič" },
+    { username: "7057", password: "kabel970", name: "Pavel S.", rank: "ridic", rankName: "Řidič" },
+    { username: "7059", password: "slunce44", name: "Marek N.", rank: "ridic", rankName: "Řidič" },
+    { username: "7063", password: "vlak777", name: "Jakub S.", rank: "dispecer", rankName: "Dispečer" },
+    { username: "7067", password: "vitr311", name: "Jan H.", rank: "team-manager", rankName: "Team manager" },    
+    { username: "7068", password: "mapa628", name: "Jakub K.", rank: "ridic", rankName: "Řidič" },
+    { username: "7071", password: "hodiny95", name: "Jiří H.", rank: "zasloužily-ridic", rankName: "Zasloužilý řidič" },
+    { username: "7074", password: "papir340", name: "Michal H.", rank: "ridic", rankName: "Řidič" },
+    { username: "7079", password: "server58", name: "Lucas Z.", rank: "dispecer", rankName: "Modder" },
+    { username: "7085", password: "obrazek903", name: "Viktor S.", rank: "ridic", rankName: "Řidič" },
+    { username: "7087", password: "klavesnice129", name: "Lukáš P.", rank: "ridic", rankName: "Řidič" },
+    { username: "7088", password: "video274", name: "Tomáš N.", rank: "ridic", rankName: "Řidič" },
+    { username: "7090", password: "zidle888", name: "Pavel K.", rank: "ridic", rankName: "Řidič" },
+    { username: "7098", password: "stul451", name: "David M.", rank: "ridic", rankName: "Řidič" },    
+    { username: "7092", password: "lampa36", name: "Jakub A.", rank: "ridic", rankName: "Řidič" },    
+    { username: "7094", password: "signal204", name: "Michal T.", rank: "zasloužily-ridic", rankName: "Zasloužilý řidič" },
+    { username: "7097", password: "soubor146", name: "Adam S.", rank: "ridic", rankName: "Řidič" },
+    { username: "7100", password: "program615", name: "Marek Z.", rank: "ridic", rankName: "Řidič" },
+    { username: "7101", password: "router399", name: "David V.", rank: "ridic", rankName: "Řidič" },
+    { username: "7102", password: "mikrofon12", name: "Matěj F.", rank: "provozni-reditel", rankName: "Provozní ředitel" },
+];
+
+const existingPages = [
+    "index.html",
+    "login.html",
+    "home.html",
+    "vedeni.html",
+    "newsletter.html",
+    "console.html"
+];
+
+const validRanks = [
+    "majitel",
+    "management",
+    "provozni-reditel",
+    "dispecer",
+    "team-manager",
+    "zasloužily-ridic",
+    "ridic"
+];
+
+const rankPower = {
+    "ridic": 1,
+    "zasloužily-ridic": 2,
+    "team-manager": 3,
+    "dispecer": 4,
+    "provozni-reditel": 5,
+    "management": 6,
+    "majitel": 7
+};
+
+const fakeFileSystem = {
+    "ALCES": {
+        type: "folder",
+        content: {
+            "pages": {
+                type: "folder",
+                content: {
+                    "index.html": { type: "file", target: "index.html" },
+                    "login.html": { type: "file", target: "login.html" },
+                    "home.html": { type: "file", target: "home.html" },
+                    "vedeni.html": { type: "file", target: "vedeni.html" },
+                    "newsletter.html": { type: "file", target: "newsletter.html" },
+                    "console.html": { type: "file", target: "console.html" }
+                }
+            },
+            "system": {
+                type: "folder",
+                content: {
+                    "users.db": { type: "file" },
+                    "ranks.db": { type: "file" },
+                    "history.log": { type: "file" }
+                }
+            },
+            "readme.txt": { type: "file" }
+        }
+    }
+};
+
+const consoleBox = document.getElementById("console");
+
+let tempUsername = "";
+let loggedUser = null;
+let pendingRankChanges = [];
+let currentPath = ["ALCES"];
+
+print("ALCES CONSOLE");
+print("V1.0.4");
+print("");
+print("Zadej přihlašovací údaje.");
+askUsername();
+
+function print(text = "", className = "") {
+    const line = document.createElement("div");
+    line.className = "line " + className;
+    line.innerText = text;
+    consoleBox.appendChild(line);
+    scrollDown();
+}
+
+function createInput(promptText, type = "text", callback) {
+    const line = document.createElement("div");
+    line.className = "input-line";
+
+    const prompt = document.createElement("span");
+    prompt.className = "prompt";
+    prompt.innerText = promptText;
+
+    const input = document.createElement("input");
+    input.type = type;
+    input.autocomplete = "off";
+
+    const cursor = document.createElement("span");
+    cursor.className = "fake-cursor";
+
+    line.appendChild(prompt);
+    line.appendChild(input);
+    line.appendChild(cursor);
+    consoleBox.appendChild(line);
+
+    input.focus();
+
+    input.addEventListener("focus", function() {
+        cursor.style.display = "inline-block";
+    });
+
+    input.addEventListener("blur", function() {
+        cursor.style.display = "none";
+    });
+
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            const value = input.value;
+            input.disabled = true;
+            cursor.remove();
+
+            if (type === "password") {
+                input.value = "********";
+            }
+
+            callback(value);
+        }
+    });
+
+    scrollDown();
+}
+
+function askUsername() {
+    createInput("username:", "text", function(value) {
+        tempUsername = value.trim();
+        askPassword();
+    });
+}
+
+function askPassword() {
+    createInput("password:", "password", function(value) {
+        const user = users.find(u => u.username === tempUsername && u.password === value);
+
+        if (user) {
+            loggedUser = user;
+
+            localStorage.setItem("username", user.name);
+            localStorage.setItem("rank", user.rank);
+            localStorage.setItem("rankName", user.rankName);
+
+            if (user.rank === "ridic" || user.rank === "zasloužily-ridic") {
+                print("");
+                print("Přístup zamítnut.", "error");
+                print("Nedostatečná práva.", "error");
+                print("Přesměrovávání na domovskou stránku...", "warning");
+
+                setTimeout(() => {
+                    window.location.href = "home.html";
+                }, 1800);
+
+                return;
+            }
+
+            print("");
+            print("Přihlášení úspěšné.", "success");
+            print("Uživatel: " + user.name);
+            print("Rank: " + user.rankName);
+            print("");
+            print("");
+
+            askCommand();
+        } else {
+            print("");
+            print("Nesprávné uživatelské jméno nebo heslo.", "error");
+            print("Přístup zamítnut.", "error");
+            print("");
+            askUsername();
+        }
+    });
+}
+
+function askCommand() {
+    print("");
+
+    createInput(getPrompt(), "text", function(command) {
+        handleCommand(command.trim());
+    });
+}
+
+function getPrompt() {
+    return currentPath.join("\\") + ">";
+}
+
+function handleCommand(command) {
+    if (command === "") {
+        askCommand();
+        return;
+    }
+
+    if (command === "help") {
+        print("");
+        print("Dostupné příkazy:", "info");
+        print("help                         zobrazí nápovědu");
+        print("clear                        vyčistí konzoli");
+        print("whoami                       zobrazí aktuálního uživatele");
+        print("pages                        zobrazí existující stránky");
+        print("-open/-target stránka.html   otevře stránku");
+        print("dir                          zobrazí obsah složky");
+        print("cd složka                    otevře složku");
+        print("cd ..                        vrátí se o složku zpět");
+        print("pwd                          zobrazí aktuální cestu");
+        print("open soubor.html             otevře soubor/stránku");
+        print("setrank username rank        připraví změnu ranku");
+        print("setrank done                 dokončí změny a vypíše users export");
+        print("setrank cancel               zruší připravené změny");
+        print("pendingranks                 zobrazí připravené změny");
+        print("rankhistory                  zobrazí historii změn ranků");
+        print("clearhistory                 smaže historii změn ranků");
+        print("ranks                        zobrazí všechny ranky");
+        print("logout                       odhlásí uživatele");
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "clear") {
+        consoleBox.innerHTML = "";
+        askCommand();
+        return;
+    }
+
+    if (command === "whoami") {
+        print("");
+        print("Uživatel: " + loggedUser.name);
+        print("Username: " + loggedUser.username);
+        print("Rank: " + loggedUser.rankName);
+        print("Cesta: " + currentPath.join("\\"));
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "pages") {
+        print("");
+        print("Existující stránky:", "info");
+        existingPages.forEach(page => print("- " + page));
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "ranks") {
+        print("");
+        print("Dostupné ranky:", "info");
+        validRanks.forEach(rank => {
+            print("- " + rank + " = " + getRankName(rank));
+        });
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "pwd") {
+        print("");
+        print(currentPath.join("\\"));
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "dir") {
+        const folder = getCurrentFolder();
+
+        print("");
+        print("Obsah složky " + currentPath.join("\\") + ":", "info");
+
+        Object.keys(folder.content).forEach(itemName => {
+            const item = folder.content[itemName];
+
+            if (item.type === "folder") {
+                print("[DIR]  " + itemName);
+            } else {
+                print("[FILE] " + itemName);
+            }
+        });
+
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command.startsWith("cd ")) {
+        const folderName = command.replace("cd ", "").trim();
+
+        if (folderName === "..") {
+            if (currentPath.length > 1) {
+                currentPath.pop();
+            }
+            askCommand();
+            return;
+        }
+
+        const folder = getCurrentFolder();
+
+        if (!folder.content[folderName]) {
+            print("Složka '" + folderName + "' neexistuje.", "error");
+            askCommand();
+            return;
+        }
+
+        if (folder.content[folderName].type !== "folder") {
+            print("'" + folderName + "' není složka.", "error");
+            askCommand();
+            return;
+        }
+
+        currentPath.push(folderName);
+        askCommand();
+        return;
+    }
+
+    if (command.startsWith("open ")) {
+        const fileName = command.replace("open ", "").trim();
+        const folder = getCurrentFolder();
+
+        if (!folder.content[fileName]) {
+            print("Soubor '" + fileName + "' neexistuje.", "error");
+            askCommand();
+            return;
+        }
+
+        if (folder.content[fileName].type !== "file") {
+            print("'" + fileName + "' není soubor.", "error");
+            askCommand();
+            return;
+        }
+
+        if (!folder.content[fileName].target) {
+            print("Soubor '" + fileName + "' nelze otevřít.", "error");
+            askCommand();
+            return;
+        }
+
+        print("Otevírám: " + folder.content[fileName].target, "success");
+
+        setTimeout(() => {
+            window.location.href = folder.content[fileName].target;
+        }, 500);
+
+        return;
+    }
+
+    if (command === "logout") {
+        localStorage.removeItem("username");
+        localStorage.removeItem("rank");
+        localStorage.removeItem("rankName");
+
+        loggedUser = null;
+        tempUsername = "";
+        pendingRankChanges = [];
+        currentPath = ["ALCES"];
+
+        print("");
+        print("Uživatel byl odhlášen.", "info");
+        print("");
+        askUsername();
+        return;
+    }
+
+    if (command === "pendingranks") {
+        if (!canManageRanks()) {
+            print("Nemáš oprávnění zobrazit připravené změny. Tento příkaz je pouze pro Management a výš.", "error");
+            askCommand();
+            return;
+        }
+
+        print("");
+        print("Připravené změny ranků:", "info");
+
+        if (pendingRankChanges.length === 0) {
+            print("Žádné připravené změny.");
+        } else {
+            pendingRankChanges.forEach(change => {
+                print("- " + change.summary);
+            });
+        }
+
+        print("");
+        askCommand();
+        return;
+    }
+
+    if (command === "setrank") {
+    if (!canManageRanks()) {
+        print("Nemáš oprávnění měnit ranky. Tento režim je pouze pro Management a výš.", "error");
+        askCommand();
+        return;
+    }
+
+    setrankMode = true;
+    pendingRankChanges = [];
+
+    print("");
+    print("SET RANK MODE spuštěn.", "success");
+    print("Piš změny ve tvaru: username rank", "info");
+    print("Příklad: 7001 majitel", "info");
+    print("Dokončení: setrank done", "info");
+    print("Zrušení: setrank cancel", "info");
+    print("");
+
+    askCommand();
+    return;
+}
+
+if (command === "setrank done") {
+    if (!canManageRanks()) {
+        print("Nemáš oprávnění dokončit změny ranků.", "error");
+        askCommand();
+        return;
+    }
+
+    if (!setrankMode) {
+        print("Nejsi v SET RANK MODE. Nejdřív napiš: setrank", "error");
+        askCommand();
+        return;
+    }
+
+    if (pendingRankChanges.length === 0) {
+        print("Nejsou připravené žádné změny ranků.", "warning");
+        setrankMode = false;
+        askCommand();
+        return;
+    }
+
+    setrankMode = false;
+
+    print("");
+    print("Změny ranků byly dokončeny.", "success");
+    print("Počet změn: " + pendingRankChanges.length);
+    print("");
+
+    print("Souhrn změn:", "info");
+    pendingRankChanges.forEach(change => {
+        print("- " + change.summary);
+    });
+
+    print("");
+    printUsersExport();
+
+    pendingRankChanges = [];
+
+    askCommand();
+    return;
+}
+
+if (command === "setrank cancel") {
+    if (!canManageRanks()) {
+        print("Nemáš oprávnění zrušit změny ranků.", "error");
+        askCommand();
+        return;
+    }
+
+    if (!setrankMode) {
+        print("Nejsi v SET RANK MODE. Nejdřív napiš: setrank", "error");
+        askCommand();
+        return;
+    }
+
+    pendingRankChanges.forEach(change => {
+        const user = users.find(u => u.username === change.username);
+        if (user) {
+            user.rank = change.oldRank;
+            user.rankName = change.oldRankName;
+        }
+    });
+
+    pendingRankChanges = [];
+    setrankMode = false;
+
+    print("SET RANK MODE byl zrušen.", "success");
+    askCommand();
+    return;
+}
+
+if (setrankMode) {
+    const parts = command.split(" ");
+
+    if (parts.length !== 2) {
+        askCommand();
+        return;
+    }
+
+    const targetUsername = parts[0];
+    const newRank = parts[1];
+
+    if (!validRanks.includes(newRank)) {
+        askCommand();
+        return;
+    }
+
+    const targetUser = users.find(u => u.username === targetUsername);
+
+    if (!targetUser) {
+        askCommand();
+        return;
+    }
+
+    if (targetUser.rank === newRank) {
+        askCommand();
+        return;
+    }
+
+    const oldRank = targetUser.rank;
+    const oldRankName = targetUser.rankName;
+
+    targetUser.rank = newRank;
+    targetUser.rankName = getRankName(newRank);
+
+    const date = new Date().toLocaleString("cs-CZ");
+    const historyText = date + " | " + loggedUser.username + " změnil uživateli " + targetUser.username + " rank z " + oldRankName + " na " + targetUser.rankName;
+
+    addHistory(historyText);
+
+    pendingRankChanges.push({
+        username: targetUser.username,
+        oldRank: oldRank,
+        oldRankName: oldRankName,
+        newRank: newRank,
+        newRankName: targetUser.rankName,
+        summary: targetUser.username + ": " + oldRankName + " → " + targetUser.rankName
+    });
+
+    if (loggedUser.username === targetUser.username) {
+        loggedUser.rank = newRank;
+        loggedUser.rankName = getRankName(newRank);
+        localStorage.setItem("rank", newRank);
+        localStorage.setItem("rankName", getRankName(newRank));
+    }
+
+    askCommand();
+    return;
+}
+
+    if (command === "rankhistory") {
+        if (!canManageRanks()) {
+            print("Nemáš oprávnění zobrazit historii. Tento příkaz je pouze pro Management a výš.", "error");
+            askCommand();
+            return;
+        }
+
+        showHistory();
+        askCommand();
+        return;
+    }
+
+    if (command === "clearhistory") {
+        if (!canManageRanks()) {
+            print("Nemáš oprávnění smazat historii. Tento příkaz je pouze pro Management a výš.", "error");
+            askCommand();
+            return;
+        }
+
+        localStorage.removeItem("rankHistory");
+        print("Historie změn ranků byla smazána.", "success");
+        askCommand();
+        return;
+    }
+
+    if (command.startsWith("-open/-target ")) {
+        const target = command.replace("-open/-target ", "").trim();
+
+        if (target === "") {
+            print("Chyba: nebyl zadán název stránky.", "error");
+            askCommand();
+            return;
+        }
+
+        if (existingPages.includes(target)) {
+            print("Otevírám: " + target, "success");
+            setTimeout(() => {
+                window.location.href = target;
+            }, 500);
+        } else {
+            print("Stránka '" + target + "' neexistuje.", "error");
+            askCommand();
+        }
+
+        return;
+    }
+
+    if (command === "debug") {
+    print("");
+    print("Spouštím debug režim...", "warning");
+    print("VAROVÁNÍ: systém je nestabilní.", "warning");
+    print("");
+
+    let count = 0;
+
+    const debugInterval = setInterval(() => {
+        print("error: debug failed", "error");
+        count++;
+
+        // 60 sekund při intervalu 200 ms = cca 300 řádků
+        if (count >= 300) {
+            clearInterval(debugInterval);
+
+            print("");
+            print("FATAL ERROR: console crashed", "error");
+            print("Uživatel bude odpojen...", "warning");
+
+            setTimeout(() => {
+                localStorage.removeItem("username");
+                localStorage.removeItem("rank");
+                localStorage.removeItem("rankName");
+                window.location.href = "home.html";
+            }, 1200);
+        }
+    }, 200);
+
+    return;
+}
+
+    print("Neznámý příkaz: " + command, "error");
+    askCommand();
+}
+
+
+
+function getCurrentFolder() {
+    let folder = fakeFileSystem[currentPath[0]];
+
+    for (let i = 1; i < currentPath.length; i++) {
+        folder = folder.content[currentPath[i]];
+    }
+
+    return folder;
+}
+
+function getRankName(rank) {
+    switch(rank) {
+        case "majitel": return "Majitel";
+        case "management": return "Management";
+        case "provozni-reditel": return "Provozní ředitel";
+        case "dispecer": return "Dispečer";
+        case "team-manager": return "Team manager";
+        case "zasloužily-ridic": return "Zasloužilý řidič";
+        case "ridic": return "Řidič";
+        default: return rank;
+    }
+}
+
+function canManageRanks() {
+    return loggedUser && rankPower[loggedUser.rank] >= rankPower["management"];
+}
+
+function addHistory(text) {
+    const history = JSON.parse(localStorage.getItem("rankHistory")) || [];
+    history.push(text);
+    localStorage.setItem("rankHistory", JSON.stringify(history));
+}
+
+function showHistory() {
+    const history = JSON.parse(localStorage.getItem("rankHistory")) || [];
+
+    print("");
+    print("Historie změn ranků:", "info");
+
+    if (history.length === 0) {
+        print("Historie je prázdná.");
+    } else {
+        history.forEach(item => print("- " + item));
+    }
+
+    print("");
+}
+
+function printUsersExport() {
+    print("Zkopíruj tento users kód do login.html:", "info");
+    print("");
+    print("const users = [");
+
+    users.forEach((u, index) => {
+        const comma = index === users.length - 1 ? "" : ",";
+        print(`    { username: "${u.username}", password: "${u.password}", name: "${u.name}", rank: "${u.rank}", rankName: "${u.rankName}" }${comma}`);
+    });
+
+    print("];");
+    print("");
+}
+
+function scrollDown() {
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+}
+</script>
+
+</body>
+</html>
