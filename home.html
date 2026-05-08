@@ -51,24 +51,77 @@
     margin: 0 3px;
     }
 
-    .menu a {
+.menu a {
     color: white;
     margin-left: 20px;
     text-decoration: none;
     font-weight: 600;
-    }
+    display: inline-block;
+
+    transition: 
+        transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 0.25s ease,
+        filter 0.25s ease;
+}
+
+.menu:hover a {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+.menu a:hover {
+    opacity: 1 !important;
+    transform: scale(1.08);
+    filter: blur(0px);
+}
+
+.menu a:active {
+    transform: scale(0.9);
+}
+
+/* MANAGEMENT - zlatý glow */
+.rank-management .menu a:hover {
+    text-shadow: 0 0 8px gold, 0 0 16px orange;
+}
+
+/* DISPEČER - modrý */
+.rank-dispecer .menu a:hover {
+    text-shadow: 0 0 8px #00ccff, 0 0 16px #0099ff;
+}
+
+/* ŘIDIČ - zelený */
+.rank-ridic .menu a:hover {
+    text-shadow: 0 0 8px #00ff66, 0 0 16px #00cc55;
+}
 
 
-    .logout {
-        font-family: 'Poppins', Arial, sans-serif;
-        background: darkred;
-        color: white;
-        border: none;
-        padding: 6px 10px;
-        cursor: pointer;
-        margin-left: 20px;
-        border-radius: 20px;
-    }
+.logout {
+    font-family: 'Poppins', Arial, sans-serif;
+    background: darkred;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-left: 20px;
+    border-radius: 20px;
+    display: inline-block;
+
+    transition: 
+        transform 0.18s cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 0.18s ease,
+        background 0.18s ease;
+}
+
+.logout:hover {
+    transform: scale(0.94);
+    opacity: 0.9;
+}
+
+.logout:active {
+    transform: scale(0.88);
+    opacity: 0.75;
+    background: #a00000;
+}
 
     /* obsah */
     .content {
@@ -251,6 +304,25 @@
     display: none;
 }
 
+[class^="rank-"] {
+    display: none;
+}
+
+.menu a.rank-ridic,
+.menu a.rank-zaslouzily-ridic,
+.menu a.rank-team-manager,
+.menu a.rank-dispecer,
+.menu a.rank-provozni-reditel,
+.menu a.rank-management,
+.menu a.rank-majitel {
+    display: none;
+}
+
+.menu a[data-min-rank],
+.menu span[data-min-rank] {
+    display: none;
+}
+
 </style>
 </head>
 
@@ -279,6 +351,7 @@
 
 
     <div class="menu">
+        <a href="console.html" data-min-rank="provozni-reditel">Konzole</a>
         <a href="jezdeni.html">JEŽDĚNÍ 30. 5. 2026</a>
         <span class="divider"></span>     
         <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
@@ -318,6 +391,7 @@ if (!username || !rank || !rankName) {
     document.getElementById("rank").innerText = rankName;
 
     showRankContent(rank);
+    showRankMenu(rank);
 }
 
 function showRankContent(rank) {
@@ -331,45 +405,67 @@ function showRankContent(rank) {
 
     if (rank === "ridic") {
         document.querySelectorAll(".rank-ridic").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "zasloužily-ridic") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "team-manager") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "dispecer") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "provozni-reditel") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "management") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
 
     if (rank === "majitel") {
         document.querySelectorAll(".rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management, .rank-majitel").forEach(element => {
-            element.style.display = "block";
+            element.style.display = "inline-block";
         });
     }
+}
+
+function showRankMenu(rank) {
+    const rankLevels = {
+        "ridic": 1,
+        "zasloužily-ridic": 2,
+        "team-manager": 3,
+        "dispecer": 4,
+        "provozni-reditel": 5,
+        "management": 6,
+        "majitel": 7
+    };
+
+    document.querySelectorAll("[data-min-rank]").forEach(element => {
+        const minRank = element.dataset.minRank;
+
+        if (rankLevels[rank] >= rankLevels[minRank]) {
+            element.style.display = "inline-block";
+        } else {
+            element.style.display = "none";
+        }
+    });
 }
 
 function logout() {
