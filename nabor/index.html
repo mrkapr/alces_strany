@@ -2,6 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nábor | alces, a. s.</title>
 
 <link rel="icon" href="..\favicon.png" type="image/png">
@@ -401,6 +402,99 @@ body::before {
 .reveal.active {
     opacity: 1;
     transform: translateY(0px);
+}
+
+/* ===== MOBIL ===== */
+
+@media (max-width: 768px) {
+
+    body {
+        padding-top: 70px;
+        background-attachment: scroll;
+        background-position: center top;
+    }
+
+    .topbar {
+        height: 70px;
+        padding: 0 16px;
+    }
+
+    .logo img {
+        height: 28px;
+    }
+
+    .menu {
+        gap: 14px;
+    }
+
+    .menu a {
+        font-size: 14px;
+    }
+
+    .hero {
+        padding: 80px 18px 55px 18px;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+    }
+
+    .hero p {
+        font-size: 17px;
+    }
+
+    .section {
+        padding: 18px;
+    }
+
+    .text-area {
+        padding: 28px 22px;
+        border-radius: 22px;
+    }
+
+    .text-area h2 {
+        font-size: 30px;
+    }
+
+    .text-area p {
+        font-size: 15.5px;
+        line-height: 1.75;
+    }
+
+    .gallery-title {
+        font-size: 34px;
+        margin-top: 55px;
+        margin-bottom: 25px;
+    }
+
+    .gallery {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .gallery img {
+        height: 210px;
+        border-radius: 18px;
+    }
+
+    .form-section {
+        padding: 70px 18px 95px 18px;
+    }
+
+    .form-button {
+        width: 100%;
+        max-width: 340px;
+
+        padding: 20px 25px;
+
+        font-size: 24px;
+    }
+
+    .footer {
+        padding: 25px;
+        font-size: 12px;
+    }
+
 }
 
 </style>
