@@ -28,23 +28,85 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+
+    z-index: 999;
 }
 
 .logo img {
     height: 30px;
-    margin-top: 6px; /* POSUN DOLŮ – klidně 2–6px podle chuti */
+    margin-top: 6px;
 }
 
-.menu {
+.footer {
+    text-align: center;
+
+    padding: 35px;
+
+    opacity: 0.55;
+
+    font-size: 14px;
+}
+
+    .menu {
     display: flex;
     align-items: center;
-    gap: 25px;
-}
+    gap: 25px; /* rozestupy mezi položkami */
+    margin-right: 20px; /* posune celé menu doleva */
+    }
+
+    .divider {
+    height: 20px;
+    width: 2.5px;
+    background: rgb(255, 255, 255);
+    margin: 0 3px;
+    }
 
 .menu a {
     color: white;
+    margin-left: 20px;
     text-decoration: none;
     font-weight: 600;
+    display: inline-block;
+
+    transition: 
+        transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 0.25s ease,
+        filter 0.25s ease;
+}
+
+.menu:hover a {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+.menu a:hover {
+    opacity: 1 !important;
+    transform: scale(1.08);
+    filter: blur(0px);
+}
+
+.menu a:active {
+    transform: scale(0.9);
+}
+
+.menu:hover a {
+    opacity: 0.4;
+    transform: scale(0.9);
+}
+
+.menu a:hover {
+    opacity: 1 !important;
+    transform: scale(1.08);
+    filter: blur(0px);
+}
+
+.menu a:active {
+    transform: scale(0.9);
 }
 
 .divider {
@@ -362,7 +424,8 @@ body {
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSdSNt-1qtoKVx83WBIdIClf4MA_PcJxLeXajdFPQgqdOwcZ3A/viewform?usp=dialog">Nábor</a>
         <span class="divider"></span>
         <a href="login.html">
-            <button class="login-btn"><b>Přihlásit se</b></button>
+        <button class="login-btn"><b>Přihlásit se</b></button>
+        <a href="#"></a>
         </a>
     </div>
 </div>
@@ -399,6 +462,10 @@ body {
             <b>V blízké době plánujeme spustit nábor do naší společnosti. Mějte oči na stopkách, budeme se na vás těšit!</b>
         </p>
     </div>
+</div>
+
+<div class="footer">
+    © alces, a. s.
 </div>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
