@@ -404,6 +404,110 @@ body::before {
     transform: translateY(0px);
 }
 
+#lightbox {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(14px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+
+    z-index: 99999;
+}
+
+#lightbox.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#lightbox-image {
+    max-width: 86%;
+    max-height: 88vh;
+    border-radius: 18px;
+
+    box-shadow: 0 20px 70px rgba(0,0,0,0.45);
+
+    transform: scale(0.92);
+    transition: transform 0.25s ease;
+}
+
+#lightbox.active #lightbox-image {
+    transform: scale(1);
+}
+
+#close-lightbox {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+
+    font-size: 42px;
+    color: white;
+    cursor: pointer;
+}
+
+.lightbox-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border: none;
+    background: transparent;
+
+    color: white;
+
+    font-size: 90px;
+    font-weight: 300;
+
+    cursor: pointer;
+
+    opacity: 0.7;
+
+    transition:
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.lightbox-arrow:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(0.92);
+}
+
+#prev-lightbox {
+    left: 35px;
+}
+
+#next-lightbox {
+    right: 35px;
+}
+
+.gallery img {
+    cursor: pointer;
+}
+
+.lightbox-image-animate {
+    animation: imageSwitch 0.22s ease;
+}
+
+@keyframes imageSwitch {
+
+    0% {
+        opacity: 0.4;
+        transform: scale(0.96);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 /* ===== MOBIL ===== */
 
 @media (max-width: 768px) {
@@ -569,10 +673,13 @@ body::before {
 
         <img src="fotky/foto1.png">
         <img src="fotky/foto2.png">
-        <img src="fotky/foto3.png">
+        <img src="fotky/fotoright.png">
         <img src="fotky/foto4.png">
         <img src="fotky/foto5.png">
         <img src="fotky/foto6.png">
+        <img src="fotky/foto7.png">
+        <img src="fotky/foto8.png">
+        <img src="fotky/foto9.png">
 
     </div>
 
@@ -592,6 +699,16 @@ body::before {
 
 <div class="footer">
     © alces, a. s.
+</div>
+
+<div id="lightbox">
+    <button id="prev-lightbox" class="lightbox-arrow">‹</button>
+
+    <img id="lightbox-image">
+
+    <button id="next-lightbox" class="lightbox-arrow">›</button>
+
+    <span id="close-lightbox">✕</span>
 </div>
 
 <script>
@@ -616,7 +733,104 @@ window.addEventListener("scroll", revealOnScroll);
 
 revealOnScroll();
 
+const galleryImages = Array.from(document.querySelectorAll(".gallery img"));
+
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightbox-image");
+const closeLightbox = document.getElementById("close-lightbox");
+const prevLightbox = document.getElementById("prev-lightbox");
+const nextLightbox = document.getElementById("next-lightbox");
+
+let currentImageIndex = 0;
+
+function openLightbox(index) {
+    currentImageIndex = index;
+    lightboxImage.classList.remove("lightbox-image-animate");
+
+setTimeout(() => {
+
+    lightboxImage.src = galleryImages[currentImageIndex].src;
+
+    lightboxImage.classList.add("lightbox-image-animate");
+
+}, 10);
+    lightbox.classList.add("active");
+}
+
+function closeLightboxFunc() {
+    lightbox.classList.remove("active");
+}
+
+function showNextImage() {
+    currentImageIndex++;
+
+    if (currentImageIndex >= galleryImages.length) {
+        currentImageIndex = 0;
+    }
+
+    lightboxImage.classList.remove("lightbox-image-animate");
+
+setTimeout(() => {
+
+    lightboxImage.src = galleryImages[currentImageIndex].src;
+
+    lightboxImage.classList.add("lightbox-image-animate");
+
+}, 10);
+}
+
+function showPrevImage() {
+    currentImageIndex--;
+
+    if (currentImageIndex < 0) {
+        currentImageIndex = galleryImages.length - 1;
+    }
+
+    lightboxImage.classList.remove("lightbox-image-animate");
+
+setTimeout(() => {
+
+    lightboxImage.src = galleryImages[currentImageIndex].src;
+
+    lightboxImage.classList.add("lightbox-image-animate");
+
+}, 10);
+}
+
+galleryImages.forEach((image, index) => {
+    image.addEventListener("click", () => {
+        openLightbox(index);
+    });
+});
+
+closeLightbox.addEventListener("click", closeLightboxFunc);
+nextLightbox.addEventListener("click", showNextImage);
+prevLightbox.addEventListener("click", showPrevImage);
+
+lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) {
+        closeLightboxFunc();
+    }
+});
+
+document.addEventListener("keydown", (e) => {
+    if (!lightbox.classList.contains("active")) return;
+
+    if (e.key === "ArrowRight") {
+        showNextImage();
+    }
+
+    if (e.key === "ArrowLeft") {
+        showPrevImage();
+    }
+
+    if (e.key === "Escape") {
+        closeLightboxFunc();
+    }
+});
+
 </script>
 
 </body>
+
 </html>
