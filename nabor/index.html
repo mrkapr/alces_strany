@@ -295,6 +295,28 @@ body::before {
 
 /* ===== galerie ===== */
 
+#lightbox-author {
+    position: absolute;
+
+    bottom: 25px;
+    right: 30px;
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0.75;
+
+    background: rgba(0,0,0,0.22);
+
+    padding: 8px 14px;
+
+    border-radius: 999px;
+
+    backdrop-filter: blur(8px);
+}
+
 .gallery-title {
     text-align: center;
 
@@ -630,7 +652,7 @@ body::before {
     <h1>Nábor</h1>
 
     <p>
-        Přidej se do společnosti alces, a. s.
+        alces, a. s. hledá nové řidiče!
     </p>
 
 </section>
@@ -671,15 +693,15 @@ body::before {
 
     <div class="gallery reveal">
 
-        <img src="fotky/foto1.png">
-        <img src="fotky/foto2.png">
-        <img src="fotky/fotoright.png">
-        <img src="fotky/foto4.png">
-        <img src="fotky/foto5.png">
-        <img src="fotky/foto6.png">
-        <img src="fotky/foto7.png">
-        <img src="fotky/foto8.png">
-        <img src="fotky/foto9.png">
+        <img src="fotky/foto1.png" data-author="7001">
+        <img src="fotky/foto2.png" data-author="7001">
+        <img src="fotky/fotoright.png" data-author="7067">
+        <img src="fotky/foto4.png" data-author="7001">
+        <img src="fotky/foto5.png" data-author="7067">
+        <img src="fotky/foto6.png" data-author="7059">
+        <img src="fotky/foto7.png" data-author="7074">
+        <img src="fotky/foto8.png" data-author="7067">
+        <img src="fotky/foto9.png" data-author="7094">
 
     </div>
 
@@ -705,6 +727,8 @@ body::before {
     <button id="prev-lightbox" class="lightbox-arrow">‹</button>
 
     <img id="lightbox-image">
+    
+    <div id="lightbox-author"></div>
 
     <button id="next-lightbox" class="lightbox-arrow">›</button>
 
@@ -712,48 +736,51 @@ body::before {
 </div>
 
 <script>
-
 const reveals = document.querySelectorAll(".reveal");
 
 function revealOnScroll() {
-
     reveals.forEach(element => {
-
         const windowHeight = window.innerHeight;
         const revealTop = element.getBoundingClientRect().top;
 
         if (revealTop < windowHeight - 100) {
             element.classList.add("active");
         }
-
     });
 }
 
 window.addEventListener("scroll", revealOnScroll);
-
 revealOnScroll();
 
 const galleryImages = Array.from(document.querySelectorAll(".gallery img"));
 
 const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightbox-image");
+const lightboxAuthor = document.getElementById("lightbox-author");
 const closeLightbox = document.getElementById("close-lightbox");
 const prevLightbox = document.getElementById("prev-lightbox");
 const nextLightbox = document.getElementById("next-lightbox");
 
 let currentImageIndex = 0;
 
-function openLightbox(index) {
-    currentImageIndex = index;
+function updateLightboxImage() {
+    const currentImage = galleryImages[currentImageIndex];
+
     lightboxImage.classList.remove("lightbox-image-animate");
 
-setTimeout(() => {
+    setTimeout(() => {
+        lightboxImage.src = currentImage.src;
 
-    lightboxImage.src = galleryImages[currentImageIndex].src;
+        const author = currentImage.dataset.author || "neuveden";
+        lightboxAuthor.innerText = "Autor: " + author;
 
-    lightboxImage.classList.add("lightbox-image-animate");
+        lightboxImage.classList.add("lightbox-image-animate");
+    }, 10);
+}
 
-}, 10);
+function openLightbox(index) {
+    currentImageIndex = index;
+    updateLightboxImage();
     lightbox.classList.add("active");
 }
 
@@ -768,15 +795,7 @@ function showNextImage() {
         currentImageIndex = 0;
     }
 
-    lightboxImage.classList.remove("lightbox-image-animate");
-
-setTimeout(() => {
-
-    lightboxImage.src = galleryImages[currentImageIndex].src;
-
-    lightboxImage.classList.add("lightbox-image-animate");
-
-}, 10);
+    updateLightboxImage();
 }
 
 function showPrevImage() {
@@ -786,15 +805,7 @@ function showPrevImage() {
         currentImageIndex = galleryImages.length - 1;
     }
 
-    lightboxImage.classList.remove("lightbox-image-animate");
-
-setTimeout(() => {
-
-    lightboxImage.src = galleryImages[currentImageIndex].src;
-
-    lightboxImage.classList.add("lightbox-image-animate");
-
-}, 10);
+    updateLightboxImage();
 }
 
 galleryImages.forEach((image, index) => {
@@ -828,7 +839,6 @@ document.addEventListener("keydown", (e) => {
         closeLightboxFunc();
     }
 });
-
 </script>
 
 </body>
