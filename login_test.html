@@ -181,7 +181,8 @@ async function loginWithGoogle() {
         const result = await signInWithPopup(auth, provider);
         await loadUserData(result.user);
     } catch (error) {
-        errorBox.innerText = "Přihlášení přes Google se nepodařilo.";
+        console.error(error);
+        errorBox.innerText = error.code + " | " + error.message;
     }
 }
 
