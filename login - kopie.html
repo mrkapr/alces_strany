@@ -19,7 +19,7 @@ body {
     margin: 0;
     height: 100vh;
     background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
-                url("bus.jpg") center / cover no-repeat;
+                url("fotky/login.png") center / cover no-repeat;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -49,6 +49,14 @@ input {
     border: none;
     outline: none;
     font-size: 14px;
+}
+
+.button:hover {
+    background: #c9c3ba;
+}
+
+.button:active {
+    transform: scale(0.97);
 }
 
 button {
@@ -97,6 +105,63 @@ button:hover {
     opacity: 1;
     text-decoration: underline;
 }
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+}
+
+.login-divider span {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.35);
+}
+
+.login-divider p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.google-btn {
+    background: #d7d2ca;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    font-weight: 600;
+
+    padding: 12px;
+    width: 100%;
+
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+
+.google-btn img {
+    width: 18px;
+    height: 18px;
+
+    position: relative;
+    top: 5px;
+}
+
+.google-btn:hover {
+    background: #c9c3ba;
+}
+
+.google-btn:active {
+    transform: scale(0.97);
+}
 </style>
 </head>
 
@@ -113,7 +178,16 @@ button:hover {
     <input type="password" id="password" placeholder="Heslo">
 
     <button id="loginBtn">Přihlásit se</button>
-    <button id="googleBtn" class="google-btn">Přihlásit přes Google</button>
+    <div class="login-divider">
+    <span></span>
+    <p>nebo</p>
+    <span></span>
+</div>
+
+<button id="googleBtn" class="google-btn">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Přihlásit se přes Google
+</button>
 
     <div class="error" id="error"></div>
 </div>
@@ -195,7 +269,7 @@ async function loadUserData(firebaseUser) {
 
     if (!userDoc.exists()) {
         await signOut(auth);
-        errorBox.innerText = "Tento účet není povolený v systému.";
+        errorBox.innerText = "Tento účet postrádá potřebná oprávnění pro vstup do systému.";
         return;
     }
 

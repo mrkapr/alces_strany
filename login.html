@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Přihlášení | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+                url("fotky/login.png") center / cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.login {
+    text-align: center;
+    width: 320px;
+}
+
+.login img {
+    width: 160px;
+    margin-bottom: 10px;
+}
+
+.login p {
+    margin: 0 0 30px;
+    opacity: 0.8;
+}
+
+input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 15px;
+
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.22);
+
+    background: rgba(255,255,255,0.18);
+    color: white;
+
+    outline: none;
+    font-size: 14px;
+
+    backdrop-filter: blur(10px);
+}
+
+input::placeholder {
+    color: rgba(255,255,255,0.75);
+}
+
+.button:hover {
+    background: #c9c3ba;
+}
+
+.button:active {
+    transform: scale(0.97);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+
+    background: rgba(8, 172, 38, 0.85);
+    color: white;
+
+    font-size: 15px;
+    cursor: pointer;
+
+    backdrop-filter: blur(10px);
+
+    transition: transform 0.16s ease, background 0.16s ease;
+}
+
+button:hover {
+    background: rgba(0, 131, 24, 0.9);
+    transform: scale(0.98);
+}
+
+button:active {
+    transform: scale(0.94);
+}
+
+.google-btn {
+    background: rgba(255,255,255,0.14);
+    color: white;
+
+    border: 1px solid rgba(255,255,255,0.18);
+
+    backdrop-filter: blur(16px);
+}
+
+.google-btn:hover {
+    background: #e6e6e6;
+}
+
+.error {
+    margin-top: 15px;
+    color: #ffb3b3;
+    font-size: 14px;
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+
+    padding: 10px 16px;
+
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+
+    border-radius: 16px;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 8px 24px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+
+    transition:
+        transform 0.16s ease,
+        background 0.16s ease,
+        opacity 0.16s ease;
+}
+
+.back-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.12);
+
+    transform: scale(0.96);
+}
+
+.back-btn:active {
+    transform: scale(0.9);
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+}
+
+.login-divider span {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.35);
+}
+
+.login-divider p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.google-btn {
+    background: rgba(220, 220, 220, 0.72);
+    color: #222;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    font-weight: 600;
+
+    border: 1px solid rgba(255,255,255,0.35);
+
+    backdrop-filter: blur(12px);
+
+    transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.google-btn:hover {
+    background: rgba(235, 235, 235, 0.82);
+    transform: scale(0.98);
+}
+
+.google-btn:active {
+    transform: scale(0.94);
+}
+
+.google-btn img {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    top: 5px;
+}
+
+/* ===== MOBILNÍ ZOBRAZENÍ ===== */
+
+@media (max-width: 600px) {
+
+    body {
+        min-height: 100vh;
+        height: auto;
+        padding: 90px 18px 30px 18px;
+        align-items: flex-start;
+        background-position: center;
+    }
+
+    .login {
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+
+    .login img {
+        width: 135px;
+    }
+
+    .login p {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+
+    input {
+        font-size: 16px;
+        padding: 13px 14px;
+    }
+
+    button {
+        font-size: 15px;
+        padding: 13px;
+    }
+
+    .google-btn {
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .google-btn img {
+        width: 18px;
+        height: 18px;
+        top: 0;
+    }
+
+    .back-btn {
+        top: 16px;
+        left: 16px;
+        padding: 9px 14px;
+        font-size: 13px;
+        border-radius: 14px;
+    }
+
+    .error {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 380px) {
+
+    body {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .login img {
+        width: 120px;
+    }
+
+    .google-btn {
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<a href="https://alces-as.fun" class="back-btn">← Zpět</a>
+
+<div class="login">
+    <img src="logo.png" alt="alces">
+
+    <p>Interní systém společnosti</p>
+
+    <input type="email" id="email" placeholder="E-mail">
+    <input type="password" id="password" placeholder="Heslo">
+
+    <button id="loginBtn">Přihlásit se</button>
+    <div class="login-divider">
+    <span></span>
+    <p>nebo</p>
+    <span></span>
+</div>
+
+<button id="googleBtn" class="google-btn">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Přihlásit se přes Google
+</button>
+
+    <div class="error" id="error"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5",
+    measurementId: "G-V47V01CEZM"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const errorBox = document.getElementById("error");
+
+document.getElementById("loginBtn").addEventListener("click", loginWithEmail);
+document.getElementById("googleBtn").addEventListener("click", loginWithGoogle);
+
+async function loginWithEmail() {
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+
+    errorBox.innerText = "";
+
+    try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        await loadUserData(result.user);
+    } catch (error) {
+    console.error(error);
+    errorBox.innerText = error.code + " | " + error.message;
+}
+}
+
+async function loginWithGoogle() {
+    errorBox.innerText = "";
+
+    try {
+        const result = await signInWithPopup(auth, provider);
+        await loadUserData(result.user);
+    } catch (error) {
+        console.error(error);
+        errorBox.innerText = error.code + " | " + error.message;
+    }
+}
+
+async function loadUserData(firebaseUser) {
+    const email = firebaseUser.email.toLowerCase();
+
+    const userDocRef = doc(db, "users", email);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+        await signOut(auth);
+        errorBox.innerText = "Tento účet postrádá potřebná oprávnění pro vstup do systému.";
+        return;
+    }
+
+    const data = userDoc.data();
+
+    localStorage.setItem("username", data.name);
+    localStorage.setItem("rank", data.rank);
+    localStorage.setItem("rankName", data.rankName);
+    localStorage.setItem("email", email);
+    localStorage.setItem("uid", firebaseUser.uid);
+
+    window.location.href = "home.html";
+}
+</script>
+
+</body>
+</html>
