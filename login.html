@@ -20,7 +20,7 @@ body {
     margin: 0;
     height: 100vh;
     background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
-                url("fotky/login.png") center / cover no-repeat;
+                url("fotky/login/login.png") center / cover no-repeat;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -29,7 +29,68 @@ body {
 
 .login {
     text-align: center;
-    width: 320px;
+
+    width: 430px;
+
+    padding: 28px 24px;
+
+    position: relative;
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    border-radius: 28px;
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+}
+
+.login::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    border-radius: inherit;
+
+    padding: 1px;
+
+    background:
+        radial-gradient(
+            120px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255,255,255,0.9),
+            rgba(255,255,255,0.25) 22%,
+            transparent 55%
+        );
+
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.22s ease,
+        background-position 0.04s linear;
+}
+
+.login:hover::after {
+    opacity: 1;
 }
 
 .login img {
@@ -70,6 +131,7 @@ input::placeholder {
 .button:active {
     transform: scale(0.97);
 }
+
 
 button {
     width: 100%;
@@ -256,7 +318,7 @@ button:active {
     .google-btn img {
         width: 18px;
         height: 18px;
-        top: -5px;
+        top: -1px;
     }
 
     .back-btn {
@@ -409,6 +471,20 @@ async function loadUserData(firebaseUser) {
 
     window.location.href = "home.html";
 }
+
+const login = document.querySelector(".login");
+
+login.addEventListener("mousemove", (e) => {
+
+    const rect = login.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    login.style.setProperty("--mouse-x", `${x}px`);
+    login.style.setProperty("--mouse-y", `${y}px`);
+});
+
 </script>
 
 </body>
