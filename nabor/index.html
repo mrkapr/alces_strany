@@ -528,6 +528,66 @@ body::before {
     }
 }
 
+#scrollDownBtn {
+    position: fixed;
+
+    bottom: 24px;
+    right: 24px;
+
+    width: 64px;
+    height: 64px;
+
+    border: 1px solid rgba(255, 210, 0, 0.28);
+
+    border-radius: 50%;
+
+    background: rgba(255, 208, 0, 0.18);
+
+    color: #ffd500;
+
+    font-size: 28px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        0 0 24px rgba(255, 213, 0, 0.16);
+
+    z-index: 9999;
+
+    opacity: 1;
+
+    transition:
+        opacity 0.35s ease,
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#scrollDownBtn:hover {
+    transform: scale(0.94);
+
+    background: rgba(255, 213, 0, 0.26);
+
+    box-shadow:
+        0 14px 34px rgba(0,0,0,0.24),
+        0 0 32px rgba(255, 213, 0, 0.28);
+}
+
+#scrollDownBtn:active {
+    transform: scale(0.88);
+}
+
+#scrollDownBtn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* ===== MOBIL ===== */
 
 @media (max-width: 768px) {
@@ -619,13 +679,34 @@ body::before {
         font-size: 12px;
     }
 
+    #scrollDownBtn {
+        width: 58px;
+        height: 58px;
+
+        bottom: 18px;
+        right: 18px;
+
+        font-size: 24px;
+
+        backdrop-filter: blur(22px);
+
+        box-shadow:
+            0 10px 26px rgba(0,0,0,0.26),
+            0 0 24px rgba(255, 213, 0, 0.22);
+    }
 }
+
 
 </style>
 </head>
 
+
+
 <body>
 
+    <button id="scrollDownBtn">
+    ↓
+</button>
 <!-- TOPBAR -->
 
 <div class="topbar">
@@ -661,10 +742,10 @@ body::before {
 
     <div class="text-area">
 
-        <h2>Pátý nábor již za rohem!</h1>
+        <h2>Pátý nábor je tu!</h1>
 
         <p>
-            Chceš se stát řidičem autobusu, jenomže máš problém - nevíš kde? Tak to jsi na správném místě! Od 25. května do 7. června budeme pořádat nábor na pozici řidič autobusu.
+            Chceš se stát řidičem autobusu, jenomže máš problém - nevíš kde? Tak to jsi na správném místě! Od 25. května do 7. června pořádáme nábor na pozici řidič autobusu.
         </p>
 
         <h2>Proč se připojit zrovna k nám?</h2>
@@ -686,7 +767,7 @@ body::before {
 
         <h2>Co to pro Tebe znamená?</h2>
          <p>
-            Zapiš si tedy termín náboru (25. května až 7. června) a vyplň náš formulář!
+            V čas vyplň formulář a čekej na výsledek!
          </p>
          <p>Budeme se na Tebe s celým týmem alcesu těšit!</p>
 
@@ -747,6 +828,29 @@ body::before {
 </div>
 
 <script>
+
+    const scrollBtn = document.getElementById("scrollDownBtn");
+
+scrollBtn.addEventListener("click", () => {
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+});
+
+window.addEventListener("scroll", () => {
+
+    const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 180;
+
+    if (nearBottom) {
+        scrollBtn.classList.add("hidden");
+    } else {
+        scrollBtn.classList.remove("hidden");
+    }
+});
+
 const reveals = document.querySelectorAll(".reveal");
 
 function revealOnScroll() {
