@@ -588,6 +588,73 @@ body::before {
     pointer-events: none;
 }
 
+/* ===== overlay ===== */
+#recruitment-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* aktivní stav */
+#recruitment-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===== popup ===== */
+#recruitment-popup {
+    background: #ffd500;
+    color: #000;
+    width: 90%;
+    max-width: 520px;
+    padding: 30px 40px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+
+    transform: translateY(-60px);
+    opacity: 0;
+    transition: all 0.45s ease;
+}
+
+/* animace nájezdu do středu */
+#recruitment-overlay.active #recruitment-popup {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+#recruitment-popup h2 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+#recruitment-popup p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+/* křížek */
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: 600;
+} 
+
 /* ===== MOBIL ===== */
 
 @media (max-width: 768px) {
@@ -722,6 +789,15 @@ body::before {
         <a href="https://alces-as.fun/nabor/">Nábor</a>
     </div>
 
+</div>
+
+<div id="recruitment-overlay">
+    <div id="recruitment-popup">
+        <button class="close-btn" onclick="closePopup()">✕</button>
+        <h2>Upozornění o konci náboru</h2>
+        <p>Vážení uchazeči, náborové řízení bude ukončeno v neděli 7. 6. již v <b>17:00</b>.</p>
+        <p>Děkujeme za pochopení.</p>
+    </div>
 </div>
 
 <!-- HERO -->
@@ -954,6 +1030,17 @@ document.addEventListener("keydown", (e) => {
         closeLightboxFunc();
     }
 });
+
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        document.getElementById("recruitment-overlay").classList.add("active");
+    }, 300); // malé zpoždění = hezčí efekt
+});
+
+function closePopup() {
+    document.getElementById("recruitment-overlay").classList.remove("active");
+}
+
 </script>
 
 </body>
