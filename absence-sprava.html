@@ -162,15 +162,17 @@ async function loadAllAbsences() {
             if (reqData.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
             if (reqData.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
 
-            // Pokud je vyřízeno, skryjeme tlačítka pro schválení
+            /// NOVÉ: Přidáme textarea pro vzkaz, pokud žádost teprve čeká
             let actionButtons = "";
             if (reqData.status === "ceka") {
                 actionButtons = `
+                    <input type="text" id="note-${reqId}" placeholder="Vzkaz řidiči (nepovinné)..." style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; padding: 5px; font-size: 11px; margin-bottom: 5px; display: block; width: 150px;">
                     <button class="btn-approve" data-id="${reqId}">Schválit ✓</button>
                     <button class="btn-reject" data-id="${reqId}">Zamítnout ✕</button>
                 `;
             } else {
-                actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>`;
+                // Pokud už je vyřízeno, ukážeme, co se řidiči poslalo
+                actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>${reqData.adminNote ? `<br><span style="font-size:11px; color:#ffd84d;">Vzkaz: ${reqData.adminNote}</span>` : ""}`;
             }
 
             const dFrom = new Date(reqData.from).toLocaleDateString("cs-CZ");
@@ -186,10 +188,15 @@ async function loadAllAbsences() {
                 <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
             `;
 
-            // Navázání funkcí na tlačítka přímo v řádku
             if (reqData.status === "ceka") {
-                row.querySelector(".btn-approve").addEventListener("click", () => updateRequestStatus(reqId, "schvaleno"));
-                row.querySelector(".btn-reject").addEventListener("click", () => updateRequestStatus(reqId, "zamitnuto"));
+                row.querySelector(".btn-approve").addEventListener("click", () => {
+                    const note = document.getElementById(`note-${reqId}`).value.trim();
+                    updateRequestStatus(reqId, "schvaleno", note);
+                });
+                row.querySelector(".btn-reject").addEventListener("click", () => {
+                    const note = document.getElementById(`note-${reqId}`).value.trim();
+                    updateRequestStatus(reqId, "zamitnuto", note);
+                });
             }
 
             tbody.appendChild(row);
@@ -198,6 +205,20 @@ async function loadAllAbsences() {
     } catch (err) {
         console.error("Chyba při stahování absencí pro admina:", err);
         tbody.innerHTML = `<tr><td colspan="6" style="color:#ff4d4d; padding:20px; text-align:center;">Chyba databáze při načítání dat.</td></tr>`;
+    }
+}
+
+// Funkce, která změní stav dokumentu ve Firebase a přidá poznámku
+async function updateRequestStatus(docId, newStatus, note) {
+    try {
+        const docRef = doc(db, "absences", docId);
+        await updateDoc(docRef, {
+            status: newStatus,
+            adminNote: note || "" // 🚀 NOVÉ: Uloží vzkaz od vedení
+        });
+        await loadAllAbsences();
+    } catch (err) {
+        alert("Chyba při aktualizaci stavu: " + err.message);
     }
 }
 
