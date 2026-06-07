@@ -483,19 +483,18 @@
 }
 
 .mentor-card {
-    background: rgba(255,255,255,0.08);
-
-    border: 1px solid rgba(255,255,255,0.12);
-
-    border-radius: 18px;
-
-    padding: 18px;
-
+background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 28px;
+    padding: 22px;
+    width: 220px;
     text-align: center;
-
-    transition: transform 0.2s ease;
-    position: relative;
-    top: -145px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    
+    /* ODSTRANĚNO: top: -145px a position: relative */
+    flex-shrink: 0; /* Zabrání tomu, aby se karta na menších displejích mačkala */
 }
 
 .mentor-card:hover {
@@ -626,31 +625,18 @@
 
 .mentor-bubble {
     
-    position: relative;
-    top: -145px;
-
-    position: relative;
-
+background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 28px;
+    padding: 28px;
     min-width: 280px;
     max-width: 650px;
-
-    width: fit-content;
-
-    padding: 28px;
-
-    background: rgba(255,255,255,0.08);
-
-    border: 1px solid rgba(255,255,255,0.16);
-
-    border-radius: 28px;
-
+    width: 100%;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-
-    box-shadow:
-        0 15px 40px rgba(0,0,0,0.25),
-        inset 0 1px 0 rgba(255,255,255,0.15);
-        
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    
+    /* ODSTRANĚNO: top: -145px a position: relative */
 }
 
 .bubble-arrow {
@@ -683,11 +669,12 @@
 }
 
 .zkusebka-layout{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-
-    width:100%;
+display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 30px;
+    margin-top: 40px; /* Vytvoří bezpečný prostor pod tvým jménem a hodností */
+    width: 100%;
 }
 
 .mentor-section{
@@ -1167,7 +1154,7 @@ async function loadMentor() {
                     document.getElementById("mentorAvatar").src = mentor.avatar;
                 }
                 if (document.getElementById("mentorMessage")) {
-                    document.getElementById("mentorMessage").innerText = mentor.message || "Ahoj! Vítám tě v alces.";
+                    document.getElementById("mentorMessage").innerText = mentor.message || "<i>Zpráva nemohla být načtena.</i>";
                 }
 
                 // AKTIVACE ZOBRAZENÍ: Najdeme sekci mentora a zviditelníme ji
