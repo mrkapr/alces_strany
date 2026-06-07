@@ -945,6 +945,7 @@
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
 
     <div class="menu">
+        <a href="mentori.html" data-min-rank="team-manager">Správa oznámení</a>
         <a href="mentori.html" data-min-rank="team-manager">Administrace mentorů</a>
         <a href="admin.html" data-min-rank="majitel">Správa uživatelů</a>
         <span class="divider rank-team-manager"></span>   
@@ -1213,7 +1214,7 @@ async function loadMentor() {
                 if (document.getElementById("mentorMessage")) document.getElementById("mentorMessage").innerText = mentor.message || "Zpráva nebyla načtena.";
 
                 // TENTO NOVÝ ŘÁDEK PŘIDEJ SEM:
-                if (document.getElementById("mentorRoom")) document.getElementById("mentorRoom").innerText = mentor.room ? `Konzultační místnost: ${mentor.room}` : "";
+                if (document.getElementById("mentorRoom")) document.getElementById("mentorRoom").innerText = mentor.room ? `Přidělená místnost: ${mentor.room}` : "";
                 
                 const mentorSection = document.querySelector(".mentor-section");
                 if (mentorSection) mentorSection.style.display = "flex";
