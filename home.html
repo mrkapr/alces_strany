@@ -1154,19 +1154,6 @@ function toggleMobileMenu() {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-const auth = getAuth(app);
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // Uživatel je prokazatelně přihlášený ve Firebase Auth -> načteme data
-        await loadMentor();
-        await loadAnnouncements();
-    } else {
-        console.log("Uživatel není přihlášen přes Firebase Auth.");
-        // Volitelně: pokud ho chceš při nepřihlášení hodit na login:
-        // window.location.href = "login.html";
-    }
-});
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
@@ -1179,11 +1166,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Získáme e-mail aktuálně přihlášeného uživatele (kterým se zapsal do localStorage při loginu)
 // Pokud ho tam neukládáš, doporučuji při úspěšném přihlášení do localStorage přidat: localStorage.setItem("userEmail", email);
 const userEmail = localStorage.getItem("userEmail") || ""; 
 const mentorId = localStorage.getItem("mentorId");
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log("Firebase Auth: Uživatel je bezpečně ověřen.");
+        await loadMentor();
+        await loadAnnouncements();
+    } else {
+        console.log("Uživatel není přihlášen přes Firebase Auth.");
+    }
+});
 
 async function initPage() {
     await loadMentor();
