@@ -114,11 +114,11 @@
                     <input type="email" id="userEmail" required placeholder="např. ridic@gmail.com">
                 </div>
                 <div class="form-group">
-                    <label>Celé Jméno / Nickname</label>
-                    <input type="text" id="userName" required placeholder="např. Adam K.">
+                    <label>Jméno uživatele</label>
+                    <input type="text" id="userName" required placeholder="např. Josef N.">
                 </div>
                 <div class="form-group">
-                    <label>Systémový Rank (Kód hodnosti)</label>
+                    <label>Rank (Kód hodnosti)</label>
                     <select id="userRank" required>
                         <option value="zkusebni-ridic" selected>zkusebni-ridic</option>
                         <option value="ridic">ridic</option>
@@ -131,7 +131,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Zobrazovaný Rank (rankName)</label>
+                    <label>Zobrazovaný rank (rankName)</label>
                     <input type="text" id="userRankName" required placeholder="např. Řidič - zkušební doba">
                 </div>
                 <div class="form-group">
@@ -359,7 +359,7 @@ function startEdit(email, data) {
 document.getElementById("cancelBtn").addEventListener("click", resetForm);
 
 function resetForm() {
-    document.getElementById("formTitle").innerText = "Vytvořit nový účet";
+    document.getElementById("formTitle").innerText = "Vytvořit nového uživatele";
     document.getElementById("submitBtn").innerText = "Vytvořit uživatele";
     document.getElementById("cancelBtn").style.display = "none";
     

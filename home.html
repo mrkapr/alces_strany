@@ -395,37 +395,52 @@
     display: none;
 }
 
-.announcements-box{
-    margin-top:40px;
-
-    width:100%;
-    max-width:700px;
-
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.16);
-
-    border-radius:24px;
-
-    padding:20px;
-
-    backdrop-filter:blur(20px);
-
-    color:white;
+.announcements-box {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 700px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 24px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    color: white;
 }
 
-.announcements-title{
-    font-size:24px;
-    font-weight:700;
-    margin-bottom:15px;
+.announcements-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #ffd84d;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
 }
 
-.announcement{
-    padding:16px;
-    margin-bottom:12px;
+.announcement {
+    padding: 18px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
-    border-radius:18px;
+.announcement:last-child { margin-bottom: 0; }
 
-    background:rgba(255,255,255,0.06);
+.announcement h3 { margin: 0; font-size: 18px; font-weight: 600; color: #fff; }
+.announcement p { margin: 0; font-size: 14px; opacity: 0.85; line-height: 1.5; white-space: pre-wrap; }
+.announcement .date { font-size: 11px; opacity: 0.4; }
+
+.announcement-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px;
 }
 
 .announcement h3{
@@ -436,18 +451,27 @@
     margin:0 0 14px;
 }
 
-.confirm-btn{
-    background:#00b84f;
+.confirm-btn {
+    background: #00b84f;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.confirm-btn:hover { background: #00963f; transform: scale(1.03); }
 
-    border:none;
-
-    color:white;
-
-    padding:8px 14px;
-
-    border-radius:999px;
-
-    cursor:pointer;
+.confirmed-badge {
+    color: #00ff66;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .mentors-box {
@@ -983,13 +1007,12 @@ Načítám...
         </div>
 
     </div>
-    <!--<div class="announcements-box">
-
-    <div class="announcements-title">
-        Oznámení
+<div class="announcements-box">
+    <div class="announcements-title">Oznámení</div>
+    <div id="announcementsList">
+        <p style="opacity: 0.5;">Načítám aktuální oznámení...</p>
     </div>
-
-    <div id="announcementsList"></div>-->
+</div>
 
 </div>
 
@@ -1129,7 +1152,7 @@ function toggleMobileMenu() {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
@@ -1143,54 +1166,128 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Načtení mentorId přímo uvnitř modulu (vyřeší podtrhávání ve VS Code)
+// Získáme e-mail aktuálně přihlášeného uživatele (kterým se zapsal do localStorage při loginu)
+// Pokud ho tam neukládáš, doporučuji při úspěšném přihlášení do localStorage přidat: localStorage.setItem("userEmail", email);
+const userEmail = localStorage.getItem("userEmail") || ""; 
 const mentorId = localStorage.getItem("mentorId");
+
+async function initPage() {
+    await loadMentor();
+    await loadAnnouncements();
+}
 
 async function loadMentor() {
     if (mentorId) {
         try {
-            // Trim odstraní případné neviditelné mezery
             const docRef = doc(db, "mentors", String(mentorId).trim());
             const mentorSnap = await getDoc(docRef);
 
             if (mentorSnap.exists()) {
                 const mentor = mentorSnap.data();
-
-                // Vepíšeme data do HTML elementů
-                if (document.getElementById("mentorName")) {
-                    document.getElementById("mentorName").innerText = mentor.name || "Bez jména";
-                }
-                if (document.getElementById("mentorRole")) {
-                    document.getElementById("mentorRole").innerText = mentor.role || "Mentor";
-                }
-                if (document.getElementById("mentorAvatar") && mentor.avatar) {
-                    document.getElementById("mentorAvatar").src = mentor.avatar;
-                }
-                if (document.getElementById("mentorMessage")) {
-                    document.getElementById("mentorMessage").innerText = mentor.message || "<i>Zpráva nemohla být načtena.</i>";
-                }
-
-                // AKTIVACE ZOBRAZENÍ: Najdeme sekci mentora a zviditelníme ji
+                if (document.getElementById("mentorName")) document.getElementById("mentorName").innerText = mentor.name || "Bez jména";
+                if (document.getElementById("mentorRole")) document.getElementById("mentorRole").innerText = mentor.role || "Mentor";
+                if (document.getElementById("mentorAvatar") && mentor.avatar) document.getElementById("mentorAvatar").src = mentor.avatar;
+                if (document.getElementById("mentorMessage")) document.getElementById("mentorMessage").innerText = mentor.message || "Ahoj! Vítám tě v alces.";
+                
                 const mentorSection = document.querySelector(".mentor-section");
-                if (mentorSection) {
-                    mentorSection.style.display = "flex";
-                }
-
-            } else {
-                console.error("Mentor s ID " + mentorId + " nebyl ve Firebase nalezen!");
-                const mentorMsg = document.getElementById("mentorMessage");
-                if (mentorMsg) mentorMsg.innerText = "Chyba: Mentor nebyl nalezen v databázi.";
+                if (mentorSection) mentorSection.style.display = "flex";
             }
         } catch (error) {
             console.error("Chyba při načítání mentora:", error);
         }
-    } else {
-        console.log("V localStorage chybí mentorId.");
     }
 }
 
-// Spuštění načítání
-loadMentor();
+// NOVÁ FUNKCE: Načte všechna oznámení z Firebase
+async function loadAnnouncements() {
+    const listContainer = document.getElementById("announcementsList");
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "announcements"));
+        let count = 0;
+
+        // Převedeme na pole, abychom je mohli seřadit podle data (od nejnovějšího)
+        const docsArray = [];
+        querySnapshot.forEach(d => docsArray.push({ id: d.id, data: d.data() }));
+        
+        // Seřazení podle času vytvoření (pokorou createdAt pole existuje)
+        docsArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        docsArray.forEach((annDoc) => {
+            const annId = annDoc.id;
+            const annData = annDoc.data;
+            count++;
+
+            const div = document.createElement("div");
+            div.className = "announcement";
+
+            // Zkontrolujeme, zda v poli confirmedBy už existuje e-mail přihlášeného uživatele
+            const confirmedByArray = annData.confirmedBy || [];
+            const isConfirmed = userEmail ? confirmedByArray.includes(userEmail) : false;
+
+            // Formátování data
+            let dateString = "";
+            if (annData.createdAt) {
+                const d = annData.createdAt.toDate();
+                dateString = d.toLocaleDateString("cs-CZ") + " v " + d.toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
+            }
+
+            div.innerHTML = `
+                <h3>${annData.title || "Bez nadpisu"}</h3>
+                ${dateString ? `<span class="date">${dateString}</span>` : ""}
+                <p>${annData.text || ""}</p>
+                <div class="announcement-footer"></div>
+            `;
+
+            const footer = div.querySelector(".announcement-footer");
+
+            if (isConfirmed) {
+                // Uživatel již potvrdil
+                footer.innerHTML = `<span class="confirmed-badge">✓ Přečteno a potvrzeno</span>`;
+            } else {
+                // Uživatel ještě nepotvrdil -> vytvoříme tlačítko
+                const btn = document.createElement("button");
+                btn.className = "confirm-btn";
+                btn.innerText = "Potvrdit přečtení";
+                
+                btn.addEventListener("click", async () => {
+                    if (!userEmail) {
+                        alert("Chyba: Systém tě nerozpoznal (chybí uživatelský email). Zkus se přihlásit znovu.");
+                        return;
+                    }
+                    try {
+                        // Přidáme e-mail uživatele do pole 'confirmedBy' ve Firebase bez přepsání ostatních
+                        await updateDoc(doc(db, "announcements", annId), {
+                            confirmedBy: arrayUnion(userEmail)
+                        });
+                        // Bleskově překreslíme seznam oznámení
+                        await loadAnnouncements();
+                    } catch (err) {
+                        console.error(err);
+                        alert("Nepodařilo se potvrdit: " + err.message);
+                    }
+                });
+                footer.appendChild(btn);
+            }
+
+            listContainer.appendChild(div);
+        });
+
+        if (count === 0) {
+            listContainer.innerHTML = `<p style="opacity: 0.5; padding: 10px; margin:0;">Momentálně nejsou publikována žádná oznámení.</p>`;
+        }
+
+    } catch (error) {
+        console.error("Chyba při načítání oznámení:", error);
+        listContainer.innerHTML = `<p style="color: #ff4d4d; padding: 10px; margin:0;">Chyba při stahování oznámení.</p>`;
+    }
+}
+
+// Spuštění všeho po načtení
+initPage();
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====

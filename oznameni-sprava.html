@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Správa Oznámení | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0; font-family: 'Poppins', Arial, sans-serif;
+        background-image: url("fotky/home/gradient.png"), url("fotky/home/pozadi.png");
+        background-size: cover; background-position: center top; background-repeat: no-repeat;
+        min-height: 100vh; color: white;
+    }
+    .topbar {
+        height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+        background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+    .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+    .content { margin: 120px 40px 40px 40px; display: none; }
+    
+    h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    
+    .layout-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start; }
+    @media (max-width: 1000px) { .layout-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+        padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    
+    .panel-sticky { position: sticky; top: 100px; }
+
+    /* Formulář */
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 14px; font-weight: 600; opacity: 0.9; }
+    input, textarea {
+        background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+        color: white; padding: 12px; font-family: 'Poppins', sans-serif; font-size: 14px;
+    }
+    textarea { resize: vertical; min-height: 150px; }
+    input:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+
+    button {
+        font-family: 'Poppins', sans-serif; font-weight: 600; padding: 10px 20px;
+        border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px;
+    }
+    .btn-add { background: #00b84f; color: white; width: 100%; margin-top: 10px; }
+    .btn-add:hover { background: #00963f; transform: scale(1.02); }
+
+    /* Výpis oznámení a statistik */
+    .ann-block {
+        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px; padding: 20px; margin-bottom: 25px;
+    }
+    .ann-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 12px; }
+    .ann-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0; }
+    .ann-date { font-size: 12px; opacity: 0.4; }
+    .ann-text { font-size: 14px; opacity: 0.85; white-space: pre-wrap; margin: 0 0 20px 0; line-height: 1.5; }
+
+    .btn-delete { background: rgba(212, 0, 0, 0.2); color: #ff4d4d; border: 1px solid rgba(212, 0, 0, 0.4); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+    .btn-delete:hover { background: rgba(212, 0, 0, 0.4); }
+
+    /* Sloupce pro potvrzení */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .stats-col { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.03); }
+    .stats-col h4 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .col-green h4 { color: #00ff66; }
+    .col-red h4 { color: #ff4d4d; }
+    
+    .stats-list { list-style: none; padding: 0; margin: 0; font-size: 13px; max-height: 150px; overflow-y: auto; }
+    .stats-list li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); opacity: 0.8; }
+    .stats-list li:last-child { border-bottom: none; }
+
+    #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div style="font-weight:700; font-size:18px;">alces, a. s. — Vydávání Oznámení</div>
+    <div>
+        <a href="home.html">Domů</a>
+        <a href="mentori.html">Mentoři</a>
+        <a href="admin.html">Admin DB</a>
+    </div>
+</div>
+
+<div id="error-screen">Přístup odepřen. Tuto stránku může zobrazit pouze majitel.</div>
+
+<div class="content" id="mainContent">
+    <h1>Správa a kontrola firemních oznámení</h1>
+    
+    <div class="layout-grid">
+        <div class="panel panel-sticky">
+            <h2>Publikovat nové oznámení</h2>
+            <form id="announcementForm">
+                <div class="form-group">
+                    <label>Nadpis oznámení / Směrnice</label>
+                    <input type="text" id="annTitle" required placeholder="např. Výpadky tabulek vozy + výpravy">
+                </div>
+                <div class="form-group">
+                    <label>Text oznámení</label>
+                    <textarea id="annText" required placeholder="Zde rozepiš podrobnosti, instrukce, linky atd..."></textarea>
+                </div>
+                <button type="submit" class="btn-add">Publikovat na hlavní stránku</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Historie publikovaných oznámení a přehled přečtení</h2>
+            <div id="announcementsAdminList">
+                <p style="opacity: 0.5; padding: 15px;">Načítám oznámení a kontroluji řidiče...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let allUsers = []; // Pomocné pole, kam si načteme komplet firmu pro porovnávání
+
+// Definice ranků, které mají přístup do správy oznámení
+const allowedRanks = [
+    "team-manager",
+    "dispecer",
+    "provozni-reditel",
+    "management",
+    "majitel"
+];
+
+onAuthStateChanged(auth, async (user) => {
+    // Vytáhneme rank přihlášeného uživatele z localStorage
+    const userRank = localStorage.getItem("rank") || "";
+    
+    // Zkontrolujeme, zda je jeho rank v seznamu povolených
+    if (allowedRanks.includes(userRank)) {
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("error-screen").style.display = "none";
+        await loadSystem();
+    } else {
+        // Pokud rank nemá přístup, přepíšeme text a zablokujeme stránku
+        document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy (Team Manager a vyšší).";
+        document.getElementById("error-screen").style.display = "block";
+        document.getElementById("mainContent").style.display = "none";
+    }
+});
+
+async function loadSystem() {
+    await fetchAllUsers();
+    await loadAnnouncementsAdmin();
+}
+
+// Stáhne seznam všech lidí z firmy z kolekce 'users', abychom věděli, kdo existuje
+async function fetchAllUsers() {
+    allUsers = [];
+    try {
+        const uSnap = await getDocs(collection(db, "users"));
+        uSnap.forEach(d => {
+            allUsers.push({
+                email: d.id,
+                name: d.data().name || d.data().username || "Bez jména",
+                rankName: d.data().rankName || "Řidič"
+            });
+        });
+    } catch(e) { console.error("Chyba při stahování zaměstnanců:", e); }
+}
+
+// Načte oznámení a spočítá, kdo podepsal a kdo ne
+async function loadAnnouncementsAdmin() {
+    const listContainer = document.getElementById("announcementsAdminList");
+    listContainer.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "announcements"));
+        const docsArray = [];
+        querySnapshot.forEach(d => docsArray.push({ id: d.id, data: d.data() }));
+        
+        // Seřadit od nejnovějšího
+        docsArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        if (docsArray.length === 0) {
+            listContainer.innerHTML = `<p style="opacity: 0.5; padding: 15px; margin:0;">Zatím nebyla vydána žádná oznámení.</p>`;
+            return;
+        }
+
+        docsArray.forEach((ann) => {
+            const annId = ann.id;
+            const annData = ann.data;
+            const confirmedEmails = annData.confirmedBy || [];
+
+            // Rozřadíme lidi z firmy na ty, co potvrdili vs. nepotvrdili
+            const confirmedPeople = [];
+            const missingPeople = [];
+
+            allUsers.forEach(u => {
+                if (confirmedEmails.includes(u.email)) {
+                    confirmedPeople.push(u);
+                } else {
+                    missingPeople.push(u);
+                }
+            });
+
+            // Formátování času vydání
+            let dateString = "Neznámý čas";
+            if (annData.createdAt) {
+                const d = annData.createdAt.toDate();
+                dateString = d.toLocaleDateString("cs-CZ") + " v " + d.toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
+            }
+
+            const annBlock = document.createElement("div");
+            annBlock.className = "ann-block";
+            annBlock.innerHTML = `
+                <div class="ann-header">
+                    <div>
+                        <h3 class="ann-title">${annData.title || "Bez nadpisu"}</h3>
+                        <span class="ann-date">Publikováno: ${dateString}</span>
+                    </div>
+                    <button class="btn-delete" data-id="${annId}">Smazat oznámení ✕</button>
+                </div>
+                <p class="ann-text">${annData.text || ""}</p>
+                
+                <div class="stats-grid">
+                    <div class="stats-col col-green">
+                        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
+                        <ul class="stats-list" id="list-yes-${annId}"></ul>
+                    </div>
+                    <div class="stats-col col-red">
+                        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
+                        <ul class="stats-list" id="list-no-${annId}"></ul>
+                    </div>
+                </div>
+            `;
+
+            // Vyplnění seznamu těch, co potvrdili
+            const ulYes = annBlock.querySelector(`#list-yes-${annId}`);
+            if(confirmedPeople.length === 0) ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`;
+            confirmedPeople.forEach(p => {
+                ulYes.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
+            });
+
+            // Vyplnění seznamu hříšníků, co ještě nepotvrdili
+            const ulNo = annBlock.querySelector(`#list-no-${annId}`);
+            if(missingPeople.length === 0) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni řidiči splnili povinnost!</li>`;
+            missingPeople.forEach(p => {
+                ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
+            });
+
+            // Navázání smazání oznámení
+            annBlock.querySelector(".btn-delete").addEventListener("click", async () => {
+                if (confirm(`Opravdu chceš smazat oznámení "${annData.title}" z hlavní stránky?`)) {
+                    await deleteDoc(doc(db, "announcements", annId));
+                    await loadSystem(); // Znovu načte data
+                }
+            });
+
+            listContainer.appendChild(annBlock);
+        });
+
+    } catch(err) {
+        console.error(err);
+        listContainer.innerHTML = `<p style="color:#ff4d4d; padding:15px;">Chyba při generování statistik.</p>`;
+    }
+}
+
+// ODESLÁNÍ FORMULÁŘE — Vytvoření nového oznámení ve Firebase
+document.getElementById("announcementForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById("annTitle").value.trim();
+    const text = document.getElementById("annText").value.trim();
+
+    // Vygenerujeme unikátní ID dokumentu podle aktuálního času, aby se nám nepřepisovala
+    const uniqueDocId = "ann_" + Date.now();
+
+    const newAnnouncement = {
+        title: title,
+        text: text,
+        createdAt: new Date(), // Uložíme aktuální JS datum
+        confirmedBy: [] // Začíná jako prázdné pole, nikdo ho ještě nečetl
+    };
+
+    try {
+        await setDoc(doc(db, "announcements", uniqueDocId), newAnnouncement);
+        alert("Oznámení bylo úspěšně publikováno na hlavní stránku!");
+        document.getElementById("announcementForm").reset();
+        await loadSystem(); // Okamžitě aktualizuje historii a grafiku na adminovi
+    } catch (err) {
+        alert("Chyba při publikování: " + err.message);
+    }
+});
+</script>
+</body>
+</html>
