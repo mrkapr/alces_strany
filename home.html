@@ -742,6 +742,223 @@
     display: none;
 }
 
+/* Styly pro samotný boční panel */
+.sidebar {
+    position: fixed;
+    top: 70px; /* Výška tvého topbaru, aby sidebar začínal přesně pod ním */
+    left: 0;
+    width: 250px;
+    height: calc(100vh - 70px); /* Roztáhne se dolů až ke konci obrazovky */
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 10px;
+    box-sizing: border-box;
+    z-index: 999;
+}
+
+.sidebar-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 15px;
+    padding-left: 10px;
+    font-weight: 600;
+}
+
+/* Odkazy v menu */
+.sidebar-link {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    transition: all 0.2s ease;
+}
+
+/* Efekt při najetí myší */
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffd84d;
+    padding-left: 20px; /* Stylové lehké posunutí textu doprava */
+}
+
+/* Aktivní stránka (na které řidič zrovna je) */
+.sidebar-link.active {
+    background: rgba(255, 216, 77, 0.15);
+    color: #ffd84d;
+    border-left: 3px solid #ffd84d;
+    border-radius: 4px 12px 12px 4px;
+}
+
+/* ⚠️ DŮLEŽITÉ: Úprava tvého hlavního bloku s obsahem! */
+/* Najdi svůj hlavní obalový div (tady ho cílím jako příklad na .main-container) */
+.main-container {
+    margin-left: 270px; /* Posune obsah o 270px doprava, takže nevleze pod sidebar */
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Tlačítko v topbaru */
+#menuToggleBtn {
+    position: fixed;
+    right: 20px;       
+    top: 90px;         
+    
+    /* ZMĚNA: Tmavé poloprůhledné pozadí se skleněným efektem */
+    background: rgba(0, 0, 0, 0.85);
+    /* ZMĚNA: Decentnější tmavý rámeček, mírně do žluta */
+    border: 1px solid rgba(255, 216, 77, 0.25);
+    /* ZMĚNA: Text necháme žlutý, aby svítil na tmavém podkladu */
+    color: #ffd84d;
+    
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;     
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+#menuToggleBtn:hover {
+    background: rgba(25, 25, 25, 0.95);
+    border-color: rgba(255, 216, 77, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+    transform: scale(1.03); 
+}
+
+/* Pravý vysunovací panel */
+.sidebar-right {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Schované za pravým okrajem */
+    width: 280px;
+    height: 100vh;
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px 16px;
+    box-sizing: border-box;
+    z-index: 99999;
+    transition: right 0.3s ease-in-out; /* Plynulé vysunutí */
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+/* Třída, kterou JavaScriptem aktivujeme vysunutí */
+.sidebar-right.open {
+    right: 0;
+}
+
+/* Hlavička v menu (Titulky + Křížek) */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+.sidebar-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffd84d;
+    font-weight: 700;
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-btn:hover { color: #ff4d4d; }
+
+/* Odkazy */
+.sidebar-link {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffd84d;
+    padding-left: 22px;
+}
+
+/* Zatemnění pozadí */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 99998;
+}
+.sidebar-overlay.open { display: block; }
+
+/* Kontejner pod topbarem, který tlačí tlačítko doprava a dává mu prostor */
+.menu-trigger-container {
+    width: 100%;
+    max-width: 1200px; /* Přizpůsob podle šířky tvého hlavního obsahu */
+    margin: 20px auto 0 auto; /* Odsazení 20px od topbaru */
+    padding: 0 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end; /* Tlačí tlačítko doprava. Pokud ho chceš vlevo pod logo, změň na: flex-start */
+}
+
+/* Stylové tlačítko */
+#menuToggleBtn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#menuToggleBtn:hover {
+    background: rgba(255, 216, 77, 0.15);
+    color: #ffd84d;
+    border-color: rgba(255, 216, 77, 0.4);
+    transform: translateY(-2px); /* Lehké naddvihnuti při najetí */
+}
+
+/* 📱 PODMÍNKA PRO MOBILY (Responzivita) */
+/* 📱 Optimalizace pro mobil */
+@media (max-width: 768px) {
+    #menuToggleBtn {
+        right: 15px;
+        top: auto;
+        bottom: 20px;  /* Na mobilu ho hodíme dolů k palci, což se mnohem líp ovládá! */
+    }
+}
+
 @media (max-width: 900px) {
 
     body {
@@ -968,6 +1185,19 @@
         <button class="logout" onclick="logout()">Odhlásit se</button>
     </div>
 </div>
+<div id="rightSidebar" class="sidebar-right">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Správa firmy</span>
+        <button type="button" class="close-btn" onclick="toggleSidebar()">✕</button>
+    </div>
+    <div class="sidebar-links">
+        <a href="oznameni-sprava.html" class="sidebar-link rank-team-manager">Správa oznámení</a>
+        <a href="oznameni-sprava.html" class="sidebar-link rank-team-manager">Panel mentorů</a>
+        <a href="admin.html" class="sidebar-link rank-majitel">Správa uživatelů</a>
+        </div>
+</div>
+
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="content">
 
@@ -1030,6 +1260,8 @@ Načítám...
     </div> -->
 </div>
 </div>
+
+<button type="button" id="menuToggleBtn" style="display: none;" onclick="toggleSidebar()">☰ SPRÁVA</button>
 
 <script>
 const username = localStorage.getItem("username");
@@ -1155,6 +1387,16 @@ topbar.addEventListener("mousemove", (e) => {
 
 function toggleMobileMenu() {
     document.querySelector(".menu").classList.toggle("open");
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById("rightSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("open");
+    }
 }
 </script>
 
@@ -1325,6 +1567,16 @@ async function loadAnnouncements() {
 
 // Spuštění všeho po načtení
 initPage();
+
+// Tohle nechej uvnitř skriptu s Firebase (např. na konci onAuthStateChanged nebo pod ním)
+const allowedManagementRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+const userRankForMenu = localStorage.getItem("rank") || "";
+
+if (allowedManagementRanks.includes(userRankForMenu)) {
+    const toggleBtn = document.getElementById("menuToggleBtn");
+    if (toggleBtn) toggleBtn.style.display = "inline-block";
+}
+
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
