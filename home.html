@@ -1001,7 +1001,6 @@ Načítám...
 </div>
 
 <script>
-const mentorId = localStorage.getItem("mentorId");
 const username = localStorage.getItem("username");
 const rank = localStorage.getItem("rank");
 const rankName = localStorage.getItem("rankName");
@@ -1129,15 +1128,8 @@ function toggleMobileMenu() {
 </script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-import {
-    getFirestore,
-    doc,
-    getDoc
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
@@ -1151,33 +1143,54 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-if(mentorId){
+// Načtení mentorId přímo uvnitř modulu (vyřeší podtrhávání ve VS Code)
+const mentorId = localStorage.getItem("mentorId");
 
-    const mentorSnap =
-    await getDoc(
-        doc(db,"mentors",mentorId)
-    );
+async function loadMentor() {
+    if (mentorId) {
+        try {
+            // Trim odstraní případné neviditelné mezery
+            const docRef = doc(db, "mentors", String(mentorId).trim());
+            const mentorSnap = await getDoc(docRef);
 
-    const mentor =
-    mentorSnap.data();
+            if (mentorSnap.exists()) {
+                const mentor = mentorSnap.data();
 
-    document.getElementById(
-        "mentorName"
-    ).innerText = mentor.name;
+                // Vepíšeme data do HTML elementů
+                if (document.getElementById("mentorName")) {
+                    document.getElementById("mentorName").innerText = mentor.name || "Bez jména";
+                }
+                if (document.getElementById("mentorRole")) {
+                    document.getElementById("mentorRole").innerText = mentor.role || "Mentor";
+                }
+                if (document.getElementById("mentorAvatar") && mentor.avatar) {
+                    document.getElementById("mentorAvatar").src = mentor.avatar;
+                }
+                if (document.getElementById("mentorMessage")) {
+                    document.getElementById("mentorMessage").innerText = mentor.message || "Ahoj! Vítám tě v alces.";
+                }
 
-    document.getElementById(
-        "mentorRole"
-    ).innerText = mentor.role;
+                // AKTIVACE ZOBRAZENÍ: Najdeme sekci mentora a zviditelníme ji
+                const mentorSection = document.querySelector(".mentor-section");
+                if (mentorSection) {
+                    mentorSection.style.display = "flex";
+                }
 
-    document.getElementById(
-        "mentorAvatar"
-    ).src = mentor.avatar;
-
-    document.getElementById(
-        "mentorMessage"
-    ).innerText = mentor.message;
+            } else {
+                console.error("Mentor s ID " + mentorId + " nebyl ve Firebase nalezen!");
+                const mentorMsg = document.getElementById("mentorMessage");
+                if (mentorMsg) mentorMsg.innerText = "Chyba: Mentor nebyl nalezen v databázi.";
+            }
+        } catch (error) {
+            console.error("Chyba při načítání mentora:", error);
+        }
+    } else {
+        console.log("V localStorage chybí mentorId.");
+    }
 }
 
+// Spuštění načítání
+loadMentor();
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
