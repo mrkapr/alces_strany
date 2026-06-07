@@ -1509,7 +1509,10 @@ async function loadAnnouncements() {
 
             div.innerHTML = `
                 <h3>${annData.title || "Bez nadpisu"}</h3>
-                ${dateString ? `<span class="date">${dateString}</span>` : ""}
+                <div class="announcement-meta" style="font-size: 12px; opacity: 0.6; margin-bottom: 10px;">
+                    ${dateString ? `<span>📅 ${dateString}</span>` : ""}
+                    <span style="margin-left: 15px;">✍️ Publikoval: <strong>${annData.author || "Vedení firmy"}</strong></span>
+                </div>
                 <p>${annData.text || ""}</p>
                 <div class="announcement-footer"></div>
             `;

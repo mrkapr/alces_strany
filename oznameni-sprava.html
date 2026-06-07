@@ -110,19 +110,19 @@
                     <label>Text oznámení</label>
                     <textarea id="annText" required placeholder="Zde rozepiš podrobnosti, instrukce, linky atd..."></textarea>
                 </div>
-               <div class="form-group" style="margin-top: 10px;">
-    <label style="margin-bottom: 5px; display: block;">Cílové skupiny (pokud nezvolíš nic, oznámení uvidí VŠICHNI):</label>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="zkusebni-ridic"> Zkušební doba</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="ridic"> Řidič</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="zaslouzily-ridic"> Zasloužilý řidič</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="team-manager"> Team Manager</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="dispecer"> Dispečer</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="provozni-reditel"> Provozní ředitel</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="management"> Management</label>
-        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="majitel"> Majitel</label>
-    </div>
-</div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label style="margin-bottom: 5px; display: block;">Cílové skupiny (pokud nezvolíš nic, oznámení uvidí VŠICHNI):</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="zkusebni-ridic"> Zkušební doba</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="ridic"> Řidič</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="zaslouzily-ridic"> Zasloužilý řidič</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="team-manager"> Team Manager</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="dispecer"> Dispečer</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="provozni-reditel"> Provozní ředitel</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="management"> Management</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="majitel"> Majitel</label>
+                    </div>
+                </div>
                 <button type="submit" class="btn-add">Publikovat na hlavní stránku</button>
             </form>
         </div>
@@ -138,7 +138,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -154,9 +154,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let allUsers = []; // Pomocné pole, kam si načteme komplet firmu pro porovnávání
+let allUsers = []; 
 
-// Definice ranků, které mají přístup do správy oznámení
 const allowedRanks = [
     "team-manager",
     "dispecer",
@@ -166,16 +165,13 @@ const allowedRanks = [
 ];
 
 onAuthStateChanged(auth, async (user) => {
-    // Vytáhneme rank přihlášeného uživatele z localStorage
     const userRank = localStorage.getItem("rank") || "";
     
-    // Zkontrolujeme, zda je jeho rank v seznamu povolených
     if (allowedRanks.includes(userRank)) {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("error-screen").style.display = "none";
         await loadSystem();
     } else {
-        // Pokud rank nemá přístup, přepíšeme text a zablokujeme stránku
         document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy (Team Manager a vyšší).";
         document.getElementById("error-screen").style.display = "block";
         document.getElementById("mainContent").style.display = "none";
@@ -187,24 +183,27 @@ async function loadSystem() {
     await loadAnnouncementsAdmin();
 }
 
-// Stáhne seznam všech lidí z firmy z kolekce 'users', abychom věděli, kdo existuje
 async function fetchAllUsers() {
     allUsers = [];
     try {
-        const uSnap = await getDocs(collection(db, "users"));
-        uSnap.forEach(d => {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        querySnapshot.forEach(d => {
+            const data = d.data();
             allUsers.push({
                 email: d.id,
-                name: d.data().name || d.data().username || "Bez jména",
-                rankName: d.data().rankName || "Řidič"
+                name: data.name || data.username || "Bez jména",
+                rankName: data.rankName || "Řidič",
+                rank: data.rank || "" 
             });
         });
-    } catch(e) { console.error("Chyba při stahování zaměstnanců:", e); }
+    } catch(e) { 
+        console.error("Chyba při stahování zaměstnanců:", e); 
+    }
 }
 
-// Načte oznámení a spočítá, kdo podepsal a kdo ne
 async function loadAnnouncementsAdmin() {
     const listContainer = document.getElementById("announcementsAdminList");
+    if (!listContainer) return;
     listContainer.innerHTML = "";
 
     try {
@@ -212,7 +211,6 @@ async function loadAnnouncementsAdmin() {
         const docsArray = [];
         querySnapshot.forEach(d => docsArray.push({ id: d.id, data: d.data() }));
         
-        // Seřadit od nejnovějšího
         docsArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
 
         if (docsArray.length === 0) {
@@ -224,20 +222,23 @@ async function loadAnnouncementsAdmin() {
             const annId = ann.id;
             const annData = ann.data;
             const confirmedEmails = annData.confirmedBy || [];
+            const targetRanks = annData.targetRanks || [];
 
-            // Rozřadíme lidi z firmy na ty, co potvrdili vs. nepotvrdili
             const confirmedPeople = [];
             const missingPeople = [];
 
             allUsers.forEach(u => {
+                const userRank = u.rank || ""; 
+
                 if (confirmedEmails.includes(u.email)) {
                     confirmedPeople.push(u);
                 } else {
-                    missingPeople.push(u);
+                    if (targetRanks.length === 0 || targetRanks.includes(userRank)) {
+                        missingPeople.push(u);
+                    }
                 }
             });
 
-            // Formátování času vydání
             let dateString = "Neznámý čas";
             if (annData.createdAt) {
                 const d = annData.createdAt.toDate();
@@ -251,27 +252,26 @@ async function loadAnnouncementsAdmin() {
                     <div>
                         <h3 class="ann-title">${annData.title || "Bez nadpisu"}</h3>
                         <span class="ann-date">Publikováno: ${dateString}</span>
+                        ${annData.author ? `<br><span class="ann-author" style="font-size: 11px; opacity: 0.6;">Od: <strong>${annData.author}</strong></span>` : ""}
                     </div>
-                    <button class="btn-delete" data-id="${annId}">Smazat oznámení ✕</button>
+                    <button class="btn-delete">Smazat oznámení ✕</button>
                 </div>
                 <p class="ann-text">${annData.text || ""}</p>
                 
                 <div class="stats-grid">
-    <div class="stats-col col-green">
-        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
-        <ul class="stats-list" id="yes-${annId}"></ul>
-    </div>
-    <div class="stats-col col-red">
-        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
-        <ul class="stats-list" id="no-${annId}"></ul>
-    </div>
-</div>
+                    <div class="stats-col col-green">
+                        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
+                        <ul class="stats-list" id="yes-${annId}"></ul>
+                    </div>
+                    <div class="stats-col col-red">
+                        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
+                        <ul class="stats-list" id="no-${annId}"></ul>
+                    </div>
+                </div>
             `;
 
-// Vyplnění seznamu těch, co potvrdili
-            // ZMĚNA: Hledáme pomocí querySelector přímo v annBlocku podle nového ID
             const ulYes = annBlock.querySelector(`#yes-${annId}`);
-            if(confirmedPeople.length === 0) {
+            if (confirmedPeople.length === 0) {
                 if (ulYes) ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`;
             } else {
                 confirmedPeople.forEach(p => {
@@ -279,46 +279,44 @@ async function loadAnnouncementsAdmin() {
                 });
             }
 
-            // Vyplnění seznamu hříšníků, co ještě nepotvrdili
-            // ZMĚNA: Hledáme pomocí querySelector přímo v annBlocku podle nového ID
             const ulNo = annBlock.querySelector(`#no-${annId}`);
-            if(missingPeople.length === 0) {
-                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni řidiči splnili povinnost!</li>`;
+            if (missingPeople.length === 0) {
+                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni z cílové skupiny splnili povinnost!</li>`;
             } else {
                 missingPeople.forEach(p => {
                     if (ulNo) ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
                 });
             }
 
-            // Navázání smazání oznámení
             annBlock.querySelector(".btn-delete").addEventListener("click", async () => {
                 if (confirm(`Opravdu chceš smazat oznámení "${annData.title}" z hlavní stránky?`)) {
                     await deleteDoc(doc(db, "announcements", annId));
-                    await loadSystem(); // Znovu načte data
+                    await loadSystem(); 
                 }
             });
 
             listContainer.appendChild(annBlock);
         });
 
-    } catch(err) {
-        console.error(err);
-        listContainer.innerHTML = `<p style="color:#ff4d4d; padding:15px;">Chyba při generování statistik.</p>`;
+    } catch (error) {
+        console.error("Chyba při načítání správy oznámení:", error);
     }
 }
 
-// ODESLÁNÍ FORMULÁŘE — Vytvoření nového oznámení ve Firebase
 document.getElementById("announcementForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const title = document.getElementById("annTitle").value.trim();
     const text = document.getElementById("annText").value.trim();
 
-    // NOVÉ: Posbíráme zaškrtnuté hodnoty checkboxů
     const selectedRanks = [];
     document.querySelectorAll(".rank-checkbox:checked").forEach(cb => {
         selectedRanks.push(cb.value);
     });
+
+    const authorName = localStorage.getItem("username") || "Vedení firmy";
+    const authorRank = localStorage.getItem("rankName") || "";
+    const fullAuthor = authorRank ? `${authorName} (${authorRank})` : authorName;
 
     const uniqueDocId = "ann_" + Date.now();
 
@@ -327,7 +325,8 @@ document.getElementById("announcementForm").addEventListener("submit", async (e)
         text: text,
         createdAt: new Date(),
         confirmedBy: [],
-        targetRanks: selectedRanks // Uloží se např. ["zkusebni-ridic", "ridic"] nebo []
+        targetRanks: selectedRanks,
+        author: fullAuthor
     };
 
     try {
