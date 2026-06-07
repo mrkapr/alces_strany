@@ -161,4 +161,213 @@ const firebaseConfig = {
     projectId: "alces-d505c",
     storageBucket: "alces-d505c.firebasestorage.app",
     messagingSenderId: "318520073072",
-    appId: "1:3185
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Definice pořadí hodností pro řazení v tabulce od nejvyšší po nejnižší
+const rankOrder = [
+    "majitel",
+    "management",
+    "provozni-reditel",
+    "dispecer",
+    "team-manager",
+    "zasloužily-ridic",
+    "ridic",
+    "zkusebni-ridic"
+];
+
+const rankNameMapping = {
+    "zkusebni-ridic": "Řidič - zkušební doba",
+    "ridic": "Řidič",
+    "zasloužily-ridic": "Zasloužilý řidič",
+    "team-manager": "Team Manager",
+    "dispecer": "Dispečer",
+    "provozni-reditel": "Provozní ředitel",
+    "management": "Management",
+    "majitel": "Majitel"
+};
+
+// VŽDY (při zakládání i úpravách) změní políčko rankName na správný text podle vybraného ranku
+document.getElementById("userRank").addEventListener("change", (e) => {
+    document.getElementById("userRankName").value = rankNameMapping[e.target.value] || "";
+});
+
+onAuthStateChanged(auth, async (user) => {
+    const email = user ? user.email : localStorage.getItem("userEmail");
+    if (email === "ytkapr@gmail.com") {
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
+        await loadAllUsers();
+    } else {
+        document.getElementById("error-screen").style.display = "block";
+    }
+});
+
+async function loadAllUsers() {
+    const container = document.getElementById("rankedListsContainer");
+    container.innerHTML = "";
+    
+    try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        
+        // Vytvoříme si prázdné šuplíky pro každý rank
+        const groups = {};
+        rankOrder.forEach(r => groups[r] = []);
+
+        // Rozřadíme uživatele do šuplíků
+        querySnapshot.forEach((userDoc) => {
+            const data = userDoc.data();
+            const email = userDoc.id;
+            const rank = data.rank || "zkusebni-ridic";
+            
+            if (groups[rank]) {
+                groups[rank].push({ email, data });
+            } else {
+                // Kdyby byl v DB rank, co nemáme v poli rankOrder
+                if(!groups["zkusebni-ridic"]) groups["zkusebni-ridic"] = [];
+                groups["zkusebni-ridic"].push({ email, data });
+            }
+        });
+
+        let totalCount = 0;
+
+        // Projdeme hodnosti v našem určeném pořadí a vykreslíme je
+        rankOrder.forEach((currentRank) => {
+            const usersInRank = groups[currentRank];
+            
+            // Pokud v této hodnosti nikdo není, blok vůbec nevytváříme (ušetří místo)
+            if (usersInRank.length === 0) return;
+            
+            totalCount += usersInRank.length;
+
+            const block = document.createElement("div");
+            block.className = "rank-category-block";
+            
+            const humanReadableTitle = rankNameMapping[currentRank] || currentRank;
+            block.innerHTML = `
+                <div class="rank-category-title">${humanReadableTitle} (${usersInRank.length})</div>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Jméno</th>
+                            <th>E-mail</th>
+                            <th>Mentor</th>
+                            <th style="text-align:right;">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            `;
+
+            const tbody = block.querySelector("tbody");
+
+            usersInRank.forEach((user) => {
+                const uName = user.data.name || user.data.username || "Bez jména";
+                const uMentor = user.data.mentorId ? user.data.mentorId : "—";
+                
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${uName}</td>
+                    <td style="opacity:0.6; font-size:13px;">${user.email}</td>
+                    <td style="color:#ffd84d; font-weight:600; font-size:13px;">${uMentor}</td>
+                    <td class="actions"></td>
+                `;
+
+                const tdActions = tr.querySelector(".actions");
+
+                const btnEdit = document.createElement("button");
+                btnEdit.className = "btn-edit";
+                btnEdit.innerText = "Upravit";
+                btnEdit.addEventListener("click", () => startEdit(user.email, user.data));
+
+                const btnDelete = document.createElement("button");
+                btnDelete.className = "btn-delete";
+                btnDelete.innerText = "Smazat";
+                btnDelete.addEventListener("click", async () => {
+                    if(confirm(`Opravdu chceš úplně SMAZAT uživatele ${uName}?`)) {
+                        await deleteDoc(doc(db, "users", user.email));
+                        loadAllUsers();
+                    }
+                });
+
+                tdActions.appendChild(btnEdit);
+                tdActions.appendChild(btnDelete);
+                tbody.appendChild(tr);
+            });
+
+            container.appendChild(block);
+        });
+
+        if (totalCount === 0) {
+            container.innerHTML = `<p style="opacity: 0.5; padding: 15px;">V databázi nejsou žádní uživatelé.</p>`;
+        }
+
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = `<p style="color:#ff4d4d; padding:15px;">Chyba načítání: ${e.message}</p>`;
+    }
+}
+
+function startEdit(email, data) {
+    document.getElementById("formTitle").innerText = "Upravit uživatele";
+    document.getElementById("submitBtn").innerText = "Uložit změny";
+    document.getElementById("cancelBtn").style.display = "block";
+    
+    const emailField = document.getElementById("userEmail");
+    emailField.value = email;
+    emailField.disabled = true;
+
+    document.getElementById("userName").value = data.name || data.username || "";
+    document.getElementById("userRank").value = data.rank || "zkusebni-ridic";
+    document.getElementById("userRankName").value = data.rankName || "";
+    document.getElementById("userMentor").value = data.mentorId || "";
+}
+
+document.getElementById("cancelBtn").addEventListener("click", resetForm);
+
+function resetForm() {
+    document.getElementById("formTitle").innerText = "Vytvořit nový účet";
+    document.getElementById("submitBtn").innerText = "Vytvořit uživatele";
+    document.getElementById("cancelBtn").style.display = "none";
+    
+    const emailField = document.getElementById("userEmail");
+    emailField.value = "";
+    emailField.disabled = false;
+    
+    document.getElementById("userForm").reset();
+    document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
+}
+
+document.getElementById("userForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById("userEmail").value.trim();
+    const name = document.getElementById("userName").value.trim();
+    const rank = document.getElementById("userRank").value;
+    const rankName = document.getElementById("userRankName").value.trim();
+    const mentorId = document.getElementById("userMentor").value;
+
+    const userObject = {
+        name: name,
+        username: name,
+        rank: rank,
+        rankName: rankName,
+        mentorId: mentorId
+    };
+
+    try {
+        await setDoc(doc(db, "users", email), userObject, { merge: true });
+        alert("Uživatel byl úspěšně uložen!");
+        resetForm();
+        await loadAllUsers();
+    } catch(err) {
+        alert("Chyba při zápisu: " + err.message);
+    }
+});
+</script>
+</body>
+</html>
