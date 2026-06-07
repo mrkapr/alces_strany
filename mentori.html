@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Správa mentorů | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Poppins', Arial, sans-serif;
+        background-image: url("fotky/home/gradient.png"), url("fotky/home/pozadi.png");
+        background-size: cover;
+        background-position: center top;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        color: white;
+    }
+
+    /* Horní lišta převzatá z tvého webu */
+    .topbar {
+        height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+        background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+    .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+
+    .content { margin: 120px 40px 40px 40px; }
+    h1 { font-size: 36px; font-weight: 700; text-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 5px; }
+    .role-badge { display: inline-block; padding: 5px 15px; background: gold; color: black; border-radius: 999px; font-weight: 600; font-size: 14px; margin-bottom: 30px; }
+
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } }
+
+    /* Stylové boxy (Glassmorphism) */
+    .panel {
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+        padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .panel h2 { margin-top: 0; font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; color: #ffd84d; }
+
+    /* Seznamy */
+    .user-list { list-style: none; padding: 0; margin: 0; }
+    .user-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 18px; background: rgba(255,255,255,0.04); margin-bottom: 10px;
+        border-radius: 14px; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .user-info { display: flex; flex-direction: column; }
+    .user-name { font-weight: 600; font-size: 16px; }
+    .user-email { font-size: 12px; opacity: 0.6; }
+    .mentor-status { font-size: 12px; color: #ffd84d; font-weight: 600; margin-top: 2px; }
+
+    /* Tlačítka */
+    button {
+        font-family: 'Poppins', sans-serif; font-weight: 600; padding: 8px 16px;
+        border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-claim { background: #00b84f; color: white; }
+    .btn-claim:hover { background: #00963f; transform: scale(1.03); }
+    .btn-release { background: rgba(212, 0, 0, 0.65); color: white; }
+    .btn-release:hover { background: rgba(180, 0, 0, 0.8); transform: scale(1.03); }
+    .btn-disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+    /* Formulář pro zprávu */
+    .msg-form { display: flex; flex-direction: column; gap: 12px; }
+    textarea {
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
+        color: white; padding: 12px; font-family: 'Poppins', sans-serif; resize: vertical; min-height: 80px;
+    }
+    textarea:focus { outline: none; border-color: #ffd84d; }
+    .btn-save { background: #ffd84d; color: black; align-self: flex-end; }
+    .btn-save:hover { background: #e6c240; }
+
+    /* Select pro majitele */
+    .owner-select {
+        background: #222; color: white; border: 1px solid rgba(255,255,255,0.3);
+        padding: 6px; border-radius: 8px; font-family: 'Poppins', sans-serif;
+    }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div style="font-weight:700; font-size:18px;">alces, a. s.</div>
+    <div>
+        <a href="home.html">Domů</a>
+        <a href="#" style="color: #ffd84d;">Mentoři</a>
+    </div>
+</div>
+
+<div class="content">
+    <h1 id="welcomeTitle">Načítání systému...</h1>
+    <div class="role-badge" id="roleBadge">Ověřování identity...</div>
+
+    <div class="grid-container">
+        <div class="panel">
+            <h2>Volní zkušební řidiči ke群 zabrání</h2>
+            <ul class="user-list" id="unassignedList">
+                <p style="opacity:0.5">Načítám nováčky...</p>
+            </ul>
+        </div>
+
+        <div class="panel" id="rightPanel">
+            <h2>Moji svěření nováčci</h2>
+            <ul class="user-list" id="myStudentsList">
+                <p style="opacity:0.5">Zatím žádní přidělení řidiči.</p>
+            </ul>
+
+            <div id="messageSection" style="margin-top: 35px; display:none;">
+                <h2>Upravit moji uvítací zprávu</h2>
+                <div class="msg-form">
+                    <textarea id="mentorMessageText" placeholder="Zde napiš uvítací zprávu, kterou nováček uvidí v bublině..."></textarea>
+                    <button class="btn-save" id="saveMsgBtn">Uložit zprávu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUserEmail = "";
+let currentMentorId = ""; // "7002" pro Vašíka, "7067" pro Horryho
+let isOwner = false;
+
+// Spuštění po ověření přihlášení přes Firebase
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUserEmail = user.email;
+        setupPermissions();
+        await loadData();
+    } else {
+        // Fallback na localStorage, pokud nepoužíváš Firebase Auth na login, ale jen data
+        currentUserEmail = localStorage.getItem("userEmail") || "vasik.kovyt.stream@gmail.com"; // Testovací fallback
+        setupPermissions();
+        await loadData();
+    }
+});
+
+function setupPermissions() {
+    if (currentUserEmail === "ytkapr@gmail.com") {
+        isOwner = true;
+        document.getElementById("welcomeTitle").innerText = "Administrace Mentorů";
+        document.getElementById("roleBadge").innerText = "Majitel";
+        document.getElementById("roleBadge").style.background = "#ff3333";
+        document.getElementById("roleBadge").style.color = "white";
+    } else if (currentUserEmail === "vasik.kovyt.stream@gmail.com") {
+        currentMentorId = "7002";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora — Vašík";
+        document.getElementById("roleBadge").innerText = "Mentor (ID 7002)";
+        document.getElementById("messageSection").style.display = "block";
+        loadMentorMessage();
+    } else if (currentUserEmail === "horry.sheron@gmail.com") {
+        currentMentorId = "7067";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora — Horry";
+        document.getElementById("roleBadge").innerText = "Mentor (ID 7067)";
+        document.getElementById("messageSection").style.display = "block";
+        loadMentorMessage();
+    } else {
+        document.getElementById("welcomeTitle").innerText = "Přístup odepřen";
+        document.getElementById("roleBadge").innerText = "Nemáš oprávnění mentora";
+        document.querySelector(".grid-container").style.display = "none";
+    }
+}
+
+async function loadMentorMessage() {
+    if(!currentMentorId) return;
+    const mentorSnap = await getDoc(doc(db, "mentors", currentMentorId));
+    if(mentorSnap.exists()) {
+        document.getElementById("mentorMessageText").value = mentorSnap.data().message || "";
+    }
+}
+
+// Hlavní načítání dat z Firebase
+async function loadData() {
+    const unassignedList = document.getElementById("unassignedList");
+    const myStudentsList = document.getElementById("myStudentsList");
+    
+    unassignedList.innerHTML = "";
+    myStudentsList.innerHTML = "";
+
+    let hasStudents = false;
+    let hasUnassigned = false;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        
+        querySnapshot.forEach((userDoc) => {
+            const userData = userDoc.data();
+            const userDocId = userDoc.id; // E-mail dokumentu
+
+            // Filtrujeme pouze lidi s hodností zkušební řidič
+            if (userData.rank === "zkusebni-ridic") {
+                const mentorId = userData.mentorId ? String(userData.mentorId).trim() : "";
+
+                // Vytvoření HTML prvku řidiče
+                const li = document.createElement("li");
+                li.className = "user-item";
+                
+                let mentorStatusText = mentorId ? `Přidělen mentorovi ID: ${mentorId}` : "Volný nováček";
+                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašík (7002)";
+                if(mentorId === "7067") mentorStatusText = "Svěřen: Horry (7067)";
+
+                li.innerHTML = `
+                    <div class="user-info">
+                        <span class="user-name">${userData.username || "Bez Jména"}</span>
+                        <span class="user-email">${userDocId}</span>
+                        <span class="mentor-status">${mentorStatusText}</span>
+                    </div>
+                `;
+
+                const btnContainer = document.createElement("div");
+
+                if (isOwner) {
+                    // ROZHRANÍ PRO MAJITELE: Může měnit cokoli komukoli přes Select Dropdown
+                    const select = document.createElement("select");
+                    select.className = "owner-select";
+                    select.innerHTML = `
+                        <option value="" ${mentorId === "" ? "selected" : ""}>-- Bez mentora --</option>
+                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašík (7002)</option>
+                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Horry (7067)</option>
+                    `;
+                    select.addEventListener("change", async () => {
+                        await updateDoc(doc(db, "users", userDocId), { mentorId: select.value });
+                        alert(`Uživatel ${userData.username} byl aktualizován.`);
+                        loadData();
+                    });
+                    btnContainer.appendChild(select);
+                    unassignedList.appendChild(li);
+                    li.appendChild(btnContainer);
+                    hasUnassigned = true;
+
+                } else {
+                    // ROZHRANÍ PRO MENTORY
+                    if (!mentorId) {
+                        // Nováček je volný
+                        const btn = document.createElement("button");
+                        btn.className = "btn-claim";
+                        btn.innerText = "Zabrat nováčka";
+                        btn.addEventListener("click", async () => {
+                            await updateDoc(doc(db, "users", userDocId), { mentorId: currentMentorId });
+                            loadData();
+                        });
+                        btnContainer.appendChild(btn);
+                        li.appendChild(btnContainer);
+                        unassignedList.appendChild(li);
+                        hasUnassigned = true;
+                    } else if (mentorId === currentMentorId) {
+                        // Nováček patří aktuálnímu přihlášenému mentorovi
+                        const btn = document.createElement("button");
+                        btn.className = "btn-release";
+                        btn.innerText = "Uvolnit";
+                        btn.addEventListener("click", async () => {
+                            await updateDoc(doc(db, "users", userDocId), { mentorId: "" });
+                            loadData();
+                        });
+                        btnContainer.appendChild(btn);
+                        li.appendChild(btnContainer);
+                        myStudentsList.appendChild(li);
+                        hasStudents = true;
+                    } else {
+                        // Nováčka už zabral ten druhý mentor
+                        const btn = document.createElement("button");
+                        btn.className = "btn-disabled";
+                        btn.innerText = "Zabráno jiným";
+                        btn.disabled = true;
+                        btnContainer.appendChild(btn);
+                        li.appendChild(btnContainer);
+                        unassignedList.appendChild(li);
+                        hasUnassigned = true;
+                    }
+                }
+            }
+        });
+
+        if (!hasUnassigned) unassignedList.innerHTML = `<p style="opacity:0.5">Žádní volní zkušební řidiči na skladě.</p>`;
+        if (!hasStudents && !isOwner) myStudentsList.innerHTML = `<p style="opacity:0.5">Zatím nemáš pod křídly žádného řidiče.</p>`;
+        if (isOwner) document.getElementById("rightPanel").innerHTML = "<h2>Přehled Administrátora</h2><p>Jako majitel vidíš kompletní seznam v levém okně a můžeš lidi mentorům libovolně přehazovat pomocí rozbalovacího menu.</p>";
+
+    } catch (error) {
+        console.error("Chyba načítání:", error);
+    }
+}
+
+// Uložení nové message mentora do Firebase
+document.getElementById("saveMsgBtn").addEventListener("click", async () => {
+    const text = document.getElementById("mentorMessageText").value;
+    if (currentMentorId) {
+        try {
+            await updateDoc(doc(db, "mentors", currentMentorId), { message: text });
+            alert("Uvítací bublina byla úspěšně upravena!");
+        } catch (error) {
+            alert("Chyba při ukládání: " + error.message);
+        }
+    }
+});
+</script>
+</body>
+</html>
