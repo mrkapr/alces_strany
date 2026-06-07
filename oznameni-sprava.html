@@ -245,30 +245,38 @@ async function loadAnnouncementsAdmin() {
                 <p class="ann-text">${annData.text || ""}</p>
                 
                 <div class="stats-grid">
-                    <div class="stats-col col-green">
-                        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
-                        <ul class="stats-list" id="list-yes-${annId}"></ul>
-                    </div>
-                    <div class="stats-col col-red">
-                        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
-                        <ul class="stats-list" id="list-no-${annId}"></ul>
-                    </div>
-                </div>
+    <div class="stats-col col-green">
+        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
+        <ul class="stats-list" id="yes-${annId}"></ul>
+    </div>
+    <div class="stats-col col-red">
+        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
+        <ul class="stats-list" id="no-${annId}"></ul>
+    </div>
+</div>
             `;
 
-            // Vyplnění seznamu těch, co potvrdili
-            const ulYes = document.getElementById(`list-yes-${annId}`);
-            if(confirmedPeople.length === 0) ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`;
-            confirmedPeople.forEach(p => {
-                ulYes.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
-            });
+// Vyplnění seznamu těch, co potvrdili
+            // ZMĚNA: Hledáme pomocí querySelector přímo v annBlocku podle nového ID
+            const ulYes = annBlock.querySelector(`#yes-${annId}`);
+            if(confirmedPeople.length === 0) {
+                if (ulYes) ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`;
+            } else {
+                confirmedPeople.forEach(p => {
+                    if (ulYes) ulYes.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
+                });
+            }
 
             // Vyplnění seznamu hříšníků, co ještě nepotvrdili
-            const ulNo = document.getElementById(`list-no-${annId}`);
-            if(missingPeople.length === 0) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni řidiči splnili povinnost!</li>`;
-            missingPeople.forEach(p => {
-                ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
-            });
+            // ZMĚNA: Hledáme pomocí querySelector přímo v annBlocku podle nového ID
+            const ulNo = annBlock.querySelector(`#no-${annId}`);
+            if(missingPeople.length === 0) {
+                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni řidiči splnili povinnost!</li>`;
+            } else {
+                missingPeople.forEach(p => {
+                    if (ulNo) ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
+                });
+            }
 
             // Navázání smazání oznámení
             annBlock.querySelector(".btn-delete").addEventListener("click", async () => {
