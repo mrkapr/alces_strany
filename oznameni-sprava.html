@@ -110,6 +110,17 @@
                     <label>Text oznámení</label>
                     <textarea id="annText" required placeholder="Zde rozepiš podrobnosti, instrukce, linky atd..."></textarea>
                 </div>
+                <div class="form-group" style="margin-top: 10px;">
+    <label style="margin-bottom: 5px; display: block;">Cílové skupiny (pokud nezvolíš nic, uvidí to VŠICHNI):</label>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="zkusebni-ridic"> Zkušební řidič</label>
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="ridic"> Řidič</label>
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="team-manager"> Team Manager</label>
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="dispecer"> Dispečer</label>
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="management"> Management</label>
+        <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="rank-checkbox" value="majitel"> Majitel</label>
+    </div>
+</div>
                 <button type="submit" class="btn-add">Publikovat na hlavní stránku</button>
             </form>
         </div>
@@ -301,21 +312,27 @@ document.getElementById("announcementForm").addEventListener("submit", async (e)
     const title = document.getElementById("annTitle").value.trim();
     const text = document.getElementById("annText").value.trim();
 
-    // Vygenerujeme unikátní ID dokumentu podle aktuálního času, aby se nám nepřepisovala
+    // NOVÉ: Posbíráme zaškrtnuté hodnoty checkboxů
+    const selectedRanks = [];
+    document.querySelectorAll(".rank-checkbox:checked").forEach(cb => {
+        selectedRanks.push(cb.value);
+    });
+
     const uniqueDocId = "ann_" + Date.now();
 
     const newAnnouncement = {
         title: title,
         text: text,
-        createdAt: new Date(), // Uložíme aktuální JS datum
-        confirmedBy: [] // Začíná jako prázdné pole, nikdo ho ještě nečetl
+        createdAt: new Date(),
+        confirmedBy: [],
+        targetRanks: selectedRanks // Uloží se např. ["zkusebni-ridic", "ridic"] nebo []
     };
 
     try {
         await setDoc(doc(db, "announcements", uniqueDocId), newAnnouncement);
-        alert("Oznámení bylo úspěšně publikováno na hlavní stránku!");
+        alert("Oznámení bylo úspěšně publikováno!");
         document.getElementById("announcementForm").reset();
-        await loadSystem(); // Okamžitě aktualizuje historii a grafiku na adminovi
+        await loadSystem(); 
     } catch (err) {
         alert("Chyba při publikování: " + err.message);
     }

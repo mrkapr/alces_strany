@@ -1248,6 +1248,16 @@ async function loadAnnouncements() {
             const annData = annDoc.data;
             count++;
 
+          // NOVÉ: Filtrování podle rolí
+            const currentRank = localStorage.getItem("rank") || ""; // Zjistíme rank uživatele
+            const targetRanks = annData.targetRanks || []; // Zjistíme povolené role pro toto oznámení
+
+            // Pokud oznámení má definované cílové role A uživatelův rank mezi nimi NENÍ -> přeskočíme ho
+            if (targetRanks.length > 0 && !targetRanks.includes(currentRank)) {
+                return; // Toto oznámení se řidiči vůbec nevykreslí
+            }
+
+            // VYTVOŘENÍ ELEMENTU (Pokračuje tvůj původní kód)
             const div = document.createElement("div");
             div.className = "announcement";
 
