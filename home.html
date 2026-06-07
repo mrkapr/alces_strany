@@ -1398,7 +1398,7 @@ function toggleSidebar() {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -1414,200 +1414,142 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let allUsers = []; 
-let globalUserEmail = ""; // Záložní email pro autora
+let userEmail = ""; 
+const mentorId = localStorage.getItem("mentorId");
 
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
 
 onAuthStateChanged(auth, async (user) => {
-    const userRank = localStorage.getItem("rank") || "";
-    
     if (user) {
-        globalUserEmail = user.email; // Uložíme si email přihlášeného pro formulář
-    }
+        userEmail = user.email; 
+        
+        // Načteme obsah pro řidiče
+        await loadMentor();
+        await loadAnnouncements();
 
-    if (allowedRanks.includes(userRank)) {
-        document.getElementById("mainContent").style.display = "block";
-        document.getElementById("error-screen").style.display = "none";
-        await loadSystem();
+        // 🚀 KLÍČOVÁ OPRAVA: Zviditelníme plovoucí tlačítko správy pouze pro vedení firmy
+        const userRank = localStorage.getItem("rank") || "";
+        if (allowedRanks.includes(userRank)) {
+            const toggleBtn = document.getElementById("menuToggleBtn");
+            if (toggleBtn) toggleBtn.style.display = "inline-block";
+        }
     } else {
-        document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy (Team Manager a vyšší).";
-        document.getElementById("error-screen").style.display = "block";
-        document.getElementById("mainContent").style.display = "none";
+        window.location.href = "login.html";
     }
 });
 
-async function loadSystem() {
-    await fetchAllUsers();
-    await loadAnnouncementsAdmin();
-}
+async function loadMentor() {
+    if (mentorId) {
+        try {
+            const docRef = doc(db, "mentors", String(mentorId).trim());
+            const mentorSnap = await getDoc(docRef);
 
-// Pomocná funkce na odstranění diakritiky (pro spolehlivé párování ranků)
-function removeAccents(str) {
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-async function fetchAllUsers() {
-    allUsers = [];
-    try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        querySnapshot.forEach(d => {
-            const data = d.data();
-            const rName = data.rankName || "Řidič";
-            
-            // 🚀 OPRAVA: Pokud chybí pole 'rank', vygenerujeme ho z 'rankName' (Majitel -> majitel, Zasloužilý řidič -> zaslouzily-ridic)
-            let systemRank = data.rank || removeAccents(rName).replace(/\s+/g, "-");
-
-            allUsers.push({
-                email: d.id,
-                name: data.name || data.username || "Bez jména",
-                rankName: rName,
-                rank: systemRank 
-            });
-        });
-    } catch(e) { 
-        console.error("Chyba při stahování zaměstnanců:", e); 
+            if (mentorSnap.exists()) {
+                const mentor = mentorSnap.data();
+                if (document.getElementById("mentorName")) document.getElementById("mentorName").innerText = mentor.name || "Jméno se nepodařilo načíst.";
+                if (document.getElementById("mentorRole")) document.getElementById("mentorRole").innerText = mentor.role || "Mentor";
+                if (document.getElementById("mentorAvatar") && mentor.avatar) document.getElementById("mentorAvatar").src = mentor.avatar;
+                if (document.getElementById("mentorMessage")) document.getElementById("mentorMessage").innerText = mentor.message || "Zpráva nebyla načtena.";
+                if (document.getElementById("mentorRoom")) document.getElementById("mentorRoom").innerText = mentor.room ? `Přidělená místnost: ${mentor.room}` : "";
+                
+                const mentorSection = document.querySelector(".mentor-section");
+                if (mentorSection) mentorSection.style.display = "flex";
+            }
+        } catch (error) {
+            console.error("Chyba při načítání mentora:", error);
+        }
     }
 }
 
-async function loadAnnouncementsAdmin() {
-    const listContainer = document.getElementById("announcementsAdminList");
+// 🚀 KLÍČOVÁ OPRAVA: Klasické načítání oznámení pro uživatele (nahrazeno za nefunkční admin verzi)
+async function loadAnnouncements() {
+    const listContainer = document.getElementById("announcementsList");
     if (!listContainer) return;
     listContainer.innerHTML = "";
 
     try {
         const querySnapshot = await getDocs(collection(db, "announcements"));
+        let count = 0;
+
         const docsArray = [];
         querySnapshot.forEach(d => docsArray.push({ id: d.id, data: d.data() }));
         
         docsArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
 
-        if (docsArray.length === 0) {
-            listContainer.innerHTML = `<p style="opacity: 0.5; padding: 15px; margin:0;">Zatím nebyla vydána žádná oznámení.</p>`;
-            return;
-        }
+        docsArray.forEach((annDoc) => {
+            const annId = annDoc.id;
+            const annData = annDoc.data;
 
-        docsArray.forEach((ann) => {
-            const annId = ann.id;
-            const annData = ann.data;
-            const confirmedEmails = annData.confirmedBy || [];
-            const targetRanks = annData.targetRanks || [];
+            const currentRank = localStorage.getItem("rank") || ""; 
+            const targetRanks = annData.targetRanks || []; 
 
-            const confirmedPeople = [];
-            const missingPeople = [];
+            if (targetRanks.length > 0 && !targetRanks.includes(currentRank)) {
+                return; 
+            }
 
-            allUsers.forEach(u => {
-                const userRank = u.rank || ""; 
+            count++;
 
-                if (confirmedEmails.includes(u.email)) {
-                    confirmedPeople.push(u);
-                } else {
-                    if (targetRanks.length === 0 || targetRanks.includes(userRank)) {
-                        missingPeople.push(u);
-                    }
-                }
-            });
+            const div = document.createElement("div");
+            div.className = "announcement";
 
-            let dateString = "Neznámý čas";
+            const confirmedByArray = annData.confirmedBy || [];
+            const isConfirmed = userEmail ? confirmedByArray.includes(userEmail) : false;
+
+            let dateString = "";
             if (annData.createdAt) {
                 const d = annData.createdAt.toDate();
                 dateString = d.toLocaleDateString("cs-CZ") + " v " + d.toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
             }
 
-            const annBlock = document.createElement("div");
-            annBlock.className = "ann-block";
-            annBlock.innerHTML = `
-                <div class="ann-header">
-                    <div>
-                        <h3 class="ann-title">${annData.title || "Bez nadpisu"}</h3>
-                        <span class="ann-date">Publikováno: ${dateString}</span>
-                        ${annData.author ? `<br><span class="ann-author" style="font-size: 11px; opacity: 0.6;">Od: <strong>${annData.author}</strong></span>` : ""}
-                    </div>
-                    <button class="btn-delete">Smazat oznámení ✕</button>
+            div.innerHTML = `
+                <h3>${annData.title || "Bez nadpisu"}</h3>
+                <div class="announcement-meta" style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">
+                    ${dateString ? `<span>📅 ${dateString}</span>` : ""}
+                    ${annData.author ? `<span style="margin-left: 12px;">✍️ Publikoval: <strong>${annData.author}</strong></span>` : ""}
                 </div>
-                <p class="ann-text">${annData.text || ""}</p>
-                
-                <div class="stats-grid">
-                    <div class="stats-col col-green">
-                        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
-                        <ul class="stats-list" id="yes-${annId}"></ul>
-                    </div>
-                    <div class="stats-col col-red">
-                        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
-                        <ul class="stats-list" id="no-${annId}"></ul>
-                    </div>
-                </div>
+                <p>${annData.text || ""}</p>
+                <div class="announcement-footer"></div>
             `;
 
-            const ulYes = annBlock.querySelector(`#yes-${annId}`);
-            if (confirmedPeople.length === 0) {
-                if (ulYes) ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`;
+            const footer = div.querySelector(".announcement-footer");
+
+            if (isConfirmed) {
+                footer.innerHTML = `<span class="confirmed-badge">✓ Přečteno a potvrzeno</span>`;
             } else {
-                confirmedPeople.forEach(p => {
-                    if (ulYes) ulYes.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
+                const btn = document.createElement("button");
+                btn.className = "confirm-btn";
+                btn.innerText = "Potvrdit přečtení";
+                
+                btn.addEventListener("click", async () => {
+                    if (!userEmail) {
+                        alert("Chyba: Systém tě nerozpoznal. Zkus se přihlásit znovu.");
+                        return;
+                    }
+                    try {
+                        await updateDoc(doc(db, "announcements", annId), {
+                            confirmedBy: arrayUnion(userEmail)
+                        });
+                        await loadAnnouncements();
+                    } catch (err) {
+                        console.error(err);
+                        alert("Nepodařilo se potvrdit: " + err.message);
+                    }
                 });
+                footer.appendChild(btn);
             }
 
-            const ulNo = annBlock.querySelector(`#no-${annId}`);
-            if (missingPeople.length === 0) {
-                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni z cílové skupiny splnili povinnost!</li>`;
-            } else {
-                missingPeople.forEach(p => {
-                    if (ulNo) ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
-                });
-            }
-
-            annBlock.querySelector(".btn-delete").addEventListener("click", async () => {
-                if (confirm(`Opravdu chceš smazat oznámení "${annData.title}" z hlavní stránky?`)) {
-                    await deleteDoc(doc(db, "announcements", annId));
-                    await loadSystem(); 
-                }
-            });
-
-            listContainer.appendChild(annBlock);
+            listContainer.appendChild(div);
         });
 
+        if (count === 0) {
+            listContainer.innerHTML = `<p style="opacity: 0.5; padding: 10px; margin:0;">Momentálně nejsou publikována žádná oznámení pro tvůj rank.</p>`;
+        }
+
     } catch (error) {
-        console.error("Chyba při načítání správy oznámení:", error);
+        console.error("Chyba při načítání oznámení:", error);
+        listContainer.innerHTML = `<p style="color: #ff4d4d; padding: 10px; margin:0;">Chyba při stahování oznámení.</p>`;
     }
 }
-
-document.getElementById("announcementForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const title = document.getElementById("annTitle").value.trim();
-    const text = document.getElementById("annText").value.trim();
-
-    const selectedRanks = [];
-    document.querySelectorAll(".rank-checkbox:checked").forEach(cb => {
-        selectedRanks.push(cb.value);
-    });
-
-    // 🚀 OPRAVA AUTORA: Pokud nemáš v localStorage username ani name, vezme se přihlašovací e-mail
-    const authorName = localStorage.getItem("username") || localStorage.getItem("name") || globalUserEmail || "Vedení firmy";
-    const authorRank = localStorage.getItem("rankName") || "";
-    const fullAuthor = authorRank ? `${authorName} (${authorRank})` : authorName;
-
-    const uniqueDocId = "ann_" + Date.now();
-
-    const newAnnouncement = {
-        title: title,
-        text: text,
-        createdAt: new Date(),
-        confirmedBy: [],
-        targetRanks: selectedRanks,
-        author: fullAuthor
-    };
-
-    try {
-        await setDoc(doc(db, "announcements", uniqueDocId), newAnnouncement);
-        alert("Oznámení bylo úspěšně publikováno!");
-        document.getElementById("announcementForm").reset();
-        await loadSystem(); 
-    } catch (err) {
-        alert("Chyba při publikování: " + err.message);
-    }
-});
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
