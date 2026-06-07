@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel | alces, a. s.</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0; font-family: 'Poppins', Arial, sans-serif;
+        background-image: url("fotky/home/gradient.png"), url("fotky/home/pozadi.png");
+        background-size: cover; background-position: center top; background-repeat: no-repeat;
+        min-height: 100vh; color: white;
+    }
+    .topbar {
+        height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+        background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+    .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+    .content { margin: 120px 40px 40px 40px; display: none; } /* Schované dokud se neověří mail */
+    
+    h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    
+    .layout-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start; }
+    @media (max-width: 900px) { .layout-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+        padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    }
+    .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+
+    /* Formulář */
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 14px; font-weight: 600; opacity: 0.9; }
+    input, select {
+        background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+        color: white; padding: 10px; font-family: 'Poppins', sans-serif; font-size: 14px;
+    }
+    input:focus, select:focus { outline: none; border-color: #ffd84d; }
+    input:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); cursor: not-allowed; }
+
+    button {
+        font-family: 'Poppins', sans-serif; font-weight: 600; padding: 10px 20px;
+        border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px;
+    }
+    .btn-add { background: #ffd84d; color: black; width: 100%; margin-top: 10px; }
+    .btn-add:hover { background: #e6c240; }
+    .btn-cancel { background: rgba(255,255,255,0.1); color: white; width: 100%; margin-top: 5px; }
+
+    /* Tabulka a seznam uživatelů */
+    .user-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .user-table th, .user-table td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .user-table th { color: #ffd84d; font-weight: 600; font-size: 14px; }
+    .user-table tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .actions { display: flex; gap: 8px; }
+    .btn-edit { background: rgba(0, 184, 80, 0.2); color: #00ff66; border: 1px solid rgba(0, 184, 80, 0.4); padding: 5px 12px; font-size: 12px; }
+    .btn-edit:hover { background: rgba(0, 184, 80, 0.4); }
+    .btn-delete { background: rgba(212, 0, 0, 0.2); color: #ff4d4d; border: 1px solid rgba(212, 0, 0, 0.4); padding: 5px 12px; font-size: 12px; }
+    .btn-delete:hover { background: rgba(212, 0, 0, 0.4); }
+
+    #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div style="font-weight:700; font-size:18px;">alces, a. s. — Interní Databáze</div>
+    <div>
+        <a href="home.html">Domů</a>
+        <a href="mentori.html">Mentoři</a>
+    </div>
+</div>
+
+<div id="error-screen">Přístup odepřen. Tento panel může zobrazit pouze majitel.</div>
+
+<div class="content" id="mainContent">
+    <h1>Správa firemních účtů (Uživatelů)</h1>
+    
+    <div class="layout-grid">
+        <div class="panel">
+            <h2 id="formTitle">Vytvořit nový účet</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label>E-mail uživatele (Slouží jako login ID)</label>
+                    <input type="email" id="userEmail" required placeholder="např. ridic@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Celé Jméno / Nickname</label>
+                    <input type="text" id="userName" required placeholder="např. Adam K.">
+                </div>
+                <div class="form-group">
+                    <label>Systémový Rank (Kód hodnosti)</label>
+                    <select id="userRank" required>
+                        <option value="zkusebni-ridic" selected>zkusebni-ridic</option>
+                        <option value="ridic">ridic</option>
+                        <option value="zasloužily-ridic">zasloužily-ridic</option>
+                        <option value="team-manager">team-manager</option>
+                        <option value="dispecer">dispecer</option>
+                        <option value="provozni-reditel">provozni-reditel</option>
+                        <option value="management">management</option>
+                        <option value="majitel">majitel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Zobrazovaný Rank (rankName)</label>
+                    <input type="text" id="userRankName" required placeholder="např. Řidič - zkušební doba">
+                </div>
+                <div class="form-group">
+                    <label>Přidělený Mentor (mentorId)</label>
+                    <select id="userMentor">
+                        <option value="">-- Bez mentora --</option>
+                        <option value="7002">Vašík (7002)</option>
+                        <option value="7067">Horry (7067)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-add" id="submitBtn">Vytvořit uživatele</button>
+                <button type="button" class="btn-cancel" id="cancelBtn" style="display: none;">Zrušit úpravu</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Seznam všech registrovaných uživatelů</h2>
+            <div style="overflow-x: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Jméno</th>
+                            <th>E-mail</th>
+                            <th>Hodnost</th>
+                            <th>Mentor ID</th>
+                            <th>Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="5" style="opacity: 0.5;">Načítám uživatele z Firebase...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let isEditing = false;
+
+// Automatické doplňování rankName podle vybraného ranku pro zjednodušení práce
+const rankNameMapping = {
+    "zkusebni-ridic": "Řidič - zkušební doba",
+    "ridic": "Řidič",
+    "zasloužily-ridic": "Zasloužilý řidič",
+    "team-manager": "Team Manager",
+    "dispecer": "Dispečer",
+    "provozni-reditel": "Provozní ředitel",
+    "management": "Management",
+    "majitel": "Majitel"
+};
+document.getElementById("userRank").addEventListener("change", (e) => {
+    if(!isEditing) {
+        document.getElementById("userRankName").value = rankNameMapping[e.target.value] || "";
+    }
+});
+
+// Zabezpečení a kontrola identity majitele
+onAuthStateChanged(auth, async (user) => {
+    const email = user ? user.email : localStorage.getItem("userEmail");
+    
+    if (email === "ytkapr@gmail.com") {
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"]; // Výchozí
+        await loadAllUsers();
+    } else {
+        document.getElementById("error-screen").style.display = "block";
+    }
+});
+
+// Funkce pro načtení všech uživatelů do tabulky
+async function loadAllUsers() {
+    const tbody = document.getElementById("userTableBody");
+    tbody.innerHTML = "";
+    
+    try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        querySnapshot.forEach((userDoc) => {
+            const data = userDoc.data();
+            const uEmail = userDoc.id;
+            const uName = data.name || data.username || "Bez jména";
+            const uRank = data.rank || "Není";
+            const uMentor = data.mentorId ? data.mentorId : "—";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="font-weight:600;">${uName}</td>
+                <td style="opacity:0.7; font-size:13px;">${uEmail}</td>
+                <td><span style="font-size:13px; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:6px;">${uRank}</span></td>
+                <td style="color:#ffd84d; font-weight:600;">${uMentor}</td>
+                <td class="actions"></td>
+            `;
+
+            const tdActions = tr.querySelector(".actions");
+
+            // Tlačítko upravit
+            const btnEdit = document.createElement("button");
+            btnEdit.className = "btn-edit";
+            btnEdit.innerText = "Upravit";
+            btnEdit.addEventListener("click", () => startEdit(uEmail, data));
+
+            // Tlačítko smazat
+            const btnDelete = document.createElement("button");
+            btnDelete.className = "btn-delete";
+            btnDelete.innerText = "Smazat";
+            btnDelete.addEventListener("click", async () => {
+                if(confirm(`Opravdu chceš úplně SMAZAT uživatele ${uName}?`)) {
+                    await deleteDoc(doc(db, "users", uEmail));
+                    loadAllUsers();
+                }
+            });
+
+            tdActions.appendChild(btnEdit);
+            tdActions.appendChild(btnDelete);
+            tbody.appendChild(tr);
+        });
+    } catch(e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#ff4d4d;">Chyba načítání: ${e.message}</td></tr>`;
+    }
+}
+
+// Spuštění režimu úpravy
+function startEdit(email, data) {
+    isEditing = true;
+    document.getElementById("formTitle").innerText = "Upravit uživatele";
+    document.getElementById("submitBtn").innerText = "Uložit změny";
+    document.getElementById("cancelBtn").style.display = "block";
+    
+    // Vyplníme pole daty z vybraného řádku
+    const emailField = document.getElementById("userEmail");
+    emailField.value = email;
+    emailField.disabled = true; // Při úpravě nelze měnit e-mail (ID dokumentu)
+
+    document.getElementById("userName").value = data.name || data.username || "";
+    document.getElementById("userRank").value = data.rank || "zkusebni-ridic";
+    document.getElementById("userRankName").value = data.rankName || "";
+    document.getElementById("userMentor").value = data.mentorId || "";
+}
+
+// Zrušení režimu úpravy
+document.getElementById("cancelBtn").addEventListener("click", resetForm);
+
+function resetForm() {
+    isEditing = false;
+    document.getElementById("formTitle").innerText = "Vytvořit nový účet";
+    document.getElementById("submitBtn").innerText = "Vytvořit uživatele";
+    document.getElementById("cancelBtn").style.display = "none";
+    
+    const emailField = document.getElementById("userEmail");
+    emailField.value = "";
+    emailField.disabled = false;
+    
+    document.getElementById("userForm").reset();
+    document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
+}
+
+// Odeslání formuláře (Zápis / Aktualizace do Firebase)
+document.getElementById("userForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById("userEmail").value.trim();
+    const name = document.getElementById("userName").value.trim();
+    const rank = document.getElementById("userRank").value;
+    const rankName = document.getElementById("userRankName").value.trim();
+    const mentorId = document.getElementById("userMentor").value;
+
+    // Sestavení objektu pro Firebase (ukládáme name i username kvůli kompatibilitě)
+    const userObject = {
+        name: name,
+        username: name,
+        rank: rank,
+        rankName: rankName,
+        mentorId: mentorId
+    };
+
+    try {
+        // Použijeme setDoc – pokud dokument neexistuje, vytvoří se. Pokud existuje, přepíše se novými daty.
+        await setDoc(doc(db, "users", email), userObject, { merge: true });
+        
+        alert(isEditing ? "Uživatel byl úspěšně upraven!" : "Nový uživatel byl úspěšně vytvořen!");
+        resetForm();
+        await loadAllUsers();
+    } catch(err) {
+        alert("Chyba při zápisu: " + err.message);
+    }
+});
+</script>
+</body>
+</html>
