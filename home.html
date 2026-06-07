@@ -407,6 +407,11 @@
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     color: white;
+    
+    /* TADY JE TA ZMĚNA PRO STATICKÝ BOX SE SCROLLOVÁNÍM */
+    max-height: 400px;      /* Box bude vysoký maximálně 400px */
+    overflow-y: auto;       /* Pokud bude oznámení víc, uvnitř boxu se objeví scrollbar */
+    box-sizing: border-box; /* Aby padding nerozbil šířku */
 }
 
 .announcements-title {
@@ -1170,12 +1175,16 @@ const auth = getAuth(app);
 
 // Získáme e-mail aktuálně přihlášeného uživatele (kterým se zapsal do localStorage při loginu)
 // Pokud ho tam neukládáš, doporučuji při úspěšném přihlášení do localStorage přidat: localStorage.setItem("userEmail", email);
-const userEmail = localStorage.getItem("userEmail") || ""; 
+let userEmail = "";
 const mentorId = localStorage.getItem("mentorId");
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("Firebase Auth: Uživatel je bezpečně ověřen.");
+        
+        // TADY JE TA OPRAVA: Vytáhneme email přímo z ověřeného Firebase účtu
+        userEmail = user.email; 
+        
         await loadMentor();
         await loadAnnouncements();
     } else {
