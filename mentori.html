@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Správa mentorů | alces, a. s.</title>
+<title>Mentoři | alces, a. s.</title>
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +35,7 @@
     h1 { font-size: 36px; font-weight: 700; text-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 5px; }
     .role-badge { display: inline-block; padding: 5px 15px; background: gold; color: black; border-radius: 999px; font-weight: 600; font-size: 14px; margin-bottom: 30px; }
 
-    /* NOVÝ TŘÍSLOUPCOVÝ GRID: Prostřední sloupec pro TVÉ lidi je největší (2 díly ze 4) */
+    /* Třísloupcový grid */
     .grid-container { 
         display: grid; 
         grid-template-columns: 1.2fr 2fr 1.3fr; 
@@ -45,11 +45,11 @@
     
     @media (max-width: 1100px) { 
         .grid-container { grid-template-columns: 1fr 1.5fr; } 
-        #messageSection { grid-column: span 2; }
+        .right-sidebar { grid-column: span 2; }
     }
     @media (max-width: 800px) { 
         .grid-container { grid-template-columns: 1fr; } 
-        #messageSection { grid-column: span 1; }
+        .right-sidebar { grid-column: span 1; }
     }
 
     /* Stylové boxy (Glassmorphism) */
@@ -60,11 +60,13 @@
     }
     .panel h2 { margin-top: 0; font-size: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; color: #ffd84d; }
 
-    /* Vlajková loď - panel pro tvé řidiče */
     .panel-primary {
         background: rgba(255,255,255,0.1);
         border: 1px solid rgba(255,255,255,0.22);
     }
+
+    /* Vnitřní větvení pravého sloupce pro admina */
+    .right-sidebar { display: flex; flex-direction: column; gap: 24px; }
 
     /* Seznamy a větší kartičky řidičů */
     .user-list { list-style: none; padding: 0; margin: 0; }
@@ -75,7 +77,7 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     .user-info { display: flex; flex-direction: column; gap: 2px; }
-    .user-name { font-weight: 700; font-size: 18px; color: #fff; } /* Větší jméno */
+    .user-name { font-weight: 700; font-size: 18px; color: #fff; }
     .user-email { font-size: 13px; opacity: 0.6; }
     .mentor-status { font-size: 13px; color: #ffd84d; font-weight: 600; margin-top: 4px; }
 
@@ -94,10 +96,10 @@
     .msg-form { display: flex; flex-direction: column; gap: 12px; }
     textarea {
         background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px;
-        color: white; padding: 14px; font-family: 'Poppins', sans-serif; resize: vertical; min-height: 140px; font-size: 14px;
+        color: white; padding: 14px; font-family: 'Poppins', sans-serif; resize: vertical; min-height: 100px; font-size: 14px;
     }
     textarea:focus { outline: none; border-color: #ffd84d; }
-    .btn-save { background: #ffd84d; color: black; align-self: stretch; padding: 12px; border-radius: 14px; }
+    .btn-save { background: #ffd84d; color: black; align-self: stretch; padding: 10px; border-radius: 12px; }
     .btn-save:hover { background: #e6c240; }
 
     /* Select pro majitele */
@@ -106,7 +108,7 @@
         padding: 8px 12px; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 14px; cursor: pointer;
     }
 
-        .logo {
+    .logo {
     display: flex;
     align-items: center;
     }
@@ -144,18 +146,28 @@
             </ul>
         </div>
 
-        <div class="panel panel-primary" id="rightPanel">
-            <h2>Moji svěření nováčci</h2>
+        <div class="panel panel-primary">
+            <h2 id="middlePanelTitle">Moji svěření nováčci</h2>
             <ul class="user-list" id="myStudentsList">
-                <p style="opacity:0.5">Zatím nemáš přiřazené žádné řidiče.</p>
+                <p style="opacity:0.5">Zatím žádná data.</p>
             </ul>
         </div>
 
-        <div class="panel" id="messageSection" style="display:none;">
-            <h2>Uvítací zpráva</h2>
-            <div class="msg-form">
-                <textarea id="mentorMessageText" placeholder="Zde napiš uvítací zprávu, kterou nováček uvidí v bublině na hlavní stránce..."></textarea>
-                <button class="btn-save" id="saveMsgBtn">Uložit zprávu</button>
+        <div class="right-sidebar">
+            <div class="panel" id="panelVasikMsg" style="display:none;">
+                <h2>Bublina: Vašek K. (7002)</h2>
+                <div class="msg-form">
+                    <textarea id="msgVasikText" placeholder="Zpráva pro Vaškovu bublinu..."></textarea>
+                    <button class="btn-save" id="saveVasikBtn">Uložit</button>
+                </div>
+            </div>
+
+            <div class="panel" id="panelHorryMsg" style="display:none;">
+                <h2>Bublina: Jan H. (7067)</h2>
+                <div class="msg-form">
+                    <textarea id="msgHorryText" placeholder="Zpráva pro Honzovu bublinu..."></textarea>
+                    <button class="btn-save" id="saveHorryBtn">Uložit</button>
+                </div>
             </div>
         </div>
     </div>
@@ -180,42 +192,49 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let currentUserEmail = "";
-let currentMentorId = ""; // "7002" pro Vaška, "7067" pro Honzu
+let currentMentorId = ""; 
 let isOwner = false;
 
-// Spuštění po ověření přihlášení přes Firebase
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUserEmail = user.email;
         setupPermissions();
         await loadData();
     } else {
-        // Fallback na localStorage, pokud nepoužíváš Firebase Auth na login, ale jen data
-        currentUserEmail = localStorage.getItem("userEmail") || "vasik.kovyt.stream@gmail.com"; // Testovací fallback
+        currentUserEmail = localStorage.getItem("userEmail") || "ytkapr@gmail.com"; // Testovací fallback (majitel)
         setupPermissions();
         await loadData();
     }
 });
 
-function setupPermissions() {
+async function setupPermissions() {
     if (currentUserEmail === "ytkapr@gmail.com") {
         isOwner = true;
-        document.getElementById("welcomeTitle").innerText = "Administrace Mentorů";
-        document.getElementById("roleBadge").innerText = "Majitel";
+        document.getElementById("welcomeTitle").innerText = "Ústřední správa mentorů";
+        document.getElementById("roleBadge").innerText = "Administrátor (ID 7001)";
         document.getElementById("roleBadge").style.background = "#ff3333";
         document.getElementById("roleBadge").style.color = "white";
+        document.getElementById("middlePanelTitle").innerText = "Kompletní přehled přidělených nováčků";
+        
+        // Majitel vidí a spravuje oba mentory najednou
+        document.getElementById("panelVasikMsg").style.display = "block";
+        document.getElementById("panelHorryMsg").style.display = "block";
+        loadMentorMessage("7002", "msgVasikText");
+        loadMentorMessage("7067", "msgHorryText");
     } else if (currentUserEmail === "vasik.kovyt.stream@gmail.com") {
         currentMentorId = "7002";
-        document.getElementById("welcomeTitle").innerText = "Panel mentora - Vašek K.";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora";
         document.getElementById("roleBadge").innerText = "Mentor (ID 7002)";
-        document.getElementById("messageSection").style.display = "block";
-        loadMentorMessage();
+        document.getElementById("middlePanelTitle").innerText = "Moji svěření nováčci";
+        document.getElementById("panelVasikMsg").style.display = "block";
+        loadMentorMessage("7002", "msgVasikText");
     } else if (currentUserEmail === "horry.sheron@gmail.com") {
         currentMentorId = "7067";
-        document.getElementById("welcomeTitle").innerText = "Panel mentora - Jan H.";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora";
         document.getElementById("roleBadge").innerText = "Mentor (ID 7067)";
-        document.getElementById("messageSection").style.display = "block";
-        loadMentorMessage();
+        document.getElementById("middlePanelTitle").innerText = "Moji svěření nováčci";
+        document.getElementById("panelHorryMsg").style.display = "block";
+        loadMentorMessage("7067", "msgHorryText");
     } else {
         document.getElementById("welcomeTitle").innerText = "Přístup odepřen";
         document.getElementById("roleBadge").innerText = "Nemáš oprávnění mentora";
@@ -223,14 +242,15 @@ function setupPermissions() {
     }
 }
 
-async function loadMentorMessage() {
-    if(!currentMentorId) return;
-    const mentorSnap = await getDoc(doc(db, "mentors", currentMentorId));
+async function loadMentorMessage(mId, textareaId) {
+    const mentorSnap = await getDoc(doc(db, "mentors", mId));
     if(mentorSnap.exists()) {
-        document.getElementById("mentorMessageText").value = mentorSnap.data().message || "";
+        document.getElementById(textareaId).value = mentorSnap.data().message || "";
     }
 }
 
+// Hlavní načítání dat z Firebase
+// Hlavní načítání dat z Firebase
 async function loadData() {
     const unassignedList = document.getElementById("unassignedList");
     const myStudentsList = document.getElementById("myStudentsList");
@@ -238,30 +258,27 @@ async function loadData() {
     unassignedList.innerHTML = "";
     myStudentsList.innerHTML = "";
 
-    let hasStudents = false;
-    let hasUnassigned = false;
+    let hasAssignedAny = false;
+    let hasUnassignedAny = false;
 
     try {
+        // TADY JE TA OPRAVA: Vždy při volání loadData() si stáhneme úplně nová, aktuální data
         const querySnapshot = await getDocs(collection(db, "users"));
         
         querySnapshot.forEach((userDoc) => {
             const userData = userDoc.data();
-            const userDocId = userDoc.id; // E-mail dokumentu
+            const userDocId = userDoc.id; 
 
-            // Filtrujeme pouze lidi s hodností zkušební řidič
             if (userData.rank === "zkusebni-ridic") {
                 const mentorId = userData.mentorId ? String(userData.mentorId).trim() : "";
-
-                // OPRAVA JMÉNA: Zkusí vzít 'name', pokud neexistuje, zkusí 'username'
                 const zobrazenoJmeno = userData.name || userData.username || "Bez Jména";
 
-                // Vytvoření HTML prvku řidiče
                 const li = document.createElement("li");
                 li.className = "user-item";
                 
-                let mentorStatusText = mentorId ? `Přidělen mentorovi ID: ${mentorId}` : "Volný nováček";
-                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašek K. (7002)";
-                if(mentorId === "7067") mentorStatusText = "Svěřen: Jan H. (7067)";
+                let mentorStatusText = "Volný nováček";
+                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašík (7002)";
+                if(mentorId === "7067") mentorStatusText = "Svěřen: Horry (7067)";
 
                 li.innerHTML = `
                     <div class="user-info">
@@ -274,30 +291,36 @@ async function loadData() {
                 const btnContainer = document.createElement("div");
 
                 if (isOwner) {
-                    // ROZHRANÍ PRO MAJITELE
+                    // CO VIDÍ MAJITEL U KAŽDÉHO ČLOVĚKA:
                     const select = document.createElement("select");
                     select.className = "owner-select";
                     select.innerHTML = `
                         <option value="" ${mentorId === "" ? "selected" : ""}>-- Bez mentora --</option>
-                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašek K. (7002)</option>
-                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Jan H. (7067)</option>
+                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašík (7002)</option>
+                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Horry (7067)</option>
                     `;
                     
-                    // OPRAVA REFRESHU: Přidán await před updateDoc, aby se počkalo na zápis do DB
                     select.addEventListener("change", async () => {
+                        // 1. Zápis do Firebase
                         await updateDoc(doc(db, "users", userDocId), { mentorId: select.value });
-                        await loadData(); // Načte a překreslí data až PO úspěšném zápisu
+                        // 2. Okamžité znovunačtení čerstvých dat, které lidi správně přesune
+                        await loadData(); 
                     });
-                    
                     btnContainer.appendChild(select);
-                    unassignedList.appendChild(li);
                     li.appendChild(btnContainer);
-                    hasUnassigned = true;
+
+                    // ROZDĚLENÍ SEZNAMŮ PRO MAJITELE: 
+                    if (!mentorId) {
+                        unassignedList.appendChild(li);
+                        hasUnassignedAny = true;
+                    } else {
+                        myStudentsList.appendChild(li);
+                        hasAssignedAny = true;
+                    }
 
                 } else {
-                    // ROZHRANÍ PRO MENTORY
+                    // CO VIDÍ MENTORI (Vašík / Horry)
                     if (!mentorId) {
-                        // Nováček je volný
                         const btn = document.createElement("button");
                         btn.className = "btn-claim";
                         btn.innerText = "Zabrat nováčka";
@@ -308,9 +331,8 @@ async function loadData() {
                         btnContainer.appendChild(btn);
                         li.appendChild(btnContainer);
                         unassignedList.appendChild(li);
-                        hasUnassigned = true;
+                        hasUnassignedAny = true;
                     } else if (mentorId === currentMentorId) {
-                        // Nováček patří aktuálnímu přihlášenému mentorovi
                         const btn = document.createElement("button");
                         btn.className = "btn-release";
                         btn.innerText = "Uvolnit";
@@ -321,42 +343,44 @@ async function loadData() {
                         btnContainer.appendChild(btn);
                         li.appendChild(btnContainer);
                         myStudentsList.appendChild(li);
-                        hasStudents = true;
+                        hasAssignedAny = true;
                     } else {
-                        // Nováčka už zabral ten druhý mentor
                         const btn = document.createElement("button");
                         btn.className = "btn-disabled";
-                        btn.innerText = "Již zabráno";
+                        btn.innerText = "Zabráno jiným";
                         btn.disabled = true;
                         btnContainer.appendChild(btn);
                         li.appendChild(btnContainer);
                         unassignedList.appendChild(li);
-                        hasUnassigned = true;
+                        hasUnassignedAny = true;
                     }
                 }
             }
         });
 
-        if (!hasUnassigned) unassignedList.innerHTML = `<p style="opacity:0.5">Žádní volní zkušební řidiči na skladě.</p>`;
-        if (!hasStudents && !isOwner) myStudentsList.innerHTML = `<p style="opacity:0.5">Zatím nemáš pod křídly žádného řidiče.</p>`;
-        if (isOwner) document.getElementById("rightPanel").innerHTML = "<h2>Přehled Administrátora</h2><p>Jako majitel vidíš kompletní seznam v levém okně a můžeš lidi mentorům libovolně přehazovat pomocí rozbalovacího menu.</p>";
+        if (!hasUnassignedAny) unassignedList.innerHTML = `<p style="opacity:0.5; padding: 10px;">Žádní volní zkušební řidiči.</p>`;
+        if (!hasAssignedAny) myStudentsList.innerHTML = `<p style="opacity:0.5; padding: 10px;">Žádní přidělení řidiči v přehledu.</p>`;
 
     } catch (error) {
-        console.error("Chyba načítání:", error);
+        console.error("Chyba načítání dat:", error);
     }
 }
 
-// Uložení nové message mentora do Firebase
-document.getElementById("saveMsgBtn").addEventListener("click", async () => {
-    const text = document.getElementById("mentorMessageText").value;
-    if (currentMentorId) {
-        try {
-            await updateDoc(doc(db, "mentors", currentMentorId), { message: text });
-            alert("Uvítací bublina byla úspěšně upravena!");
-        } catch (error) {
-            alert("Chyba při ukládání: " + error.message);
-        }
-    }
+// AKCE UKLÁDÁNÍ PRO TEXTY BUBILN
+document.getElementById("saveVasikBtn").addEventListener("click", async () => {
+    const text = document.getElementById("msgVasikText").value;
+    try {
+        await updateDoc(doc(db, "mentors", "7002"), { message: text });
+        alert("Zpráva pro Vaška (7002) byla úspěšně změněna!");
+    } catch (e) { alert("Chyba: " + e.message); }
+});
+
+document.getElementById("saveHorryBtn").addEventListener("click", async () => {
+    const text = document.getElementById("msgHorryText").value;
+    try {
+        await updateDoc(doc(db, "mentors", "7067"), { message: text });
+        alert("Zpráva pro Honzu (7067) byla úspěšně změněna!");
+    } catch (e) { alert("Chyba: " + e.message); }
 });
 </script>
 </body>
