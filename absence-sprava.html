@@ -119,7 +119,6 @@ const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "managemen
 onAuthStateChanged(auth, async (user) => {
     const userRank = localStorage.getItem("rank") || "";
     
-    // Kontrola oprávnění vstupu
     if (allowedRanks.includes(userRank)) {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("error-screen").style.display = "none";
@@ -131,7 +130,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Načtení úplně všech absencí pro vedení
 async function loadAllAbsences() {
     const tbody = document.getElementById("adminAbsenceList");
     if (!tbody) return;
@@ -145,7 +143,6 @@ async function loadAllAbsences() {
             absencesArray.push({ id: d.id, data: d.data() });
         });
 
-        // Seřadit od nejnověji podaných žádostí
         absencesArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
 
         if (absencesArray.length === 0) {
@@ -157,21 +154,18 @@ async function loadAllAbsences() {
             const reqId = item.id;
             const reqData = item.data;
 
-            // Formátování badge stavu
             let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
             if (reqData.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
             if (reqData.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
 
-            /// NOVÉ: Přidáme textarea pro vzkaz, pokud žádost teprve čeká
             let actionButtons = "";
             if (reqData.status === "ceka") {
                 actionButtons = `
-                    <input type="text" id="note-${reqId}" placeholder="Vzkaz řidiči (nepovinné)..." style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; padding: 5px; font-size: 11px; margin-bottom: 5px; display: block; width: 150px;">
+                    <input type="text" id="note-${reqId}" placeholder="Vzkaz řidiči (nepovinné)..." style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; padding: 5px; font-size: 11px; margin-bottom: 5px; display: block; width: 150px; font-family: sans-serif;">
                     <button class="btn-approve" data-id="${reqId}">Schválit ✓</button>
                     <button class="btn-reject" data-id="${reqId}">Zamítnout ✕</button>
                 `;
             } else {
-                // Pokud už je vyřízeno, ukážeme, co se řidiči poslalo
                 actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>${reqData.adminNote ? `<br><span style="font-size:11px; color:#ffd84d;">Vzkaz: ${reqData.adminNote}</span>` : ""}`;
             }
 
@@ -208,28 +202,14 @@ async function loadAllAbsences() {
     }
 }
 
-// Funkce, která změní stav dokumentu ve Firebase a přidá poznámku
+// 🚀 JEDINÁ OPRAVENÁ FUNKCE (Duplicitní čistě smazána)
 async function updateRequestStatus(docId, newStatus, note) {
     try {
         const docRef = doc(db, "absences", docId);
         await updateDoc(docRef, {
             status: newStatus,
-            adminNote: note || "" // 🚀 NOVÉ: Uloží vzkaz od vedení
+            adminNote: note || "" 
         });
-        await loadAllAbsences();
-    } catch (err) {
-        alert("Chyba při aktualizaci stavu: " + err.message);
-    }
-}
-
-// Funkce, která změní stav dokumentu ve Firebase
-async function updateRequestStatus(docId, newStatus) {
-    try {
-        const docRef = doc(db, "absences", docId);
-        await updateDoc(docRef, {
-            status: newStatus
-        });
-        // Bleskové překreslení tabulky bez nutnosti obnovovat celou stránku
         await loadAllAbsences();
     } catch (err) {
         alert("Chyba při aktualizaci stavu: " + err.message);
