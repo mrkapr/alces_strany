@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Správa Absencí | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0; font-family: 'Poppins', Arial, sans-serif;
+            background: #121212;
+            min-height: 100vh; color: white;
+        }
+        
+        /* Horní lišta */
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+        }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar a:hover { color: #ffd84d; }
+
+        /* Hlavní kontejner s obsahem */
+        .content { margin: 120px 40px 40px 40px; display: none; }
+        #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
+        
+        h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+
+        /* Skleněný panel */
+        .panel {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+            padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 20px; }
+
+        /* Stylování admin tabulky */
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .admin-table th { padding: 12px 8px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .admin-table td { padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+        .admin-table tr:last-child td { border-bottom: none; }
+
+        /* Tlačítka akcí */
+        button {
+            font-family: 'Poppins', sans-serif; font-weight: 600; padding: 6px 12px;
+            border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; font-size: 12px;
+        }
+        .btn-approve { background: #00b84f; color: white; margin-right: 5px; }
+        .btn-approve:hover { background: #00963f; transform: scale(1.03); }
+        
+        .btn-reject { background: #d40000; color: white; }
+        .btn-reject:hover { background: #a80000; transform: scale(1.03); }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div style="font-weight:700; font-size:18px;">alces, a. s. — Schvalování absencí</div>
+    <div>
+        <a href="home.html">Domů</a>
+        <a href="oznameni-sprava.html">Správa oznámení</a>
+        <a href="absence.html">Zpět na Žádosti</a>
+    </div>
+</div>
+
+<div id="error-screen">Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy.</div>
+
+<div class="content" id="mainContent">
+    <h1>Přehled a schvalování žádostí o volno</h1>
+    
+    <div class="panel">
+        <h2>Čekající a vyřízené žádosti zaměstnanců</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Jméno řidiče</th>
+                    <th>Typ</th>
+                    <th>Termín absence</th>
+                    <th>Důvod / Poznámka</th>
+                    <th>Stav žádosti</th>
+                    <th style="text-align: right;">Akce</th>
+                </tr>
+            </thead>
+            <tbody id="adminAbsenceList">
+                <tr>
+                    <td colspan="6" style="opacity: 0.5; padding: 20px; text-align: center;">Načítám veškeré žádosti z databáze...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+
+onAuthStateChanged(auth, async (user) => {
+    const userRank = localStorage.getItem("rank") || "";
+    
+    // Kontrola oprávnění vstupu
+    if (allowedRanks.includes(userRank)) {
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("error-screen").style.display = "none";
+        await loadAllAbsences();
+    } else {
+        document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy (Team Manager a vyšší).";
+        document.getElementById("error-screen").style.display = "block";
+        document.getElementById("mainContent").style.display = "none";
+    }
+});
+
+// Načtení úplně všech absencí pro vedení
+async function loadAllAbsences() {
+    const tbody = document.getElementById("adminAbsenceList");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "absences"));
+        const absencesArray = [];
+        
+        querySnapshot.forEach(d => {
+            absencesArray.push({ id: d.id, data: d.data() });
+        });
+
+        // Seřadit od nejnověji podaných žádostí
+        absencesArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        if (absencesArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="opacity: 0.5; padding: 25px; text-align: center;">Žádný řidič zatím nepodal žádost o volno.</td></tr>`;
+            return;
+        }
+
+        absencesArray.forEach((item) => {
+            const reqId = item.id;
+            const reqData = item.data;
+
+            // Formátování badge stavu
+            let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
+            if (reqData.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
+            if (reqData.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
+
+            // Pokud je vyřízeno, skryjeme tlačítka pro schválení
+            let actionButtons = "";
+            if (reqData.status === "ceka") {
+                actionButtons = `
+                    <button class="btn-approve" data-id="${reqId}">Schválit ✓</button>
+                    <button class="btn-reject" data-id="${reqId}">Zamítnout ✕</button>
+                `;
+            } else {
+                actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>`;
+            }
+
+            const dFrom = new Date(reqData.from).toLocaleDateString("cs-CZ");
+            const dTo = new Date(reqData.to).toLocaleDateString("cs-CZ");
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><strong>${reqData.userName || "Neznámý řidič"}</strong><br><span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span></td>
+                <td style="font-weight: 600;">${reqData.type}</td>
+                <td>${dFrom} — ${dTo}</td>
+                <td style="opacity: 0.9; max-width: 250px; word-wrap: break-word;">${reqData.reason || "-"}</td>
+                <td>${statusBadge}</td>
+                <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
+            `;
+
+            // Navázání funkcí na tlačítka přímo v řádku
+            if (reqData.status === "ceka") {
+                row.querySelector(".btn-approve").addEventListener("click", () => updateRequestStatus(reqId, "schvaleno"));
+                row.querySelector(".btn-reject").addEventListener("click", () => updateRequestStatus(reqId, "zamitnuto"));
+            }
+
+            tbody.appendChild(row);
+        });
+
+    } catch (err) {
+        console.error("Chyba při stahování absencí pro admina:", err);
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#ff4d4d; padding:20px; text-align:center;">Chyba databáze při načítání dat.</td></tr>`;
+    }
+}
+
+// Funkce, která změní stav dokumentu ve Firebase
+async function updateRequestStatus(docId, newStatus) {
+    try {
+        const docRef = doc(db, "absences", docId);
+        await updateDoc(docRef, {
+            status: newStatus
+        });
+        // Bleskové překreslení tabulky bez nutnosti obnovovat celou stránku
+        await loadAllAbsences();
+    } catch (err) {
+        alert("Chyba při aktualizaci stavu: " + err.message);
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Žádost o absenci | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0; font-family: 'Poppins', Arial, sans-serif;
+            background: #121212;
+            min-height: 100vh; color: white;
+        }
+        
+        /* Horní lišta */
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+        }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar a:hover { color: #ffd84d; }
+
+        /* Hlavní kontejner s obsahem */
+        .content { margin: 120px 40px 40px 40px; }
+        
+        h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        
+        /* Rozvržení panelů vedle sebe */
+        .layout-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start; }
+        @media (max-width: 1000px) { .layout-grid { grid-template-columns: 1fr; } }
+
+        /* Skleněné panely */
+        .panel {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+            padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+
+        /* Formulářové prvky */
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 14px; font-weight: 600; opacity: 0.9; }
+        
+        input, select, textarea {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+            color: white; padding: 12px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box;
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+
+        /* Tlačítka */
+        button {
+            font-family: 'Poppins', sans-serif; font-weight: 600; padding: 12px 20px;
+            border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px;
+        }
+        .btn-add { background: #00b84f; color: white; width: 100%; margin-top: 10px; }
+        .btn-add:hover { background: #00963f; transform: scale(1.01); }
+
+        /* Stylování tabulky */
+        .absence-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .absence-table th { padding: 12px 8px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .absence-table td { padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .absence-table tr:last-child td { border-bottom: none; }
+        
+        /* Plovoucí tmavé menu z boku */
+        .sidebar-right {
+            position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
+            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 24px 16px; box-sizing: border-box;
+            z-index: 99999; transition: right 0.3s ease-in-out; box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+        .sidebar-right.open { right: 0; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99998; }
+        .sidebar-overlay.open { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div style="font-weight:700; font-size:18px;">alces, a. s. — Portál řidiče</div>
+    <div>
+        <a href="home.html">Domů</a>
+        <a href="mentori.html">Mentoři</a>
+        <a href="#" onclick="toggleSidebar(); return false;" id="menuToggleBtn" style="display: none; color: #ffd84d;">☰ Správa</a>
+    </div>
+</div>
+
+<div id="rightSidebar" class="sidebar-right">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+        <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ffd84d; font-weight: 700;">Správa firmy</span>
+        <button type="button" style="background:none; color:rgba(255,255,255,0.5); font-size:20px; padding:0;" onclick="toggleSidebar()">✕</button>
+    </div>
+    <a href="oznameni-sprava.html" style="display:block; color:white; text-decoration:none; padding:12px; border-radius:8px; margin-bottom:5px;">📢 Správa oznámení</a>
+    </div>
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="content">
+    <h1>Žádost o absenci / volno</h1>
+    
+    <div class="layout-grid">
+        <div class="panel">
+            <h2>Nová žádost</h2>
+            <form id="absenceForm">
+                <div class="form-group">
+                    <label>Typ absence</label>
+                    <select id="absenceType" required>
+                        <option value="Dovolená">🌴 Dovolená</option>
+                        <option value="Nemoc / Lékař">🤢 Nemoc / Lékař</option>
+                        <option value="Osobní / Volno">🏠 Osobní důvody</option>
+                        <option value="Škola / Zkoušky">📚 Škola</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Od data</label>
+                    <input type="date" id="absenceFrom" required>
+                </div>
+                <div class="form-group">
+                    <label>Do data (včetně)</label>
+                    <input type="date" id="absenceTo" required>
+                </div>
+                <div class="form-group">
+                    <label>Poznámka / Důvod</label>
+                    <textarea id="absenceReason" placeholder="Např. Dovolená v Chorvatsku, nebudu u PC..."></textarea>
+                </div>
+                <button type="submit" class="btn-add">Odeslat žádost ke schválení</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Moje odeslané žádosti</h2>
+            <table class="absence-table">
+                <thead>
+                    <tr>
+                        <th>Typ</th>
+                        <th>Termín</th>
+                        <th>Poznámka</th>
+                        <th>Stav žádosti</th>
+                    </tr>
+                </thead>
+                <tbody id="myAbsenceList">
+                    <tr>
+                        <td colspan="4" style="opacity: 0.5; padding: 20px; text-align: center;">Načítám tvé podané žádosti z databáze...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById("rightSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (sidebar && overlay) {
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("open");
+    }
+}
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let userEmail = "";
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        userEmail = user.email;
+        await loadMyAbsences();
+
+        // Kontrola ranku, jestli se má ukázat tlačítko pro vstup do správy
+        const allowedManagementRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+        const userRankForMenu = localStorage.getItem("rank") || "";
+        if (allowedManagementRanks.includes(userRankForMenu)) {
+            const toggleBtn = document.getElementById("menuToggleBtn");
+            if (toggleBtn) toggleBtn.style.display = "inline-block";
+        }
+    } else {
+        window.location.href = "login.html";
+    }
+});
+
+async function loadMyAbsences() {
+    const tbody = document.getElementById("myAbsenceList");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    try {
+        const q = query(collection(db, "absences"), where("userEmail", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+        let count = 0;
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            count++;
+
+            let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
+            if (data.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
+            if (data.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
+
+            const dFrom = new Date(data.from).toLocaleDateString("cs-CZ");
+            const dTo = new Date(data.to).toLocaleDateString("cs-CZ");
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 600;">${data.type}</td>
+                    <td>${dFrom} — ${dTo}</td>
+                    <td style="opacity: 0.8; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${data.reason || ''}">${data.reason || "-"}</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        });
+
+        if (count === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="opacity: 0.5; padding: 25px; text-align: center;">Zatím jsi nepodal žádnou žádost o volno.</td></tr>`;
+        }
+    } catch (err) {
+        console.error("Chyba při stahování absencí:", err);
+        tbody.innerHTML = `<tr><td colspan="4" style="color:#ff4d4d; padding:20px; text-align:center;">Nepodařilo se načíst tvé absence.</td></tr>`;
+    }
+}
+
+document.getElementById("absenceForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const type = document.getElementById("absenceType").value;
+    const from = document.getElementById("absenceFrom").value;
+    const to = document.getElementById("absenceTo").value;
+    const reason = document.getElementById("absenceReason").value.trim();
+    const userName = localStorage.getItem("username") || "Řidič";
+
+    const newRequest = {
+        userEmail: userEmail,
+        userName: userName,
+        type: type,
+        from: from,
+        to: to,
+        reason: reason,
+        status: "ceka",
+        createdAt: new Date()
+    };
+
+    try {
+        await addDoc(collection(db, "absences"), newRequest);
+        alert("Žádost byla úspěšně odeslána vedení firmy ke schválení!");
+        document.getElementById("absenceForm").reset();
+        await loadMyAbsences();
+    } catch (err) {
+        alert("Chyba při odesílání žádosti: " + err.message);
+    }
+});
+</script>
+</body>
+</html>
