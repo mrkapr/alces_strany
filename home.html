@@ -953,20 +953,16 @@
             <div class="mentor-card">
 
                 <div class="mentor-profile">
-                    <img src="profilovky/7001.jpg">
-                </div>
+    <img id="mentorAvatar">
+</div>
 
-                <div class="mentor-name">
-                    Karel P. M.
-                </div>
+<div class="mentor-name" id="mentorName"></div>
 
-                <div class="mentor-role">
-                    Hlavní mentor
-                </div>
+<div class="mentor-role" id="mentorRole"></div>
 
-                <div class="mentor-label">
-                    Přidělený mentor
-                </div>
+<div class="mentor-label">
+    Přidělený mentor
+</div>
 
             </div>
 
@@ -974,15 +970,9 @@
 
                 <div class="bubble-arrow"></div>
 
-                <div class="bubble-text">
-                    Ahoj! 👋<br><br>
-
-                    Vítej v alces, a. s.<br>
-                    Pokud budeš něco potřebovat,
-                    napiš mi na Discord.<br><br>
-
-                    @mrkapr
-                </div>
+<div class="bubble-text" id="mentorMessage">
+Načítám...
+</div>
 
                 <div class="bubble-sign">
                     alces
@@ -1014,6 +1004,7 @@
 const username = localStorage.getItem("username");
 const rank = localStorage.getItem("rank");
 const rankName = localStorage.getItem("rankName");
+const mentorId = localStorage.getItem("mentorId");
 
 if (!username || !rank || !rankName) {
     window.location.href = "login.html";
@@ -1134,6 +1125,57 @@ topbar.addEventListener("mousemove", (e) => {
 
 function toggleMobileMenu() {
     document.querySelector(".menu").classList.toggle("open");
+}
+</script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc
+}
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+if(mentorId){
+
+    const mentorSnap =
+    await getDoc(
+        doc(db,"mentors",mentorId)
+    );
+
+    const mentor =
+    mentorSnap.data();
+
+    document.getElementById(
+        "mentorName"
+    ).innerText = mentor.name;
+
+    document.getElementById(
+        "mentorRole"
+    ).innerText = mentor.role;
+
+    document.getElementById(
+        "mentorAvatar"
+    ).src = mentor.avatar;
+
+    document.getElementById(
+        "mentorMessage"
+    ).innerText = mentor.message;
 }
 
 </script>
