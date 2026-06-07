@@ -277,8 +277,8 @@ async function loadData() {
                 li.className = "user-item";
                 
                 let mentorStatusText = "Volný nováček";
-                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašík (7002)";
-                if(mentorId === "7067") mentorStatusText = "Svěřen: Horry (7067)";
+                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašek K. (7002)";
+                if(mentorId === "7067") mentorStatusText = "Svěřen: Jan H. (7067)";
 
                 li.innerHTML = `
                     <div class="user-info">
@@ -296,8 +296,8 @@ async function loadData() {
                     select.className = "owner-select";
                     select.innerHTML = `
                         <option value="" ${mentorId === "" ? "selected" : ""}>-- Bez mentora --</option>
-                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašík (7002)</option>
-                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Horry (7067)</option>
+                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašek K. (7002)</option>
+                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Jan H. (7067)</option>
                     `;
                     
                     select.addEventListener("change", async () => {
