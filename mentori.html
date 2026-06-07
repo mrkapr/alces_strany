@@ -102,7 +102,7 @@
 
     <div class="grid-container">
         <div class="panel">
-            <h2>Volní zkušební řidiči ke群 zabrání</h2>
+            <h2>Volní zkušební řidiči k zabrání</h2>
             <ul class="user-list" id="unassignedList">
                 <p style="opacity:0.5">Načítám nováčky...</p>
             </ul>
@@ -144,7 +144,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let currentUserEmail = "";
-let currentMentorId = ""; // "7002" pro Vašíka, "7067" pro Horryho
+let currentMentorId = ""; // "7002" pro Vaška, "7067" pro Honzu
 let isOwner = false;
 
 // Spuštění po ověření přihlášení přes Firebase
@@ -170,13 +170,13 @@ function setupPermissions() {
         document.getElementById("roleBadge").style.color = "white";
     } else if (currentUserEmail === "vasik.kovyt.stream@gmail.com") {
         currentMentorId = "7002";
-        document.getElementById("welcomeTitle").innerText = "Panel mentora — Vašík";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora — Vašek K.";
         document.getElementById("roleBadge").innerText = "Mentor (ID 7002)";
         document.getElementById("messageSection").style.display = "block";
         loadMentorMessage();
     } else if (currentUserEmail === "horry.sheron@gmail.com") {
         currentMentorId = "7067";
-        document.getElementById("welcomeTitle").innerText = "Panel mentora — Horry";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora — Jan H.";
         document.getElementById("roleBadge").innerText = "Mentor (ID 7067)";
         document.getElementById("messageSection").style.display = "block";
         loadMentorMessage();
@@ -222,8 +222,8 @@ async function loadData() {
                 li.className = "user-item";
                 
                 let mentorStatusText = mentorId ? `Přidělen mentorovi ID: ${mentorId}` : "Volný nováček";
-                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašík (7002)";
-                if(mentorId === "7067") mentorStatusText = "Svěřen: Horry (7067)";
+                if(mentorId === "7002") mentorStatusText = "Svěřen: Vašek K. (7002)";
+                if(mentorId === "7067") mentorStatusText = "Svěřen: Jan H. (7067)";
 
                 li.innerHTML = `
                     <div class="user-info">
@@ -241,8 +241,8 @@ async function loadData() {
                     select.className = "owner-select";
                     select.innerHTML = `
                         <option value="" ${mentorId === "" ? "selected" : ""}>-- Bez mentora --</option>
-                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašík (7002)</option>
-                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Horry (7067)</option>
+                        <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašek K. (7002)</option>
+                        <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Jan H. (7067)</option>
                     `;
                     select.addEventListener("change", async () => {
                         await updateDoc(doc(db, "users", userDocId), { mentorId: select.value });
