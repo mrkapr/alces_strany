@@ -468,6 +468,7 @@ async function loadUserData(firebaseUser) {
     localStorage.setItem("rankName", data.rankName);
     localStorage.setItem("email", email);
     localStorage.setItem("uid", firebaseUser.uid);
+    localStorage.setItem("mentorId", data.mentorId || "");
 
     window.location.href = "home.html";
 }
