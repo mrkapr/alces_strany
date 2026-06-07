@@ -1001,10 +1001,10 @@ Načítám...
 </div>
 
 <script>
+const mentorId = localStorage.getItem("mentorId");
 const username = localStorage.getItem("username");
 const rank = localStorage.getItem("rank");
 const rankName = localStorage.getItem("rankName");
-const mentorId = localStorage.getItem("mentorId");
 
 if (!username || !rank || !rankName) {
     window.location.href = "login.html";
