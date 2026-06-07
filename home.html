@@ -1153,6 +1153,19 @@ function toggleMobileMenu() {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Uživatel je prokazatelně přihlášený ve Firebase Auth -> načteme data
+        await loadMentor();
+        await loadAnnouncements();
+    } else {
+        console.log("Uživatel není přihlášen přes Firebase Auth.");
+        // Volitelně: pokud ho chceš při nepřihlášení hodit na login:
+        // window.location.href = "login.html";
+    }
+});
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
