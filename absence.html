@@ -275,10 +275,44 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     };
 
     try {
+        // 1. Zápis do Firebase databáze
         await addDoc(collection(db, "absences"), newRequest);
+        
+        // 🚀 2. ODESLÁNÍ DO DISCORDU (Webhook)
+        // SEM VLOŽ SVOJE ZKOPÍROVANÉ URL Z DISCORDU:
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
+        
+        const dFrom = new Date(from).toLocaleDateString("cs-CZ");
+        const dTo = new Date(to).toLocaleDateString("cs-CZ");
+
+        const discordMessage = {
+            embeds: [{
+                title: "Nová žádost o omluvenku / pauzu",
+                color: 16766029, // Krásná zlatá barva alces
+                fields: [
+                    { name: "👤 Řidič", value: `**${userName}** (${userEmail})`, inline: true },
+                    { name: "📝 Typ", value: type, inline: true },
+                    { name: "📅 Termín", value: `${dFrom} — ${dTo}`, inline: false },
+                    { name: "💬 Důvod / Poznámka", value: reason || "*Nevyplněno*", inline: false }
+                ],
+                footer: { text: "alces-as.fun" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+
+        // Odeslání dat na Discord na pozadí
+        fetch(discordWebhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(discordMessage)
+        }).catch(err => console.error("Discord webhook selhal:", err));
+
+
+        // 3. Hotovo, vyčištění formuláře
         alert("Žádost byla úspěšně odeslána vedení firmy ke schválení!");
         document.getElementById("absenceForm").reset();
         await loadMyAbsences();
+
     } catch (err) {
         alert("Chyba při odesílání žádosti: " + err.message);
     }
