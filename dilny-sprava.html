@@ -42,9 +42,9 @@
         
         .btn-add { background: #00b84f; color: white; width: 100%; }
         .btn-add:hover { background: #00963f; transform: scale(1.01); }
-        .btn-blue { background: #007bff; color: white; width: 100%; }
+        .btn-blue { background: #007bff; color: white; width: 100%; margin-bottom: 15px; }
         .btn-blue:hover { background: #0056b3; transform: scale(1.01); }
-        .btn-delete { background: #ff4d4d; color: white; padding: 6px 12px; font-size: 12px; }
+        .btn-delete { background: #ff4d4d; color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; }
         .btn-delete:hover { background: #cc3333; }
         
         #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
@@ -68,6 +68,11 @@
         .col-red h4 { color: #ff4d4d; margin: 0 0 5px 0; font-size: 13px; }
         .stats-list { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 12px; opacity: 0.85; }
         .stats-list li { padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        /* Seznam vozidel k mazání */
+        .admin-vehicle-list { max-height: 200px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(0,0,0,0.2); padding: 5px; list-style: none; margin: 0; }
+        .admin-vehicle-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        .admin-vehicle-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -120,14 +125,19 @@
         </div>
 
         <div class="panel">
-            <h2>2. Registrace nového vozidla (Ev.č.)</h2>
+            <h2>2. Registrace a správa vozidel (Ev.č.)</h2>
             <form id="addVehicleForm">
                 <div class="form-group">
-                    <label>Evidenční číslo vozu</label>
+                    <label>Evidenční číslo nového vozu</label>
                     <input type="text" id="newVehicleEvc" placeholder="např. 7015" required>
                 </div>
                 <button type="submit" class="btn-blue">➕ Zaregistrovat vozidlo</button>
             </form>
+
+            <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; opacity:0.9;">Aktuálně registrovaná vozidla:</label>
+            <ul class="admin-vehicle-list" id="adminVehiclesContainer">
+                <li style="opacity:0.5; padding:8px 12px;">Načítám vozový park...</li>
+            </ul>
         </div>
     </div>
 
@@ -189,7 +199,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
-let registeredVehicles = []; // Pole pro ukládání ev.č. pro našeptávač
+let registeredVehicles = []; 
 let allUsers = [];
 
 onAuthStateChanged(auth, async (user) => {
@@ -199,15 +209,14 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("error-screen").style.display = "none";
         
         await fetchAllUsers();
-        await loadActiveVehiclesList(); // Načte data pro našeptávač
-        await loadAdminWorkshopSystem(); // Načte kontrolní přehled hříšníků
+        await loadActiveVehiclesList(); 
+        await loadAdminWorkshopSystem(); 
     } else {
         document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může upravovat pouze vedení.";
         document.getElementById("error-screen").style.display = "block";
     }
 });
 
-// Stáhnout lidi z firmy pro porovnání hříšníků
 async function fetchAllUsers() {
     allUsers = [];
     try {
@@ -222,16 +231,48 @@ async function fetchAllUsers() {
     } catch(e) { console.error(e); }
 }
 
-// Načte seznam všech evidovaných ev.č. z databáze
+// 🚍 NAČTENÍ VOZIDEL PRO NAŠEPTÁVAČ + SPRÁVU MAZÁNÍ
 async function loadActiveVehiclesList() {
     registeredVehicles = [];
+    const container = document.getElementById("adminVehiclesContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
     try {
         const querySnapshot = await getDocs(collection(db, "vehicles"));
-        querySnapshot.forEach(d => registeredVehicles.push(d.id));
+        const vehicles = [];
+        querySnapshot.forEach(d => vehicles.push(d.id));
+        vehicles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+        registeredVehicles = vehicles;
+
+        if (vehicles.length === 0) {
+            container.innerHTML = `<li style="opacity:0.5; padding:8px 12px;">Žádná registrovaná vozidla.</li>`;
+            return;
+        }
+
+        vehicles.forEach(evc => {
+            const li = document.createElement("li");
+            li.className = "admin-vehicle-item";
+            li.innerHTML = `
+                <span>🚍 <strong>Ev.č. ${evc}</strong></span>
+                <button class="btn-delete-vehicle btn-delete" data-evc="${evc}">Smazat ✕</button>
+            `;
+
+            // Akce pro smazání vozidla
+            li.querySelector(".btn-delete-vehicle").addEventListener("click", async () => {
+                if (confirm(`Opravdu chceš trvale smazat vozidlo ev.č. ${evc} z databáze?`)) {
+                    await deleteDoc(doc(db, "vehicles", evc));
+                    await loadActiveVehiclesList(); // Znovu načteme seznam a našeptávač
+                }
+            });
+
+            container.appendChild(li);
+        });
     } catch(e) { console.error(e); }
 }
 
-// 🚀 LOGIKA NAŠEPTÁVAČE (AUTOKOMPLET)
+// LOGIKA NAŠEPTÁVAČE
 const inputEvc = document.getElementById("vehicleEvc");
 const suggestionsList = document.getElementById("suggestions");
 
@@ -241,13 +282,11 @@ inputEvc.addEventListener("input", () => {
     
     if (!value) { suggestionsList.style.display = "none"; return; }
 
-    // Zjistíme, co uživatel píše za poslední čárkou
     const parts = value.split(",");
     const currentQuery = parts[parts.length - 1].trim().toLowerCase();
 
     if (!currentQuery) { suggestionsList.style.display = "none"; return; }
 
-    // Vyfiltrujeme vozy, které odpovídají zadání a ještě nejsou v textu napsané
     const filtered = registeredVehicles.filter(v => 
         v.toLowerCase().includes(currentQuery) && !value.toLowerCase().includes(v.toLowerCase())
     );
@@ -258,8 +297,8 @@ inputEvc.addEventListener("input", () => {
         const li = document.createElement("li");
         li.innerText = `🚍 Ev.č. ${evc}`;
         li.addEventListener("click", () => {
-            parts[parts.length - 1] = " " + evc; // Nahradíme rozepsanou část celým číslem
-            inputEvc.value = parts.join(",") + ", "; // Přidáme čárku pro další zadávání
+            parts[parts.length - 1] = " " + evc; 
+            inputEvc.value = parts.join(",") + ", "; 
             suggestionsList.innerHTML = "";
             suggestionsList.style.display = "none";
             inputEvc.focus();
@@ -270,13 +309,11 @@ inputEvc.addEventListener("input", () => {
     suggestionsList.style.display = "block";
 });
 
-// Zavřít našeptávač, pokud klikneš mimo
 document.addEventListener("click", (e) => {
     if (e.target !== inputEvc) { suggestionsList.style.display = "none"; }
 });
 
-
-// 🚀 KONTROLNÍ SYSTÉM (KDO POTVRDIL / NEPOTVRDIL)
+// KONTROLNÍ SYSTÉM ČTENÍ HLÁŠENÍ
 async function loadAdminWorkshopSystem() {
     const container = document.getElementById("adminWorkshopLogsContainer");
     if (!container) return;
@@ -319,7 +356,7 @@ async function loadAdminWorkshopSystem() {
                         <h3 style="margin:0; font-size:16px; color:#ffd84d;">${logData.title}</h3>
                         <span style="font-size:11px; opacity:0.5;">Publikováno: ${date} | Od: ${logData.author}</span>
                     </div>
-                    <button class="btn-delete" data-id="${logId}">Smazat ✕</button>
+                    <button class="btn-delete" data-id="${logId}">Smazat hlášení ✕</button>
                 </div>
                 <p style="font-size:13px; opacity:0.8; margin:5px 0; white-space:pre-wrap;">${logData.text}</p>
                 
@@ -343,7 +380,6 @@ async function loadAdminWorkshopSystem() {
             if (missingPeople.length === 0) { ulNo.innerHTML = `<li style="color:#00ff66;">Všichni potvrdili!</li>`; }
             else { missingPeople.forEach(p => ulNo.innerHTML += `<li><strong>${p.name}</strong> (${p.rankName})</li>`); }
 
-            // Smazání hlášení
             block.querySelector(".btn-delete").addEventListener("click", async () => {
                 if (confirm(`Opravdu chceš smazat toto hlášení z dílen?`)) {
                     await deleteDoc(doc(db, "workshop_logs", logId));
@@ -355,7 +391,6 @@ async function loadAdminWorkshopSystem() {
         });
     } catch(err) { console.error(err); }
 }
-
 
 // ➕ LOGIKA PŘIDÁVÁNÍ NOVÉHO VOZIDLA
 document.getElementById("addVehicleForm").addEventListener("submit", async (e) => {
@@ -379,7 +414,7 @@ document.getElementById("addVehicleForm").addEventListener("submit", async (e) =
 
         alert(`Vozidlo Ev.č. ${evc} bylo úspěšně přidáno!`);
         document.getElementById("addVehicleForm").reset();
-        await loadActiveVehiclesList(); // Obnovíme pole našeptávače
+        await loadActiveVehiclesList(); 
     } catch (err) { alert("Chyba: " + err.message); }
 });
 
@@ -393,26 +428,29 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     const details = document.getElementById("actionDetails").value.trim();
     const authorName = localStorage.getItem("username") || "Management";
 
-    // Vyčistíme pole na čistá čísla, odsekáme případné koncové čárky
-    const evcArray = rawEvc ? rawEvc.split(",").map(s => s.trim()).filter(s => s.length > 0 && !isNaN(s)) : [];
+    const evcArray = rawEvc ? rawEvc.split(",").map(s => s.trim()).filter(s => s.length > 0) : [];
 
     let finalTitle = "";
     let finalLogText = "";
 
     if (type === "Aktualizace repaintu") {
-        finalTitle = "🎨 Aktualizace repaintu";
-        const sklonovaniVozidlo = evcArray.length === 1 ? "vozidlo" : (evcArray.length >= 2 && evcArray.length <= 4 ? "vozidla" : "vozidel");
-        const sklonovaniNovy = evcArray.length === 1 ? "nový repaint" : "nové repainty";
-        finalLogText = `Na disk byl(y) nahrán(y) ${sklonovaniNovy} na ${sklonovaniVozidlo} ${evcArray.join(", ")}.`;
+        finalTitle = "Aktualizace repaintu";
+        if (evcArray.length === 1) {
+            finalLogText = `Na disk byl nahrán nový repaint na vozidlo ${evcArray[0]}.`;
+        } else {
+            finalLogText = `Na disk byl(y) nahrán(y) nový/é repaint/y na vozidla ${evcArray.join(", ")}.`;
+        }
         if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
     } else if (type === "Nová úprava pro vozidlo") {
-        finalTitle = "🔧 Nová úprava vozidla";
-        const sklonovaniVozidlo = evcArray.length === 1 ? "vozidlo" : (evcArray.length >= 2 && evcArray.length <= 4 ? "vozidla" : "vozidel");
-        const sklonovaniUprava = evcArray.length === 1 ? "nová úprava" : "nové úpravy";
-        finalLogText = `Byla vydána ${sklonovaniUprava} pro ${sklonovaniVozidlo} ${evcArray.join(", ")}.`;
+        finalTitle = "Nová úprava vozidla";
+        if (evcArray.length === 1) {
+            finalLogText = `Byla vydána nová úprava pro vozidlo ${evcArray[0]}.`;
+        } else {
+            finalLogText = `Byla(y) vydána(y) nová/é úprava/y pro vozidla ${evcArray.join(", ")}.`;
+        }
         if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
     } else if (type === "Aktualizace mapy") {
-        finalTitle = "🗺️ Aktualizace mapy";
+        finalTitle = "Aktualizace mapy";
         finalLogText = details;
     } else {
         finalTitle = customTitle || "Zpráva z dílen";
@@ -444,7 +482,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
         alert("Záznam úspěšně publikován!");
         document.getElementById("workshopForm").reset();
         handleActionTypeChange();
-        await loadAdminWorkshopSystem(); // Obnovíme tabulku hříšníků dolů
+        await loadAdminWorkshopSystem(); 
     } catch (err) { alert("Chyba: " + err.message); }
 });
 </script>
