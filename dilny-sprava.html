@@ -78,7 +78,11 @@
 <body>
 
 <div class="topbar">
-    <div style="font-weight:700; font-size:18px;">alces, a. s. — Admin Panel</div>
+    <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
     <div>
         <a href="dilny.html">← Zpět do dílen</a>
         <a href="home.html">Domů</a>
@@ -356,7 +360,7 @@ async function loadAdminWorkshopSystem() {
                         <h3 style="margin:0; font-size:16px; color:#ffd84d;">${logData.title}</h3>
                         <span style="font-size:11px; opacity:0.5;">Publikováno: ${date} | Od: ${logData.author}</span>
                     </div>
-                    <button class="btn-delete" data-id="${logId}">Smazat hlášení ✕</button>
+                    <button class="btn-delete" data-id="${logId}">Smazat ✕</button>
                 </div>
                 <p style="font-size:13px; opacity:0.8; margin:5px 0; white-space:pre-wrap;">${logData.text}</p>
                 
@@ -440,7 +444,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
         } else {
             finalLogText = `Na disk byly nahrány nové verze repaintů vozidel ${evcArray.join(", ")}.`;
         }
-        if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
+        if (details) finalLogText += `\n\nDodatek:\n${details}`;
     } else if (type === "Nová úprava pro vozidlo") {
         finalTitle = "Nová úprava vozidla";
         if (evcArray.length === 1) {
@@ -448,7 +452,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
         } else {
             finalLogText = `Byly vydány nové úpravy pro vozidla ${evcArray.join(", ")}.`;
         }
-        if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
+        if (details) finalLogText += `\n\nDodatek:\n${details}`;
     } else if (type === "Aktualizace mapy") {
         finalTitle = "Aktualizace mapy";
         finalLogText = details;
@@ -461,6 +465,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     try {
         const timestamp = new Date();
 
+        // 1. Uložení logu do Firebase
         await addDoc(collection(db, "workshop_logs"), {
             title: finalTitle,
             text: finalLogText,
@@ -471,6 +476,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
             confirmedBy: []
         });
 
+        // 2. Propsání do stavu konkrétních vozidel ve Firebase
         for (const evc of evcArray) {
             const vehicleRef = doc(db, "vehicles", evc);
             await setDoc(vehicleRef, {
@@ -479,7 +485,40 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
             }, { merge: true });
         }
 
-        alert("Záznam úspěšně publikován!");
+        // 🚀 3. NOVÉ: DISCORD WEBHOOK PRO DÍLNY
+        // Sem vlož URL webhooku (může být stejný jako na omluvenky, nebo jiný veřejný kanál)
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
+
+        // Nastavení barvy embedu podle typu akce
+        let embedColor = 8421504; // Výchozí šedá pro "Jiné"
+        if (type === "Aktualizace repaintu") embedColor = 15151221;  // Červená/Růžová pro repainty
+        if (type === "Nová úprava pro vozidlo") embedColor = 3447003; // Modrá pro úpravy
+        if (type === "Aktualizace mapy") embedColor = 3066993;        // Zelená pro mapy
+
+        const discordMessage = {
+            embeds: [{
+                title: `${finalTitle}`,
+                description: `${finalLogText}`,
+                color: embedColor,
+                fields: [
+                    { name: "✍️ Publikoval", value: authorName, inline: true },
+                    { name: "🚍 Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "Celý vozový park / Mapa", inline: true }
+                ],
+                footer: { text: "alces, a. s. — Technické zázemí (Dílny)" },
+                timestamp: timestamp.toISOString()
+            }]
+        };
+
+        // Odeslání na Discord na pozadí
+        fetch(discordWebhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(discordMessage)
+        }).catch(err => console.error("Discord webhook pro dílny selhal:", err));
+
+
+        // 4. Potvrzení na webu a reset formuláře
+        alert("Záznam úspěšně publikován a odeslán na Discord!");
         document.getElementById("workshopForm").reset();
         handleActionTypeChange();
         await loadAdminWorkshopSystem(); 
