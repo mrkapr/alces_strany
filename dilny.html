@@ -62,12 +62,26 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99998; }
         .sidebar-overlay.open { display: block; }
         .sidebar-right button { background: none; color: white; border: none; cursor: pointer; }
+            .logo {
+    display: flex;
+    align-items: center;
+    }
+
+.logo img {
+    height: 34px;
+    width: auto;
+    display: block;
+}
     </style>
 </head>
 <body>
 
 <div class="topbar">
-    <div style="font-weight:700; font-size:18px;">alces, a. s. — Technické zázemí</div>
+    <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
     <div>
         <a href="home.html">Domů</a>
     </div>
