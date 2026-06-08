@@ -125,7 +125,7 @@
 
                 <div class="form-group" id="evcGroup">
                     <label>Evidenční čísla vozidel (odděluj čárkou)</label>
-                    <input type="text" id="vehicleEvc" placeholder="Začni psát ev.č. (např. 2104)">
+                    <input type="text" id="vehicleEvc" placeholder="Začni psát ev.č. (např. 7002)">
                     <ul id="suggestions" class="suggestions-box"></ul>
                 </div>
 
@@ -514,7 +514,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
                     { name: "✍️ Publikoval", value: authorName, inline: true },
                     { name: "🚍 Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "Celý vozový park / Mapa", inline: true }
                 ],
-                footer: { text: "alces-as.fun - dílny" },
+                footer: { text: "alces, a. s. — Technické zázemí (Dílny)" },
                 timestamp: timestamp.toISOString()
             }]
         };
