@@ -1191,6 +1191,7 @@
         <a href="oznameni-sprava.html" class="sidebar-link rank-team-manager">Správa oznámení</a>
         <a href="mentori.html" class="sidebar-link rank-team-manager">Panel mentorů</a>
         <a href="absence-sprava.html" class="sidebar-link rank-team-manager">Správa absencí</a>
+        <a href="dilny-sprava.html" class="sidebar-link rank-majitel">Správa dílen</a>
         <a href="admin.html" class="sidebar-link rank-majitel">Správa uživatelů</a>
         </div>
 </div>
@@ -1243,11 +1244,21 @@ Načítám...
         </div>
 
     </div>
-<div class="announcements-box">
-    <div class="announcements-title">Oznámení</div>
-    <div id="announcementsList">
-        <p style="opacity: 0.5;">Načítám aktuální oznámení...</p>
+<div style="display: flex; gap: 24px; margin-top: 40px; align-items: start; max-width: 1200px; width: 100%; flex-wrap: wrap;">
+    
+    <div class="announcements-box" style="flex: 1; min-width: 300px; margin-top: 0;">
+        <div class="announcements-title">Oznámení</div>
+        <div id="announcementsList">
+            <p style="opacity: 0.5;">Načítám aktuální oznámení...</p>
+        </div>
     </div>
+
+    <div id="workshopAlertsBox" class="announcements-box" style="flex: 1; min-width: 300px; margin-top: 0; display: none;">
+        <div class="announcements-title" style="color: #ffd84d;">Dílny</div>
+        <div id="workshopAlertsContainer">
+            </div>
+    </div>
+
 </div>
 
 </div>
@@ -1428,8 +1439,10 @@ onAuthStateChanged(auth, async (user) => {
         // Načteme obsah pro řidiče
         await loadMentor();
         await loadAnnouncements();
+        // 🚀 NOVÉ: Načteme nepotvrzená hlášení z dílen
+        await loadUnconfirmedWorkshopLogs(user.email);
 
-        // 🚀 KLÍČOVÁ OPRAVA: Zviditelníme plovoucí tlačítko správy pouze pro vedení firmy
+        // Zviditelníme plovoucí tlačítko správy pouze pro vedení firmy
         const userRank = localStorage.getItem("rank") || "";
         if (allowedRanks.includes(userRank)) {
             const toggleBtn = document.getElementById("menuToggleBtn");
@@ -1439,7 +1452,6 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
-
 async function loadMentor() {
     if (mentorId) {
         try {
@@ -1550,6 +1562,87 @@ async function loadAnnouncements() {
     } catch (error) {
         console.error("Chyba při načítání oznámení:", error);
         listContainer.innerHTML = `<p style="color: #ff4d4d; padding: 10px; margin:0;">Chyba při stahování oznámení.</p>`;
+    }
+}
+
+// 🛠️ NAČTENÍ NEPOTVRZENÝCH HLÁŠENÍ Z DÍLEN (ZPRAVA OD OZNÁMENÍ)
+async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
+    const container = document.getElementById("workshopAlertsContainer");
+    const wholeBox = document.getElementById("workshopAlertsBox");
+    if (!container || !wholeBox) return;
+    container.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "workshop_logs"));
+        let unconfirmedCount = 0;
+
+        const logs = [];
+        querySnapshot.forEach(d => logs.push({ id: d.id, data: d.data() }));
+        logs.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        logs.forEach(item => {
+            const logId = item.id;
+            const logData = item.data;
+
+            // Kontrola, zda řidič již nepotvrdil
+            const alreadyConfirmed = logData.confirmedBy && logData.confirmedBy.includes(currentUserEmail);
+
+            if (!alreadyConfirmed) {
+                unconfirmedCount++;
+                
+                let dateString = "";
+                if (logData.createdAt) {
+                    const d = logData.createdAt.toDate();
+                    dateString = d.toLocaleDateString("cs-CZ") + " v " + d.toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
+                }
+
+                // Vytvoříme prvek se třídou "announcement", aby vizuál 1:1 seděl
+                const div = document.createElement("div");
+                div.className = "announcement";
+                div.innerHTML = `
+                    <h3>${logData.title}</h3>
+                    <div class="announcement-meta" style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">
+                        <span>📅 ${dateString}</span>
+                        <span style="margin-left: 12px;">🛠️ Zadal: <strong>${logData.author}</strong></span>
+                    </div>
+                    <p>${logData.text}</p>
+                    <div class="announcement-footer" style="display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                        <button class="confirm-btn btn-confirm-workshop" data-id="${logId}">Potvrdit přečtení</button>
+                    </div>
+                `;
+
+                // Reakce na kliknutí
+                div.querySelector(".btn-confirm-workshop").addEventListener("click", async (e) => {
+                    e.target.innerText = "Zpracovávám...";
+                    await confirmWorkshopLog(logId, currentUserEmail);
+                });
+
+                container.appendChild(div);
+            }
+        });
+
+        // 🚀 VYCHYTÁVKA: Pokud nemá žádnou nepřečtenou zprávu z dílen, celý pravý box se schová a levý box se roztáhne na celou šířku!
+        if (unconfirmedCount > 0) {
+            wholeBox.style.display = "block";
+        } else {
+            wholeBox.style.display = "none";
+        }
+
+    } catch (err) {
+        console.error("Chyba při načítání dílen na plochu:", err);
+    }
+}
+
+// 🚀 ZÁPIS POTVRZENÍ
+async function confirmWorkshopLog(logId, userEmail) {
+    try {
+        const logRef = doc(db, "workshop_logs", logId);
+        await updateDoc(logRef, {
+            confirmedBy: arrayUnion(userEmail)
+        });
+        await loadUnconfirmedWorkshopLogs(userEmail);
+    } catch (err) {
+        alert("Chyba při potvrzení: " + err.message);
     }
 }
 </script>
