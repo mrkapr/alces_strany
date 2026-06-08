@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Správa Absencí | alces, a. s.</title>
+    <title>Správa absencí | alces, a. s.</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,6 +143,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// 🚀 POMOCNÁ FUNKCE: Převede text "2026-06" na "Červen 2026" pro přehlednost v tabulce
+function formatMonthHTML(monthString) {
+    if (!monthString) return "";
+    const [year, month] = monthString.split("-");
+    const date = new Date(year, parseInt(month) - 1, 1);
+    const text = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 async function loadAllAbsences() {
     const tbody = document.getElementById("adminAbsenceList");
     if (!tbody) return;
@@ -182,14 +191,15 @@ async function loadAllAbsences() {
                 actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>${reqData.adminNote ? `<br><span style="font-size:11px; color:#ffd84d;">Vzkaz: ${reqData.adminNote}</span>` : ""}`;
             }
 
-            const dFrom = new Date(reqData.from).toLocaleDateString("cs-CZ");
-            const dTo = new Date(reqData.to).toLocaleDateString("cs-CZ");
+            // 🚀 OPRAVA ČTENÍ MĚSÍCŮ: Voláme naši novou funkci místo padajícího "new Date()"
+            const mFrom = formatMonthHTML(reqData.from);
+            const mTo = formatMonthHTML(reqData.to);
 
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td><strong>${reqData.userName || "Neznámý řidič"}</strong><br><span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span></td>
                 <td style="font-weight: 600;">${reqData.type}</td>
-                <td>${dFrom} - ${dTo}</td>
+                <td>${reqData.type === "Omluvenka" ? mFrom : `${mFrom} — ${mTo}`}</td>
                 <td style="opacity: 0.9; max-width: 250px; word-wrap: break-word;">${reqData.reason || "-"}</td>
                 <td>${statusBadge}</td>
                 <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
@@ -215,7 +225,6 @@ async function loadAllAbsences() {
     }
 }
 
-// 🚀 JEDINÁ OPRAVENÁ FUNKCE (Duplicitní čistě smazána)
 async function updateRequestStatus(docId, newStatus, note) {
     try {
         const docRef = doc(db, "absences", docId);
@@ -228,6 +237,7 @@ async function updateRequestStatus(docId, newStatus, note) {
         alert("Chyba při aktualizaci stavu: " + err.message);
     }
 }
+</script>
 </script>
 </body>
 </html>

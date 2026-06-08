@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omluvenky a Pauzy | alces, a. s.</title>
+    <title>Absence | alces, a. s.</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,18 +80,15 @@
     </div>
     <div>
         <a href="home.html">Domů</a>
-        <a href="#" onclick="toggleSidebar(); return false;" id="menuToggleBtn" style="display: none; color: #ffd84d;">☰ Správa</a>
     </div>
 </div>
 
 <div id="rightSidebar" class="sidebar-right">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
         <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ffd84d; font-weight: 700;">Správa firmy</span>
-        <button type="button" style="background:none; color:rgba(255,255,255,0.5); font-size:20px; padding:0;" onclick="toggleSidebar()">✕</button>
     </div>
     <a href="absence-sprava.html" style="display:block; color:white; text-decoration:none; padding:12px; border-radius:8px; margin-bottom:5px;">📅 Schvalování omluvenek</a>
 </div>
-<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="content">
     <h1>Žádost o omluvenku / pauzu</h1>
@@ -145,15 +142,6 @@
 </div>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById("rightSidebar");
-    const overlay = document.getElementById("sidebarOverlay");
-    if (sidebar && overlay) {
-        sidebar.classList.toggle("open");
-        overlay.classList.toggle("open");
-    }
-}
-
 // 🚀 DYNAMICKÉ UZAMČENÍ MĚSÍCŮ
 function handleTypeChange() {
     const type = document.getElementById("absenceType").value;
