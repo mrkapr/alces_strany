@@ -101,20 +101,20 @@
             <h2>Nová žádost</h2>
             <form id="absenceForm">
                 <div class="form-group">
-                    <label>Typ žádosti</label>
-                    <select id="absenceType" required onchange="handleTypeChange()">
-                        <option value="Omluvenka">Omluvenka (na aktuální měsíc)</option>
-                        <option value="Pauza">Pauza (dlouhodobá, max 6 měsíců)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label id="labelFrom">Od data</label>
-                    <input type="date" id="absenceFrom" required>
-                </div>
-                <div class="form-group" id="groupTo">
-                    <label>Do data (včetně)</label>
-                    <input type="date" id="absenceTo" required>
-                </div>
+    <label>Typ žádosti</label>
+    <select id="absenceType" required onchange="handleTypeChange()">
+        <option value="Omluvenka">Omluvenka (pouze aktuální měsíc)</option>
+        <option value="Pauza">Pauza (dlouhodobá, max 6 měsíců)</option>
+    </select>
+</div>
+<div class="form-group">
+    <label id="labelFrom">Od měsíce</label>
+    <input type="month" id="absenceFrom" required>
+</div>
+<div class="form-group" id="groupTo">
+    <label>Do měsíce (včetně)</label>
+    <input type="month" id="absenceTo" required>
+</div>
                 <div class="form-group">
                     <label>Důvod / Poznámka</label>
                     <textarea id="absenceReason" placeholder="Zde rozepiš podrobnosti..." required></textarea>
@@ -154,7 +154,7 @@ function toggleSidebar() {
     }
 }
 
-// 🚀 DYNAMICKÉ CHOVÁNÍ FORMULÁŘE PODLE TYPU
+// 🚀 DYNAMICKÉ UZAMČENÍ MĚSÍCŮ
 function handleTypeChange() {
     const type = document.getElementById("absenceType").value;
     const inputFrom = document.getElementById("absenceFrom");
@@ -162,31 +162,34 @@ function handleTypeChange() {
     const groupTo = document.getElementById("groupTo");
     const labelFrom = document.getElementById("labelFrom");
 
+    // Zjistíme aktuální rok a měsíc (např. 2026-06)
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+    const currentMonthString = `${currentYear}-${currentMonth}`;
 
     if (type === "Omluvenka") {
-        // Skryjeme políčko "Do data"
+        // Skryjeme políčko "Do měsíce"
         groupTo.style.display = "none";
         inputTo.removeAttribute("required");
-        labelFrom.innerText = "Vyber den v aktuálním měsíci";
+        labelFrom.innerText = "Vyber aktuální měsíc";
         
-        // Uzamkneme kalendář pouze na aktuální měsíc (červen 2026)
-        const lastDay = new Date(currentYear, now.getMonth() + 1, 0).getDate();
-        inputFrom.min = `${currentYear}-${currentMonth}-01`;
-        inputFrom.max = `${currentYear}-${currentMonth}-${lastDay}`;
+        // Vynutíme POUZE aktuální měsíc – min i max nastavíme na stejnou hodnotu
+        inputFrom.value = currentMonthString;
+        inputFrom.min = currentMonthString;
+        inputFrom.max = currentMonthString;
     } else {
-        // Pro Pauzu ukážeme obě pole a odemkneme limity
+        // Pro Pauzu ukážeme obě pole a uvolníme limity pro budoucnost
         groupTo.style.display = "flex";
         inputTo.setAttribute("required", "true");
-        labelFrom.innerText = "Od data";
+        labelFrom.innerText = "Od měsíce";
+        
+        inputFrom.value = "";
         inputFrom.removeAttribute("min");
         inputFrom.removeAttribute("max");
     }
 }
 
-// Spustíme hned při načtení, aby se nastavily defaultní limity pro Omluvenku
 window.addEventListener("DOMContentLoaded", handleTypeChange);
 </script>
 
@@ -226,6 +229,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// Pomocná funkce na převedení formátu "2026-06" na "Červen 2026"
+function formatMonthHTML(monthString) {
+    if (!monthString) return "";
+    const [year, month] = monthString.split("-");
+    const date = new Date(year, parseInt(month) - 1, 1);
+    const text = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
+    return text.charAt(0).toUpperCase() + text.slice(1); // První písmeno velké
+}
+
 async function loadMyAbsences() {
     const tbody = document.getElementById("myAbsenceList");
     if (!tbody) return;
@@ -245,13 +257,13 @@ async function loadMyAbsences() {
             if (data.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
             if (data.adminNote) statusBadge += `<br><span style="font-size: 11px; opacity: 0.7; color: #ffd84d; display: block; margin-top: 2px;">💬 Vyjádření: ${data.adminNote}</span>`;
 
-            const dFrom = new Date(data.from).toLocaleDateString("cs-CZ");
-            const dTo = data.to ? new Date(data.to).toLocaleDateString("cs-CZ") : "";
+            const mFrom = formatMonthHTML(data.from);
+            const mTo = formatMonthHTML(data.to);
 
             tbody.innerHTML += `
                 <tr>
                     <td style="font-weight: 600;">${data.type}</td>
-                    <td>${data.type === "Omluvenka" ? dFrom : `${dFrom} — ${dTo}`}</td>
+                    <td>${data.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
                     <td style="opacity: 0.8; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${data.reason || ''}">${data.reason || "-"}</td>
                     <td>${statusBadge}</td>
                 </tr>
@@ -270,32 +282,30 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const type = document.getElementById("absenceType").value;
-    const from = document.getElementById("absenceFrom").value;
-    let to = document.getElementById("absenceTo").value;
+    const from = document.getElementById("absenceFrom").value; // vrátí např. "2026-06"
+    let to = document.getElementById("absenceTo").value; // vrátí např. "2026-11"
     const reason = document.getElementById("absenceReason").value.trim();
     const userName = localStorage.getItem("username") || "Řidič";
 
-    // 🚀 VALIDACE: Pokud je to Pauza, zkontrolujeme limit maximálně 6 měsíců
+    // 🚀 STRIKTNÍ KONTROLA MAXIMÁLNĚ 6 MĚSÍCŮ PRO PAUZU
     if (type === "Pauza") {
-        const dateFrom = new Date(from);
-        const dateTo = new Date(to);
-        
-        // Výpočet rozdílu v měsících
-        const diffTime = Math.abs(dateTo - dateFrom);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        
-        if (dateTo < dateFrom) {
-            alert("Chyba: Koncové datum nemůže být dříve než počáteční!");
+        const [yearFrom, monthFrom] = from.split("-").map(Number);
+        const [yearTo, monthTo] = to.split("-").map(Number);
+
+        // Celkový počet zvolených měsíců
+        const totalMonthsDiff = (yearTo - yearFrom) * 12 + (monthTo - monthFrom) + 1;
+
+        if (totalMonthsDiff <= 0) {
+            alert("Chyba: Koncový měsíc nemůže být dříve než počáteční!");
             return;
         }
 
-        if (diffDays > 183) { // cca 6 měsíců v dnech
-            alert("Chyba: Délka pauzy může být maximálně 6 měsíců (183 dní)!");
+        if (totalMonthsDiff > 6) {
+            alert(`Chyba: Délka pauzy může být maximálně 6 měsíců! Zvolil jsi ${totalMonthsDiff} měsíců.`);
             return;
         }
     } else {
-        // Pokud je to omluvenka, koncové datum nepotřebujeme ukládat
-        to = "";
+        to = ""; // u omluvenky konec prázdný
     }
 
     const newRequest = {
@@ -313,19 +323,19 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
         await addDoc(collection(db, "absences"), newRequest);
 
         // 🚀 DISCORD WEBHOOK INTEGRACE
-        const discordWebhookUrl = "SEM_VLOZ_SVOJE_URL_WEBHOOKU_Z_DISCORDU"; 
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
         
-        const dFrom = new Date(from).toLocaleDateString("cs-CZ");
-        const dTo = to ? new Date(to).toLocaleDateString("cs-CZ") : "";
+        const mFrom = formatMonthHTML(from);
+        const mTo = formatMonthHTML(to);
 
         const discordMessage = {
             embeds: [{
                 title: type === "Omluvenka" ? "📝 Nová omluvenka ke schválení" : "⏸️ Nová žádost o pauzu",
-                color: type === "Omluvenka" ? 16738657 : 16766029, // Omluvenka červeno-oranžová, Pauza zlatá
+                color: type === "Omluvenka" ? 16738657 : 16766029,
                 fields: [
                     { name: "👤 Řidič", value: `**${userName}** (${userEmail})`, inline: true },
                     { name: "📝 Typ", value: type, inline: true },
-                    { name: "📅 Termín", value: type === "Omluvenka" ? dFrom : `${dFrom} — ${dTo}`, inline: false },
+                    { name: "📅 Termín", value: type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`, inline: false },
                     { name: "💬 Důvod / Poznámka", value: reason, inline: false }
                 ],
                 footer: { text: "alces-as.fun" },
@@ -337,16 +347,17 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(discordMessage)
-        }).catch(err => console.error(discordWebhookUrl));
+        }).catch(err => console.error(err));
 
         alert("Žádost byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
         document.getElementById("absenceForm").reset();
-        handleTypeChange(); // Resetujeme limity formuláře
+        handleTypeChange(); 
         await loadMyAbsences();
     } catch (err) {
         alert("Chyba při odesílání: " + err.message);
     }
 });
+</script>
 </script>
 </body>
 </html>
