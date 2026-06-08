@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Záznamy z dílen | alces, a. s.</title>
+    <title>Technické zázemí | alces, a. s.</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,6 @@
         .content { margin: 120px 40px 40px 40px; }
         h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         
-        /* Layout 1fr vlevo pro formulář/logy, 1fr vpravo pro vozidla */
         .layout-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; align-items: start; }
         @media (max-width: 1000px) { .layout-grid { grid-template-columns: 1fr; } }
         
@@ -32,23 +31,14 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;
         }
         .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 14px; font-weight: 600; opacity: 0.9; }
-        input, select, textarea {
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
-            color: white; padding: 12px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box;
-        }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
-        button { font-family: 'Poppins', sans-serif; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
-        .btn-add { background: #00b84f; color: white; width: 100%; }
-        .btn-add:hover { background: #00963f; transform: scale(1.01); }
         
-        /* Seznam vozidel vpravo */
-        .search-box { width: 100%; margin-bottom: 15px; padding: 10px; }
-        .vehicle-list { list-style: none; padding: 0; margin: 0; max-height: 500px; overflow-y: auto; }
+        /* Vozidla vpravo */
+        .search-box { width: 100%; margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-family: inherit; box-sizing: border-box; }
+        .search-box:focus { outline: none; border-color: #ffd84d; }
+        .vehicle-list { list-style: none; padding: 0; margin: 0; max-height: 600px; overflow-y: auto; }
         .vehicle-item { 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-            padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+            padding: 14px 18px; border-radius: 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
         }
         .vehicle-item:hover { background: rgba(255,216,77,0.1); border-color: rgba(255,216,77,0.3); }
         .vehicle-header { display: flex; justify-content: space-between; align-items: center; }
@@ -56,10 +46,22 @@
         .vehicle-date { font-size: 11px; opacity: 0.4; }
         .vehicle-details { display: none; margin-top: 10px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; opacity: 0.85; white-space: pre-wrap; }
         
-        /* Levá historie hlášení */
-        .log-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 15px; border-radius: 16px; margin-bottom: 12px; }
-        .log-title { font-weight: 600; margin: 0 0 5px 0; color: #fff; }
-        .log-meta { font-size: 11px; opacity: 0.4; margin-bottom: 8px; }
+        /* Historie vlevo */
+        .log-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 16px; margin-bottom: 15px; }
+        .log-title { font-weight: 700; margin: 0 0 5px 0; font-size: 18px; color: #fff; }
+        .log-meta { font-size: 11px; opacity: 0.4; margin-bottom: 10px; }
+
+        /* Menu vpravo vysouvací */
+        .sidebar-right {
+            position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
+            background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 24px 16px; box-sizing: border-box;
+            z-index: 99999; transition: right 0.3s ease-in-out;
+        }
+        .sidebar-right.open { right: 0; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99998; }
+        .sidebar-overlay.open { display: block; }
+        .sidebar-right button { background: none; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -68,46 +70,24 @@
     <div style="font-weight:700; font-size:18px;">alces, a. s. — Technické zázemí</div>
     <div>
         <a href="home.html">Domů</a>
+        <a href="#" onclick="toggleSidebar(); return false;" id="menuToggleBtn" style="display: none; color: #ffd84d;">☰ Správa</a>
     </div>
 </div>
 
+<div id="rightSidebar" class="sidebar-right">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+      <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ffd84d; font-weight: 700;">Správa dílen</span>
+      <button type="button" style="font-size:20px; opacity:0.5;" onclick="toggleSidebar()">✕</button>
+    </div>
+    <a href="dilny-sprava.html" style="display:block; color:white; text-decoration:none; padding:12px; border-radius:8px; background: rgba(255,255,255,0.05); font-weight: 600;">🛠️ Administrace dílen</a>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
 <div class="content">
-    <h1>Správa vozového parku a dílen</h1>
+    <h1>Záznamy z dílen a stav vozů</h1>
     
     <div class="layout-grid">
         <div>
-            <div class="panel">
-                <h2>Nový záznam z dílen / Aktualizace</h2>
-                <form id="workshopForm">
-                    <div class="form-group">
-                        <label>Typ akce</label>
-                        <select id="actionType" required onchange="handleActionTypeChange()">
-                            <option value="Aktualizace repaintu">🎨 Aktualizace repaintu</option>
-                            <option value="Nová úprava pro vozidlo">🔧 Nová úprava pro vozidlo</option>
-                            <option value="Aktualizace mapy">🗺️ Aktualizace mapy</option>
-                            <option value="Jiné">📝 Jiné (Vlastní nadpis)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="customTitleGroup" style="display: none;">
-                        <label>Vlastní nadpis zprávy</label>
-                        <input type="text" id="customTitle" placeholder="např. Výměna pneumatik u vybraných vozů">
-                    </div>
-
-                    <div class="form-group" id="evcGroup">
-                        <label id="evcLabel">Evidenční čísla vozidel (odděluj čárkou)</label>
-                        <input type="text" id="vehicleEvc" placeholder="např. 7002, 7067, 7015">
-                    </div>
-
-                    <div class="form-group">
-                        <label id="reasonLabel">Dodatek k hlášení (nepovinné)</label>
-                        <textarea id="actionDetails" placeholder="Zde můžeš dopsat podrobnosti, co se přesně měnilo..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-add">Publikovat záznam</button>
-                </form>
-            </div>
-
             <div class="panel">
                 <h2>Historie oznámení z dílen</h2>
                 <div id="workshopLogsContainer">
@@ -127,64 +107,35 @@
 </div>
 
 <script>
-// Dynamická správa formuláře podle vybrané možnosti
-function handleActionTypeChange() {
-    const type = document.getElementById("actionType").value;
-    const customTitleGroup = document.getElementById("customTitleGroup");
-    const evcGroup = document.getElementById("evcGroup");
-    const vehicleEvc = document.getElementById("vehicleEvc");
-    const actionDetails = document.getElementById("actionDetails");
-
-    if (type === "Jiné") {
-        customTitleGroup.style.display = "flex";
-        document.getElementById("customTitle").setAttribute("required", "true");
-        evcGroup.style.display = "flex";
-        vehicleEvc.removeAttribute("required");
-        actionDetails.setAttribute("required", "true"); // U "Jiné" musí obsah zprávy vyplnit
-    } else if (type === "Aktualizace mapy") {
-        customTitleGroup.style.display = "none";
-        document.getElementById("customTitle").removeAttribute("required");
-        evcGroup.style.display = "none"; // Mapy nemají evidenční čísla vozů
-        vehicleEvc.removeAttribute("required");
-        actionDetails.setAttribute("required", "true");
-    } else {
-        // Repaint nebo Úprava vozu
-        customTitleGroup.style.display = "none";
-        document.getElementById("customTitle").removeAttribute("required");
-        evcGroup.style.display = "flex";
-        vehicleEvc.setAttribute("required", "true"); // Ev.č. jsou pro repainty/úpravy povinné
-        actionDetails.removeAttribute("required");
+function toggleSidebar() {
+    const sidebar = document.getElementById("rightSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (sidebar && overlay) {
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("open");
     }
 }
 
-// Bleskové lokální filtrování v pravém seznamu
 function filterVehicles() {
     const query = document.getElementById("vehicleSearch").value.toLowerCase().trim();
     const items = document.querySelectorAll(".vehicle-item");
-    
     items.forEach(item => {
         const evc = item.getAttribute("data-evc").toLowerCase();
-        if (evc.includes(query)) {
-            item.style.display = "block";
-        } else {
-            item.style.display = "none";
-        }
+        item.style.display = evc.includes(query) ? "block" : "none";
     });
 }
 
-// Rozbalení / zabalení detailů vozidla po kliknutí
 function toggleVehicleDetails(element) {
     const details = element.querySelector(".vehicle-details");
     if (details) {
-        const isVisible = details.style.display === "block";
-        details.style.display = isVisible ? "none" : "block";
+        details.style.display = details.style.display === "block" ? "none" : "block";
     }
 }
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -200,19 +151,23 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let userEmail = "";
-
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        userEmail = user.email;
         await loadWorkshopLogs();
         await loadVehiclesPark();
+
+        // Odemknutí správy pro vedení
+        const allowedManagementRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+        const userRankForMenu = localStorage.getItem("rank") || "";
+        if (allowedManagementRanks.includes(userRankForMenu)) {
+            const toggleBtn = document.getElementById("menuToggleBtn");
+            if (toggleBtn) toggleBtn.style.display = "inline-block";
+        }
     } else {
         window.location.href = "login.html";
     }
 });
 
-// Načtení levé historie hlášení z dílen
 async function loadWorkshopLogs() {
     const container = document.getElementById("workshopLogsContainer");
     if (!container) return;
@@ -222,18 +177,15 @@ async function loadWorkshopLogs() {
         const querySnapshot = await getDocs(collection(db, "workshop_logs"));
         const logs = [];
         querySnapshot.forEach(d => logs.push(d.data()));
-
-        // Seřadit od nejnovějšího
         logs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         if (logs.length === 0) {
-            container.innerHTML = `<p style="opacity:0.5; margin:0;">Zatím nebyly zapsány žádné zprávy.</p>`;
+            container.innerHTML = `<p style="opacity:0.5; margin:0;">Zatím nebyly zapsány žádné zprávy z dílen.</p>`;
             return;
         }
 
         logs.forEach(log => {
             const date = log.createdAt ? new Date(log.createdAt.toDate()).toLocaleDateString("cs-CZ") + " v " + new Date(log.createdAt.toDate()).toLocaleTimeString("cs-CZ", {hour:'2-digit', minute:'2-digit'}) : "Neznámý čas";
-            
             container.innerHTML += `
                 <div class="log-item">
                     <div class="log-title">${log.title}</div>
@@ -242,12 +194,9 @@ async function loadWorkshopLogs() {
                 </div>
             `;
         });
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (err) { console.error(err); }
 }
 
-// Načtení pravého seznamu unikátních vozidel
 async function loadVehiclesPark() {
     const container = document.getElementById("vehiclesContainer");
     if (!container) return;
@@ -257,111 +206,27 @@ async function loadVehiclesPark() {
         const querySnapshot = await getDocs(collection(db, "vehicles"));
         const vehicles = [];
         querySnapshot.forEach(d => vehicles.push({ id: d.id, data: d.data() }));
-
-        // Seřadit abecedně/číselně podle Ev.č.
         vehicles.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
         if (vehicles.length === 0) {
-            container.innerHTML = `<p style="opacity:0.5; margin:0;">V databázi nejsou žádná registrovaná vozidla.</p>`;
+            container.innerHTML = `<p style="opacity:0.5; margin:0;">V systému nejsou registrovaná žádná vozidla.</p>`;
             return;
         }
 
         vehicles.forEach(v => {
             const date = v.data.updatedAt ? new Date(v.data.updatedAt.toDate()).toLocaleDateString("cs-CZ") : "Nikdy";
-            
             container.innerHTML += `
                 <div class="vehicle-item" data-evc="${v.id}" onclick="toggleVehicleDetails(this)">
                     <div class="vehicle-header">
                         <span class="vehicle-evc">🚍 Ev.č. ${v.id}</span>
                         <span class="vehicle-date">Aktualizace: ${date}</span>
                     </div>
-                    <div class="vehicle-details"><strong>Poslední stav:</strong>\n${v.data.lastStatus || "Žádné záznamy."}</div>
+                    <div class="vehicle-details"><strong>Poslední stav / záznam:</strong>\n${v.data.lastStatus || "Žádné záznamy."}</div>
                 </div>
             `;
         });
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (err) { console.error(err); }
 }
-
-// Odeslání formuláře
-document.getElementById("workshopForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const type = document.getElementById("actionType").value;
-    const customTitle = document.getElementById("customTitle").value.trim();
-    const rawEvc = document.getElementById("vehicleEvc").value.trim();
-    const details = document.getElementById("actionDetails").value.trim();
-    const authorName = localStorage.getItem("username") || "Díly / Management";
-
-    // Vyčištění zadaných evidenčních čísel do čistého pole [7002, 7067]
-    const evcArray = rawEvc ? rawEvc.split(",").map(s => s.trim()).filter(s => s.length > 0) : [];
-
-    let finalTitle = "";
-    let finalLogText = "";
-
-    // 🚀 CHYTRÁ AUTOGENERACE TEXTŮ PODLE POČTU VOZIDEL
-    if (type === "Aktualizace repaintu") {
-        finalTitle = "🎨 Aktualizace repaintu";
-        const sklonovaniVozidlo = evcArray.length === 1 ? "vozidlo" : (evcArray.length >= 2 && evcArray.length <= 4 ? "vozidla" : "vozidel");
-        const sklonovaniNovy = evcArray.length === 1 ? "nový repaint" : (evcArray.length >= 2 && evcArray.length <= 4 ? "nové repainty" : "nové repainty");
-        
-        finalLogText = `Na disk byl(y) nahrán(y) ${sklonovaniNovy} na ${sklonovaniVozidlo} ${evcArray.join(", ")}.`;
-        if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
-        
-    } else if (type === "Nová úprava pro vozidlo") {
-        finalTitle = "🔧 Nová úprava vozidla";
-        const sklonovaniVozidlo = evcArray.length === 1 ? "vozidlo" : (evcArray.length >= 2 && evcArray.length <= 4 ? "vozidla" : "vozidel");
-        const sklonovaniUprava = evcArray.length === 1 ? "nová úprava" : (evcArray.length >= 2 && evcArray.length <= 4 ? "nové úpravy" : "nové úpravy");
-        
-        finalLogText = `Byla vydána ${sklonovaniUprava} pro ${sklonovaniVozidlo} ${evcArray.join(", ")}.`;
-        if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
-        
-    } else if (type === "Aktualizace mapy") {
-        finalTitle = "🗺️ Aktualizace mapy";
-        finalLogText = details;
-    } else {
-        // Možnost "Jiné"
-        finalTitle = customTitle || "Zpráva z dílen";
-        finalLogText = details;
-        if (evcArray.length > 0) finalLogText += `\n\nTýká se vozů: ${evcArray.join(", ")}`;
-    }
-
-    try {
-        const timestamp = new Date();
-
-        // 1. ZÁPIS HLÁŠENÍ DO FIREBASE (Kolekce workshop_logs)
-        await addDoc(collection(db, "workshop_logs"), {
-            title: finalTitle,
-            text: finalLogText,
-            author: authorName,
-            createdAt: timestamp,
-            type: type,
-            evcList: evcArray,
-            confirmedBy: [] // Pole pro budoucí odškrtávání řidiči
-        });
-
-        // 2. AKTUALIZACE STAVU UNIKÁTNÍCH VOZIDEL (Kolekce vehicles)
-        // Projedeme všechna zadaná ev.č. a aktualizujeme jim stav v pravém seznamu
-        for (const evc of evcArray) {
-            const vehicleRef = doc(db, "vehicles", evc); // ID dokumentu bude přímo to evidenční číslo
-            await setDoc(vehicleRef, {
-                lastStatus: `${finalTitle} (${timestamp.toLocaleDateString("cs-CZ")}):\n${details || "Bez bližšího dodatku."}`,
-                updatedAt: timestamp
-            }, { merge: true });
-        }
-
-        alert("Záznam z dílen byl úspěšně uložen do logů i k jednotlivým vozidlům!");
-        document.getElementById("workshopForm").reset();
-        handleActionTypeChange();
-        await loadWorkshopLogs();
-        await loadVehiclesPark();
-        
-    } catch (err) {
-        alert("Chyba při ukládání záznamu: " + err.message);
-    }
-});
 </script>
-
 </body>
 </html>
