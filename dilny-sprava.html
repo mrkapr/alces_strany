@@ -31,7 +31,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;
         }
         .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; position: relative; }
         label { font-size: 14px; font-weight: 600; opacity: 0.9; }
         input, select, textarea {
             background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
@@ -39,11 +39,35 @@
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
         button { font-family: 'Poppins', sans-serif; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+        
         .btn-add { background: #00b84f; color: white; width: 100%; }
         .btn-add:hover { background: #00963f; transform: scale(1.01); }
         .btn-blue { background: #007bff; color: white; width: 100%; }
         .btn-blue:hover { background: #0056b3; transform: scale(1.01); }
+        .btn-delete { background: #ff4d4d; color: white; padding: 6px 12px; font-size: 12px; }
+        .btn-delete:hover { background: #cc3333; }
+        
         #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
+
+        /* Styly pro našeptávač */
+        .suggestions-box {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #1e1e1e; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0 0 10px 10px; max-height: 150px; overflow-y: auto;
+            z-index: 9999; display: none; list-style: none; padding: 0; margin: 0;
+        }
+        .suggestions-box li { padding: 10px 12px; cursor: pointer; font-size: 14px; }
+        .suggestions-box li:hover { background: #ffd84d; color: #121212; font-weight: 600; }
+
+        /* Kontrolní statistiky pod formulářem */
+        .admin-log-block { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 18px; margin-bottom: 15px; }
+        .admin-log-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 10px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .stats-col { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; }
+        .col-green h4 { color: #00ff66; margin: 0 0 5px 0; font-size: 13px; }
+        .col-red h4 { color: #ff4d4d; margin: 0 0 5px 0; font-size: 13px; }
+        .stats-list { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 12px; opacity: 0.85; }
+        .stats-list li { padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
     </style>
 </head>
 <body>
@@ -64,7 +88,7 @@
     <div class="layout-grid">
         <div class="panel">
             <h2>1. Publikovat nové oznámení z dílen</h2>
-            <form id="workshopForm">
+            <form id="workshopForm" autocomplete="off">
                 <div class="form-group">
                     <label>Typ akce</label>
                     <select id="actionType" required onchange="handleActionTypeChange()">
@@ -82,7 +106,8 @@
 
                 <div class="form-group" id="evcGroup">
                     <label>Evidenční čísla vozidel (odděluj čárkou)</label>
-                    <input type="text" id="vehicleEvc" placeholder="např. 7002, 7067">
+                    <input type="text" id="vehicleEvc" placeholder="Začni psát ev.č. (např. 7002)">
+                    <ul id="suggestions" class="suggestions-box"></ul>
                 </div>
 
                 <div class="form-group">
@@ -96,7 +121,6 @@
 
         <div class="panel">
             <h2>2. Registrace nového vozidla (Ev.č.)</h2>
-            <p style="font-size:12px; opacity:0.6; margin-top:-5px; margin-bottom:15px;">Přidá evidenční číslo trvale do pravého seznamu vozového parku.</p>
             <form id="addVehicleForm">
                 <div class="form-group">
                     <label>Evidenční číslo vozu</label>
@@ -104,6 +128,13 @@
                 </div>
                 <button type="submit" class="btn-blue">➕ Zaregistrovat vozidlo</button>
             </form>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-top: 20px;">
+        <h2>Kontrola přečtení zpráv z dílen</h2>
+        <div id="adminWorkshopLogsContainer">
+            <p style="opacity: 0.5;">Načítám přehled kontroly...</p>
         </div>
     </div>
 </div>
@@ -141,7 +172,7 @@ window.addEventListener("DOMContentLoaded", handleActionTypeChange);
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -158,17 +189,173 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+let registeredVehicles = []; // Pole pro ukládání ev.č. pro našeptávač
+let allUsers = [];
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     const userRank = localStorage.getItem("rank") || "";
     if (user && allowedRanks.includes(userRank)) {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("error-screen").style.display = "none";
+        
+        await fetchAllUsers();
+        await loadActiveVehiclesList(); // Načte data pro našeptávač
+        await loadAdminWorkshopSystem(); // Načte kontrolní přehled hříšníků
     } else {
         document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může upravovat pouze vedení.";
         document.getElementById("error-screen").style.display = "block";
     }
 });
+
+// Stáhnout lidi z firmy pro porovnání hříšníků
+async function fetchAllUsers() {
+    allUsers = [];
+    try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        querySnapshot.forEach(d => {
+            allUsers.push({
+                email: d.id,
+                name: d.data().name || d.data().username || "Bez jména",
+                rankName: d.data().rankName || "Řidič"
+            });
+        });
+    } catch(e) { console.error(e); }
+}
+
+// Načte seznam všech evidovaných ev.č. z databáze
+async function loadActiveVehiclesList() {
+    registeredVehicles = [];
+    try {
+        const querySnapshot = await getDocs(collection(db, "vehicles"));
+        querySnapshot.forEach(d => registeredVehicles.push(d.id));
+    } catch(e) { console.error(e); }
+}
+
+// 🚀 LOGIKA NAŠEPTÁVAČE (AUTOKOMPLET)
+const inputEvc = document.getElementById("vehicleEvc");
+const suggestionsList = document.getElementById("suggestions");
+
+inputEvc.addEventListener("input", () => {
+    const value = inputEvc.value.trim();
+    suggestionsList.innerHTML = "";
+    
+    if (!value) { suggestionsList.style.display = "none"; return; }
+
+    // Zjistíme, co uživatel píše za poslední čárkou
+    const parts = value.split(",");
+    const currentQuery = parts[parts.length - 1].trim().toLowerCase();
+
+    if (!currentQuery) { suggestionsList.style.display = "none"; return; }
+
+    // Vyfiltrujeme vozy, které odpovídají zadání a ještě nejsou v textu napsané
+    const filtered = registeredVehicles.filter(v => 
+        v.toLowerCase().includes(currentQuery) && !value.toLowerCase().includes(v.toLowerCase())
+    );
+
+    if (filtered.length === 0) { suggestionsList.style.display = "none"; return; }
+
+    filtered.forEach(evc => {
+        const li = document.createElement("li");
+        li.innerText = `🚍 Ev.č. ${evc}`;
+        li.addEventListener("click", () => {
+            parts[parts.length - 1] = " " + evc; // Nahradíme rozepsanou část celým číslem
+            inputEvc.value = parts.join(",") + ", "; // Přidáme čárku pro další zadávání
+            suggestionsList.innerHTML = "";
+            suggestionsList.style.display = "none";
+            inputEvc.focus();
+        });
+        suggestionsList.appendChild(li);
+    });
+
+    suggestionsList.style.display = "block";
+});
+
+// Zavřít našeptávač, pokud klikneš mimo
+document.addEventListener("click", (e) => {
+    if (e.target !== inputEvc) { suggestionsList.style.display = "none"; }
+});
+
+
+// 🚀 KONTROLNÍ SYSTÉM (KDO POTVRDIL / NEPOTVRDIL)
+async function loadAdminWorkshopSystem() {
+    const container = document.getElementById("adminWorkshopLogsContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "workshop_logs"));
+        const logsArray = [];
+        querySnapshot.forEach(d => logsArray.push({ id: d.id, data: d.data() }));
+        logsArray.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        if (logsArray.length === 0) {
+            container.innerHTML = `<p style="opacity: 0.5; margin:0;">Žádná oznámení nebyla vydána.</p>`;
+            return;
+        }
+
+        logsArray.forEach(item => {
+            const logId = item.id;
+            const logData = item.data;
+            const confirmedEmails = logData.confirmedBy || [];
+
+            const confirmedPeople = [];
+            const missingPeople = [];
+
+            allUsers.forEach(u => {
+                if (confirmedEmails.includes(u.email)) {
+                    confirmedPeople.push(u);
+                } else {
+                    missingPeople.push(u);
+                }
+            });
+
+            const date = logData.createdAt ? new Date(logData.createdAt.toDate()).toLocaleDateString("cs-CZ") : "Neznámý čas";
+
+            const block = document.createElement("div");
+            block.className = "admin-log-block";
+            block.innerHTML = `
+                <div class="admin-log-header">
+                    <div>
+                        <h3 style="margin:0; font-size:16px; color:#ffd84d;">${logData.title}</h3>
+                        <span style="font-size:11px; opacity:0.5;">Publikováno: ${date} | Od: ${logData.author}</span>
+                    </div>
+                    <button class="btn-delete" data-id="${logId}">Smazat ✕</button>
+                </div>
+                <p style="font-size:13px; opacity:0.8; margin:5px 0; white-space:pre-wrap;">${logData.text}</p>
+                
+                <div class="stats-grid">
+                    <div class="stats-col col-green">
+                        <h4>Potvrdili (${confirmedPeople.length}) ✓</h4>
+                        <ul class="stats-list" id="yes-${logId}"></ul>
+                    </div>
+                    <div class="stats-col col-red">
+                        <h4>NEPOTVRDILI (${missingPeople.length}) ✕</h4>
+                        <ul class="stats-list" id="no-${logId}"></ul>
+                    </div>
+                </div>
+            `;
+
+            const ulYes = block.querySelector(`#yes-${logId}`);
+            if (confirmedPeople.length === 0) { ulYes.innerHTML = `<li style="opacity:0.4;">Nikdo.</li>`; }
+            else { confirmedPeople.forEach(p => ulYes.innerHTML += `<li><strong>${p.name}</strong> (${p.rankName})</li>`); }
+
+            const ulNo = block.querySelector(`#no-${logId}`);
+            if (missingPeople.length === 0) { ulNo.innerHTML = `<li style="color:#00ff66;">Všichni potvrdili!</li>`; }
+            else { missingPeople.forEach(p => ulNo.innerHTML += `<li><strong>${p.name}</strong> (${p.rankName})</li>`); }
+
+            // Smazání hlášení
+            block.querySelector(".btn-delete").addEventListener("click", async () => {
+                if (confirm(`Opravdu chceš smazat toto hlášení z dílen?`)) {
+                    await deleteDoc(doc(db, "workshop_logs", logId));
+                    await loadAdminWorkshopSystem();
+                }
+            });
+
+            container.appendChild(block);
+        });
+    } catch(err) { console.error(err); }
+}
+
 
 // ➕ LOGIKA PŘIDÁVÁNÍ NOVÉHO VOZIDLA
 document.getElementById("addVehicleForm").addEventListener("submit", async (e) => {
@@ -185,20 +372,18 @@ document.getElementById("addVehicleForm").addEventListener("submit", async (e) =
             return;
         }
 
-        // Založíme čistý dokument s ID = evidenční číslo
         await setDoc(vehicleRef, {
             lastStatus: "Vozidlo bylo nově zaregistrováno do systému.",
             updatedAt: new Date()
         });
 
-        alert(`Vozidlo Ev.č. ${evc} bylo úspěšně přidáno do vozového parku!`);
+        alert(`Vozidlo Ev.č. ${evc} bylo úspěšně přidáno!`);
         document.getElementById("addVehicleForm").reset();
-    } catch (err) {
-        alert("Chyba při registraci vozu: " + err.message);
-    }
+        await loadActiveVehiclesList(); // Obnovíme pole našeptávače
+    } catch (err) { alert("Chyba: " + err.message); }
 });
 
-// LOGIKA ODESÍLÁNÍ HLÁŠENÍ Z DÍLEN
+// ODESLÁNÍ HLÁŠENÍ Z DÍLEN
 document.getElementById("workshopForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -208,7 +393,8 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     const details = document.getElementById("actionDetails").value.trim();
     const authorName = localStorage.getItem("username") || "Management";
 
-    const evcArray = rawEvc ? rawEvc.split(",").map(s => s.trim()).filter(s => s.length > 0) : [];
+    // Vyčistíme pole na čistá čísla, odsekáme případné koncové čárky
+    const evcArray = rawEvc ? rawEvc.split(",").map(s => s.trim()).filter(s => s.length > 0 && !isNaN(s)) : [];
 
     let finalTitle = "";
     let finalLogText = "";
@@ -237,7 +423,6 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     try {
         const timestamp = new Date();
 
-        // 1. Uložení logu
         await addDoc(collection(db, "workshop_logs"), {
             title: finalTitle,
             text: finalLogText,
@@ -248,7 +433,6 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
             confirmedBy: []
         });
 
-        // 2. Propsání do stavu konkrétních vozidel
         for (const evc of evcArray) {
             const vehicleRef = doc(db, "vehicles", evc);
             await setDoc(vehicleRef, {
@@ -257,12 +441,11 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
             }, { merge: true });
         }
 
-        alert("Záznam úspěšně publikován řidičům!");
+        alert("Záznam úspěšně publikován!");
         document.getElementById("workshopForm").reset();
         handleActionTypeChange();
-    } catch (err) {
-        alert("Chyba: " + err.message);
-    }
+        await loadAdminWorkshopSystem(); // Obnovíme tabulku hříšníků dolů
+    } catch (err) { alert("Chyba: " + err.message); }
 });
 </script>
 </body>
