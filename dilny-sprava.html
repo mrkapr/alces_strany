@@ -97,10 +97,10 @@
                 <div class="form-group">
                     <label>Typ akce</label>
                     <select id="actionType" required onchange="handleActionTypeChange()">
-                        <option value="Aktualizace repaintu">🎨 Aktualizace repaintu</option>
-                        <option value="Nová úprava pro vozidlo">🔧 Nová úprava pro vozidlo</option>
-                        <option value="Aktualizace mapy">🗺️ Aktualizace mapy</option>
-                        <option value="Jiné">📝 Jiné (Vlastní nadpis)</option>
+                        <option value="Aktualizace repaintu">Aktualizace repaintu</option>
+                        <option value="Nová úprava pro vozidlo">Nová úprava pro vozidlo</option>
+                        <option value="Aktualizace mapy">Aktualizace mapy</option>
+                        <option value="Jiné">Jiné (Vlastní nadpis)</option>
                     </select>
                 </div>
 
@@ -436,9 +436,9 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     if (type === "Aktualizace repaintu") {
         finalTitle = "Aktualizace repaintu";
         if (evcArray.length === 1) {
-            finalLogText = `Na disk byl nahrán nový repaint na vozidlo ${evcArray[0]}.`;
+            finalLogText = `Na disk byl nahrána nová repaint vozidla ${evcArray[0]}.`;
         } else {
-            finalLogText = `Na disk byl(y) nahrán(y) nový/é repaint/y na vozidla ${evcArray.join(", ")}.`;
+            finalLogText = `Na disk byly nahrány nové verze repaintů vozidel ${evcArray.join(", ")}.`;
         }
         if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
     } else if (type === "Nová úprava pro vozidlo") {
@@ -446,7 +446,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
         if (evcArray.length === 1) {
             finalLogText = `Byla vydána nová úprava pro vozidlo ${evcArray[0]}.`;
         } else {
-            finalLogText = `Byla(y) vydána(y) nová/é úprava/y pro vozidla ${evcArray.join(", ")}.`;
+            finalLogText = `Byly vydány nové úpravy pro vozidla ${evcArray.join(", ")}.`;
         }
         if (details) finalLogText += `\n\n**Dodatek:**\n${details}`;
     } else if (type === "Aktualizace mapy") {
