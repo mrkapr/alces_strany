@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Čistý Import Historie | alces, a. s.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; }
+        .box { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); padding: 40px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-width: 550px; width: 100%; box-sizing: border-box; }
+        h1 { color: #ffd84d; font-size: 24px; margin-bottom: 10px; }
+        p { opacity: 0.7; font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+        
+        button { background: #4285F4; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 10px; }
+        button:hover { background: #357ae8; transform: scale(1.02); }
+        #status { margin-top: 20px; font-family: monospace; font-size: 13px; color: #a0aec0; text-align: left; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; display: none; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>IMPORT STARÝCH DAT Z VÝKAZŮ</h1>
+    <p>Tohle importuje stará data, chápeme se.</p>
+    
+    <button id="btnGoogleImport">🌐 Přihlásit se přes Google a nahrát data</button>
+    <div id="status"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const mesice = [
+    "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09",
+    "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03",
+    "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+    "2026-10", "2026-11", "2026-12", "2027-01"
+];
+
+// kilometry napis hyr
+const excelData = {
+    "7001": ["31", "59", "/", "/", "/", "/", "45", "299", "/", "/", "/", "/", "/", "98", "14", "-", "-", "-", "-", "-", "-", "-"],
+    "7002": ["/", "32", "/", "/", "/", "43", "/", "/", "/", "33", "92", "89", "/", "/", "60", "-", "-", "-", "-", "-", "-", "-"],
+    "7003": ["60", "26", "/", "/", "/", "/", "36", "444", "50", "/", "/", "/", "/", "/", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7014": ["121", "X", "70", "X", "X", "95", "X", "X", "X", "34", "/", "98", "/", "/", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7015": ["X", "60", "X", "45", "X", "X", "111", "342", "X", "!", "/", "181", "/", "/", "115", "-", "-", "-", "-", "-", "-", "-",],
+    "7021": ["98", "112", "252", "/", "/", "92", "/", "182", "79", "200", "83", "/", "60", "57", "68", "-", "-","-", "-", "-", "-", "-"],
+    "7026": ["X", "423", "386", "233", "167", "X", "X", "X", "74", "/", "250", "250", "X", "X", "35", "-", "-", "-", "-", "-", "-", "-"],
+    "7028": ["208", "60", "?", "608", "175", "49", "240", "X", "221", "50", "252", "157", "/", "237", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7045": ["42", "824", "?", "X", "647", "60", "575", "166", "293", "50", "/", "/", "/", "X", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7048": ["79", "278", "331", "396", "90", "230", "133", "251", "80", "79", "155", "/", "127", "89", "360", "-", "-", "-", "-", "-", "-", "-"],
+    "7054": ["X", "X", "197", "X", "77", "112", "/", "/", "/", "/", "/", "X", "X", "X", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7057": ["-", "-", "-", "-", "-", "?", "?", "?", "-", "228", "146", "/", "X", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7059": ["-", "-", "-", "-", "-", "10", "20", "50", "80", "99", "101", "114", "256", "435", "105", "-", "-", "-", "-", "-", "-"],
+    "7063": ["-", "-", "-", "-", "-", "368", "610", "225", "185", "200", "181", "163", "/", "128", "93", "-", "-", "-", "-", "-", "-"],
+    "7067": ["-", "-", "-", "-", "-", "X", "494", "749", "947", "1229", "704", "894", "654", "998", "1307", "-", "-", "-", "-", "-", "-", "-"],
+    "7068": ["-", "-", "-", "-", "-", "X", "234", "595", "133", "/", "220", "/", "/", "100", "X", "-", "-", "-", "-", "-", "-"],
+    "7071": ["-", "-", "-", "-", "-", "77", "1069", "336", "290", "136", "204", "/", "/", "X", "X", "-", "-", "-", "-", "-", "-"],
+    "7074": ["-", "-", "-", "-", "-", "-", "X", "X", "X", "/", "89", "114", "138", "/", "/", "-", "-", "-", "-", "-", "-"],
+    "7079": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "/", "/", "/", "/", "/", "X", "X", "-", "-", "-", "-", "-", "-"],
+    "7087": ["-", "-", "-","-", "-", "-", "-", "-", "-", "74", "204", "187", "114", "428", "408", "-", "-", "-", "-", "-", "-", "-"],
+    "7093": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "120", "/", "/", "/", "X", "X", "-", "-", "-", "-", "-", "-", "-"],
+    "7094": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "1565", "849", "1462", "979", "1220", "2050", "-", "-", "-", "-", "-", "-", "-"],
+    "7097": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "57", "/", "/", "/", "83", "70", "-", "-", "-", "-", "-", "-", "-"],
+    "7100": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "145", "81", "98", "70", "78", "115", "-", "-", "-", "-", "-", "-", "-"],
+    "7101": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "31", "166", "224", "144", "/", "135", "-", "-", "-", "-", "-", "-", "-"],
+    "7102": ["-", "-", "-", "-", "-", "-", "-", "-", "-", "/", "/", "/", "/", "/", "103", "-", "-", "-", "-", "-", "-", "-"],
+};
+
+const emailMap = {
+    "7001": "ytkapr@gmail.com",
+    "7002": "vasik.kovyt.stream@gmail.com",
+    "7003": "vitulda15@gmail.com",
+    "7028": "bolomsky.j@gmail.com",
+    "7045": "hrouzek.patrik@gmail.com",
+    "7048": "patrikadamek6@gmail.com",
+    "7059": "platosmarek09@gmail.com",
+    "7094": "troutnarm@gmail.com",
+    "7021": "adamecek214@gmail.com",
+    "7063": "jakubkoschwarz@gmail.com",
+    "7067": "horry.sheron@gmail.com",
+    "7101": "davidvagenknecht063@gmail.com",
+    "7074": "husakmichal83@gmail.com",
+    "7015": "jakubsoucek2010@gmail.com",
+    "7100": "mzuscic@gmail.com",
+    "7068": "pepa1149@gmail.com",
+    "7087": "robloxmhd12@gmail.com",
+    "7014": "rukolacek@gmail.com",
+    "7097": "slezak.1900@gmail.com",
+    "7026": "stanislav.krakora@gs.7zscv.cz",
+    "7054": "tomasmarek2005@gmail.com",
+    "7102": "foukalmates@gmail.com"
+};
+
+document.getElementById("btnGoogleImport").addEventListener("click", async () => {
+    const statusDiv = document.getElementById("status");
+    statusDiv.style.display = "block";
+    statusDiv.innerHTML = "Otevírám Google přihlášení...<br>";
+
+    try {
+        const result = await signInWithPopup(auth, provider);
+        statusDiv.innerHTML += `<span style='color:#00ff66;'>✓ Přihlášen: ${result.user.email}</span><br>`;
+        statusDiv.innerHTML += "Nahrávám...<br><br>";
+
+        let celkovyPocet = 0;
+
+        for (const [oc, hodnoty] of Object.entries(excelData)) {
+            const realnyEmail = emailMap[oc] || "";
+
+            for (let i = 0; i < mesice.length; i++) {
+                const mesicStr = mesice[i];
+                let hodnota = hodnoty[i];
+                
+                // jakýkoliv případný zbytek textu odfiltrujeme na pomlčku
+                if (!hodnota || hodnota.includes("posun") || hodnota.includes("opraveno")) {
+                    hodnota = "-";
+                }
+
+                const docId = `${oc}_${mesicStr}`;
+
+                let importObject = {
+                    oc: oc,
+                    osobniCislo: oc,
+                    userEmail: realnyEmail,
+                    archiveMonth: mesicStr,
+                    dateText: `01. ${parseInt(mesicStr.split("-")[1])}. ${mesicStr.split("-")[0]}`,
+                    evc: "IMPORT",
+                    rz: "IMPORT",
+                    archivedAt: new Date().toISOString()
+                };
+
+                if (hodnota !== "-" && hodnota !== "/" && hodnota !== "X" && hodnota !== "!" && hodnota !== "?") {
+                    importObject.najetoKm = parseFloat(hodnota);
+                    importObject.statusText = "odjeto";
+                } else {
+                    importObject.najetoKm = 0;
+                    importObject.statusText = hodnota; // Uloží se '-', '/', 'X', '!'
+                }
+
+                await setDoc(doc(db, "ridici_archivy", docId), importObject);
+                celkovyPocet++;
+            }
+        }
+
+        statusDiv.innerHTML += `<br><span style='color:#00ff66;'><strong>Import dokončen.</strong><br>Všechny řádky byly přepsány přesně na ${celkovyPocet} políček.</span>`;
+        alert("Hotovo! Stará data byla smazána a nahrazena čistým přehledem.");
+
+    } catch (err) {
+        statusDiv.innerHTML += `<br><span style='color:#ff4d4d;'>Máš tu chybu mrdko: ${err.message}</span>`;
+        alert("Chyba při zápisu: " + err.message);
+    }
+});
+</script>
+</body>
+</html>

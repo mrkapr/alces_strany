@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Výkazy (DZVA) | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0; font-family: 'Poppins', Arial, sans-serif;
+            background: #121212; min-height: 100vh; color: white;
+        }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        .content { margin: 120px 40px 40px 40px; }
+        
+        .layout-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px; align-items: start; }
+        @media (max-width: 1100px) { .layout-grid { grid-template-columns: 1fr; } }
+        
+        .panel {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+            padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;
+        }
+        .panel h2 { margin-top: 0; font-size: 24px; color: #fff; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px; }
+        
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; position: relative; }
+        label { font-size: 13px; font-weight: 600; opacity: 0.8; color: #ffd84d; }
+        
+        input, select, textarea {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+            color: white; padding: 10px 12px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box; width: 100%;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+        
+        /* 🚀 PEVNÉ KM UVNITŘ POLÍČKA (BÍLÉ A NATRVALO) */
+        .km-input-wrapper { position: relative; width: 100%; }
+        .km-input-wrapper input { padding-right: 45px; }
+        .km-input-wrapper::after {
+            content: "km"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            font-size: 13px; color: #fff; font-weight: 600; pointer-events: none; opacity: 0.9;
+        }
+
+        /* Multiselect pro linky s tick-boxy */
+        .multiselect-container { position: relative; width: 100%; }
+        .multiselect-select { cursor: pointer; text-align: left; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); padding: 10px 12px; border-radius: 10px; font-size: 14px; color: white; }
+        .multiselect-dropdown { 
+            display: none; position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; 
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; z-index: 9999; 
+            max-height: 180px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .multiselect-option { display: flex; align-items: center; gap: 10px; padding: 6px 4px; cursor: pointer; font-size: 13px; }
+        .multiselect-option:hover { color: #ffd84d; }
+        .multiselect-option input { width: auto; cursor: pointer; }
+
+        .date-selector { display: flex; gap: 10px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .date-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .date-btn input { display: none; }
+        .date-btn.active { background: #ffd84d; color: #121212; }
+
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #ffd84d; margin: 20px 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .delay-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; width: 100%; }
+        .btn-small { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; padding: 6px 12px; font-size: 11px; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; }
+        .btn-small:hover { background: rgba(255,255,255,0.2); }
+
+        /* 🚀 ZAROVNÁNÍ SUMY KM VEDLE SEBE */
+        .km-flex-row { display: flex; align-items: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .km-summary-box { background: #fff; color: #121212; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 20px; display: inline-block; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .km-summary-text { font-size: 14px; font-weight: 600; opacity: 0.9; }
+
+        .btn-submit { background: #00b84f; color: white; border: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif; }
+        .btn-submit:hover { background: #00963f; transform: scale(1.02); }
+
+        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; }
+        .omluvenka-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 10px; font-size: 12px; text-align: center; }
+        .omluvenka-box strong { font-size: 16px; color: #ff4d4d; margin-left: 5px; }
+        
+        .history-list { display: flex; flex-direction: column; gap: 8px; }
+        .history-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: all 0.2s; }
+        .history-item:hover { background: rgba(255,255,255,0.06); }
+        .history-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
+        .history-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; opacity: 0.85; line-height: 1.5; }
+
+        /* 🚀 SPODNÍ SKLENĚNÉ STATISTIKY */
+        .bottom-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 16px; }
+        .stat-card label { display: block; font-size: 13px; opacity: 0.6; margin-bottom: 8px; color: #fff; }
+        .stat-card .val { font-size: 24px; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); display: inline-block; min-width: 150px; text-align: center; }
+        .status-msg {
+            font-size: 14px;
+            color: #00ff66;
+            font-weight: 600;
+            display: none; /* V základu schováno, JS rozsvítí až po úspěšném zápisu */
+        }
+        /* Styly pro našeptávač Ev.č. */
+        .suggestions-box {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px; max-height: 150px; overflow-y: auto;
+            z-index: 9999; display: none; list-style: none; padding: 0; margin: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .suggestions-box li { padding: 10px 12px; cursor: pointer; font-size: 14px; }
+        .suggestions-box li:hover { background: #ffd84d; color: #121212; font-weight: 600; }
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 36px; width: auto; }
+        @media (max-width: 768px) {
+            .topbar {
+                top: 8px; left: 12px; right: 12px; height: 50px;
+                padding: 0 14px; border-radius: 16px;
+            }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 13px; margin-left: 12px; }
+
+            .content { margin: 85px 16px 20px 16px; }
+            .panel { padding: 16px; border-radius: 16px; margin-bottom: 15px; }
+            .panel h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; }
+
+            .form-row { gap: 10px; margin-bottom: 10px; }
+            .form-group { min-width: 100%; }
+            .form-group[style*="flex: 0.5"], .form-group[style*="flex: 1.5"] { flex: 1 !important; }
+
+            input, select, textarea, .multiselect-select { padding: 10px; font-size: 13px; }
+            
+            .delay-row { flex-wrap: wrap; gap: 5px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; }
+            .delay-row .delay-min { width: 55px !important; }
+            .delay-row .delay-time { width: 65px !important; }
+            .delay-row input { flex: 1 !important; min-width: 80px; }
+
+            /* Spodní odesílací blok pod sebou na mobilu */
+            form [style*="display: flex"] { 
+            flex-direction: column; 
+            gap: 15px; 
+            align-items: stretch !important; 
+            }
+            .km-flex-row { margin-top: 10px; width: 100%; justify-content: center; }
+            .km-summary-box { font-size: 18px; padding: 8px 16px; }
+            .btn-submit { width: 100%; padding: 12px; font-size: 14px; margin-top: 5px; }
+            
+            .bottom-stats-grid { grid-template-columns: 1fr; gap: 12px; }
+            .stat-card { padding: 12px 16px; }
+            .stat-card .val { font-size: 20px; padding: 8px; min-width: 100%; }
+            
+            .history-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .omluvenka-box { width: 100%; text-align: left; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">
+        <a href="home.html">
+        <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
+    <div><a href="home.html">Domů</a></div>
+</div>
+
+<div class="content">
+    <div class="layout-grid">
+        
+        <div>
+            <div class="panel">
+                <h2>Denní záznam o výkonu autobusu</h2>
+                <form id="dzvaForm" autocomplete="off">
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 0.5;">
+                            <label>Ev. č. vozu</label>
+                            <input type="text" id="evc" required placeholder="např. 2104">
+                            <ul id="evcSuggestions" class="suggestions-box"></ul>
+                        </div>
+                        <div class="form-group">
+                            <label>RZ vozidla</label>
+                            <input type="text" id="rz" required placeholder="3ST 1234">
+                        </div>
+                        <div class="form-group">
+                            <label>Datum směny</label>
+                            <div class="date-selector">
+                                <label class="date-btn active" id="lblDnes">
+                                    <input type="radio" name="datumSmeny" value="dnes" checked onchange="updateDateSelection()">Dnes
+                                </label>
+                                <label class="date-btn" id="lblVcera">
+                                    <input type="radio" name="datumSmeny" value="vcera" onchange="updateDateSelection()">Včera
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Provozovna</label>
+                            <select id="provozovna" required>
+                                <option value="Severní Čechy">Severní Čechy</option>
+                                <option value="Benešov">Benešov</option>
+                                <option value="Kameniště">Kameniště</option>
+                                <option value="Břeclav">Břeclav</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tachometr start (km)</label>
+                            <div class="km-input-wrapper">
+                                <input type="number" id="tachStart" required placeholder="0" oninput="calculateKm()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tachometr konec (km)</label>
+                            <div class="km-input-wrapper">
+                                <input type="number" id="tachKonec" required placeholder="0" oninput="calculateKm()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Turnus</label>
+                            <input type="text" id="turnus" required placeholder="např. 332/1">
+                        </div>
+                        <div class="form-group">
+                            <label>Linky turnusu (vyber):</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-select" id="multiselectTrigger">Vyber linky...</div>
+                                <div class="multiselect-dropdown" id="multiselectDropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <span class="section-title">ZPOŽDĚNÍ NAD 5 MINUT – VYPIŠ VŠECHNA ZPOŽDĚNÍ</span>
+                        <button type="button" class="btn-small" onclick="addDelayRow()">+ Přidat řádek</button>
+                    </div>
+                    <div id="delaysContainer"></div>
+
+                    <div class="section-title">TANKOVÁNÍ (POUZE PŘI ČERPÁNÍ)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Stav tachometru při tankování</label>
+                            <div class="km-input-wrapper">
+                                <input type="number" id="tankTach" placeholder="km">
+                            </div>
+                        </div>
+                        <div class="form-group" style="flex: 0.5;">
+                            <label>Natankováno (v %)</label>
+                            <input type="number" id="tankProcenta" placeholder="%">
+                        </div>
+                        <div class="form-group" style="flex: 1.5;">
+                            <label>Místo tankování</label>
+                            <input type="text" id="tankMisto" placeholder="garáž / čerpací stanice">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <div class="km-flex-row">
+                            <div class="km-summary-box">
+                                <span id="calculatedKm">0</span> km
+                            </div>
+                            <span class="km-summary-text">bylo najeto za nahlášenou směnu.</span>
+                        </div>
+                        <button type="submit" class="btn-submit">Podepsat a odeslat</button>
+                    </div>
+                    <div id="statusMsg" class="status-msg" style="text-align: right; margin-top: 10px;">Směna zapsána ✓</div>
+                </form>
+            </div>
+
+            <div class="bottom-stats-grid">
+                <div class="stat-card">
+                    <label>Za červen najeto:</label>
+                    <div class="val"><span id="monthTotalKm">-</span> km</div>
+                </div>
+                <div class="stat-card">
+                    <label>Celkem najeto:</label>
+                    <div class="val"><span id="globalTotalKm">-</span> km</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="history-header">
+                <h2 style="border:none; margin:0; padding:0;">Historie Tvých DZVA:</h2>
+                <div class="omluvenka-box">
+                    Omluven za <span id="currentMonthLabel">--/--</span>:<strong id="omluvenkaStatus">X</strong>
+                </div>
+            </div>
+            
+            <h3 style="font-size:16px; color:#ffd84d; margin-bottom:15px;" id="historyTitleMonth">Červen 2026</h3>
+            <div class="history-list" id="historyContainer"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Seznam dostupných linek pro multiselect
+// Seznam linek rozdělený podle provozoven
+const linkyPodleProvozovny = {
+    "Severní Čechy": ["S1", "NAD", "224", "225", "240", "251", "349", "400", "410", "Jiné"],
+    "Benešov": ["6", "332", "338", "360", "361", "390", "437", "438", "440", "485", "753", "755", "667", "668", "669", "Jiné"],
+    "Kameniště": ["001", "680", "810", "811", "812", "Jiné"],
+    "Břeclav": ["572", "573", "574", "Jiné"]
+};
+
+// Pole pro uložení právě vybraných linek řidičem
+const zvoleneLinky = [];
+// Logika multiselectu linek
+const trigger = document.getElementById("multiselectTrigger");
+const dropdown = document.getElementById("multiselectDropdown");
+const provozovnaSelect = document.getElementById("provozovna");
+
+// Funkce, která kompletně překope nabídku linek v menu
+function aktualizujNabidkuLinek() {
+    dropdown.innerHTML = ""; // Vyčistíme staré linky
+    zvoleneLinky.length = 0;  // Vynulujeme předchozí výběr řidiče
+    trigger.innerText = "Vyber linky...";
+
+    // Zjistíme, jaká provozovna je zrovna zvolená
+    const aktualniProvozovna = provozovnaSelect.value;
+    const linkyStrediska = linkyPodleProvozovny[aktualniProvozovna] || [];
+
+    // Vygenerujeme nové tick-boxy
+    linkyStrediska.forEach(linka => {
+        const opt = document.createElement("div");
+        opt.className = "multiselect-option";
+        opt.innerHTML = `<input type="checkbox" value="${linka}"> <span>Linka ${linka}</span>`;
+        
+        opt.querySelector("input").addEventListener("change", (e) => {
+            if(e.target.checked) {
+                zvoleneLinky.push(linka);
+            } else {
+                const idx = zvoleneLinky.indexOf(linka);
+                if(idx > -1) zvoleneLinky.splice(idx, 1);
+            }
+            zvoleneLinky.sort();
+            trigger.innerText = zvoleneLinky.length > 0 ? zvoleneLinky.join(", ") : "Vyber linky...";
+        });
+        
+        dropdown.appendChild(opt);
+    });
+}
+
+// 🔄 Živé sledování: Když řidič změní provozovnu, okamžitě změníme linky
+provozovnaSelect.addEventListener("change", aktualizujNabidkuLinek);
+
+// 🚀 Spustíme hned na začátku při načtení stránky, aby tam skočila výchozí provozovna
+aktualizujNabidkuLinek();
+
+// Stará logika otevírání menu (nechej beze změny)
+trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+});
+document.addEventListener("click", () => { dropdown.style.display = "none"; });
+dropdown.addEventListener("click", (e) => e.stopPropagation());
+
+
+function updateDateSelection() {
+    const rDnes = document.querySelector('input[name="datumSmeny"][value="dnes"]');
+    document.getElementById("lblDnes").classList.toggle("active", rDnes.checked);
+    document.getElementById("lblVcera").classList.toggle("active", !rDnes.checked);
+}
+
+function calculateKm() {
+    const start = parseFloat(document.getElementById("tachStart").value) || 0;
+    const konec = parseFloat(document.getElementById("tachKonec").value) || 0;
+    const rozdil = konec - start;
+    document.getElementById("calculatedKm").innerText = rozdil > 0 ? rozdil : 0;
+}
+
+function addDelayRow() {
+    const container = document.getElementById("delaysContainer");
+    const div = document.createElement("div");
+    div.className = "delay-row";
+    div.innerHTML = `
+        <span style="font-size:14px; opacity:0.7;">+</span>
+        <input type="number" class="delay-min" placeholder="min" style="width: 70px;" required>
+        <input type="text" class="delay-stop" placeholder="Zastávka..." style="flex:2;" required>
+        <input type="text" class="delay-reason" placeholder="Důvod..." style="flex:2;" required>
+        <input type="text" class="delay-time" placeholder="hh:mm" style="width: 80px;" required>
+        <button type="button" class="btn-small" style="background:#ff4d4d; border:none;" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function toggleHistoryDetails(element) {
+    const details = element.querySelector(".history-details");
+    if(details) details.style.display = details.style.display === "block" ? "none" : "block";
+}
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let userEmail = "";
+let existujiciVozidla = []; // Sem si stáhneme reálná auta pro kontrolu
+const now = new Date();
+const formattedLabel = `${now.getMonth() + 1}/${String(now.getFullYear()).slice(-2)}`;
+document.getElementById("currentMonthLabel").innerText = formattedLabel;
+document.getElementById("historyTitleMonth").innerText = now.toLocaleDateString("cs-CZ", { month: 'long', year: 'numeric' });
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        userEmail = user.email;
+        await loadActiveVehicles();
+        await checkOmluvenkaStatus();
+        await loadMyDzvaHistory();
+    } else {
+        window.location.href = "login.html";
+    }
+});
+
+// 🚀 NOVÉ: Stáhnutí aut z databáze a zapnutí našeptávače
+async function loadActiveVehicles() {
+    existujiciVozidla = [];
+    try {
+        const querySnapshot = await getDocs(collection(db, "vehicles"));
+        querySnapshot.forEach(d => existujiciVozidla.push(d.id)); // Uložíme Ev.č.
+    } catch(e) { console.error("Chyba stažení aut:", e); }
+
+    // Aktivace našeptávače na inputu
+    const inputEvc = document.getElementById("evc");
+    const suggestionsList = document.getElementById("evcSuggestions");
+
+    inputEvc.addEventListener("input", () => {
+        const value = inputEvc.value.trim();
+        suggestionsList.innerHTML = "";
+        
+        if (!value) { suggestionsList.style.display = "none"; return; }
+
+        // Vyfiltrujeme auta, která odpovídají zadání
+        const filtered = existujiciVozidla.filter(v => v.includes(value));
+
+        if (filtered.length === 0) { suggestionsList.style.display = "none"; return; }
+
+        filtered.forEach(evc => {
+            const li = document.createElement("li");
+            li.innerText = `🚍 Ev.č. ${evc}`;
+            li.addEventListener("click", () => {
+                inputEvc.value = evc; // Vyplníme hodnotu
+                suggestionsList.innerHTML = "";
+                suggestionsList.style.display = "none";
+                inputEvc.focus();
+            });
+            suggestionsList.appendChild(li);
+        });
+
+        suggestionsList.style.display = "block";
+    });
+
+    // Zavřít našeptávač, pokud řidič klikne kamkoli vedle
+    document.addEventListener("click", (e) => {
+        if (e.target !== inputEvc) { suggestionsList.style.display = "none"; }
+    });
+}
+
+async function checkOmluvenkaStatus() {
+    const statusText = document.getElementById("omluvenkaStatus");
+    try {
+        const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        
+        // 🚀 ÚPRAVA: Odstranili jsme filtr na konkrétní type == "Omluvenka"
+        // Teď kontrolujeme všechny záznamy daného řidiče pro tento měsíc
+        const q = query(
+            collection(db, "absences"), 
+            where("userEmail", "==", userEmail), 
+            where("from", "==", currentMonthStr)
+        );
+        const snap = await getDocs(q);
+        
+        let hasApprovedAbsence = false;
+        
+        snap.forEach(d => { 
+            // Pokud je stav schválený (platí pro Omluvenky i aktivní Pauzy)
+            if(d.data().status === "schvaleno") {
+                hasApprovedAbsence = true; 
+            }
+        });
+        
+        // Pokud má schválenou omluvenku NEBO pauzu, svítí fajfka
+        statusText.innerText = hasApprovedAbsence ? "✓" : "X";
+        statusText.style.color = hasApprovedAbsence ? "#00ff66" : "#ff4d4d";
+    } catch (err) { 
+        console.error("Chyba při kontrole statusu omluvenky/pauzy:", err); 
+    }
+}
+
+async function loadMyDzvaHistory() {
+    const container = document.getElementById("historyContainer");
+    if(!container) return;
+    container.innerHTML = "";
+
+    try {
+        // 1. Načteme aktivní směny z aktuálního měsíce
+        const q = query(collection(db, "dzva"), where("userEmail", "==", userEmail));
+        const snap = await getDocs(q);
+        const list = [];
+        
+        let globalTotal = 0;
+        let monthTotal = 0;
+        const currentMonthIdx = now.getMonth();
+        const currentYearIdx = now.getFullYear();
+
+        snap.forEach(d => {
+            const data = d.data();
+            list.push(data);
+            
+            const km = parseFloat(data.najetoKm) || 0;
+            globalTotal += km; // Přičteme km z aktuálního měsíce
+
+            if (data.createdAt) {
+                const cDate = data.createdAt.toDate();
+                if (cDate.getMonth() === currentMonthIdx && cDate.getFullYear() === currentYearIdx) {
+                    monthTotal += km;
+                }
+            }
+        });
+
+        // 🚀 NOVÉ: Načteme historii z uzavřených archivů, aby seděl globální součet km
+        try {
+            const archiveQ = query(collection(db, "ridici_archivy"), where("userEmail", "==", userEmail));
+            const archiveSnap = await getDocs(archiveQ);
+            archiveSnap.forEach(ad => {
+                const aData = ad.data();
+                const archiveKm = parseFloat(aData.najetoKm) || 0;
+                globalTotal += archiveKm; // 🌟 Přičteme historii do celkového součtu
+            });
+        } catch (archErr) {
+            console.error("Chyba při načítání km z archivu do výkazů:", archErr);
+        }
+
+        // Zápis do políček na webu
+        document.getElementById("globalTotalKm").innerText = globalTotal;
+        document.getElementById("monthTotalKm").innerText = monthTotal;
+
+        list.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds);
+
+        if(list.length === 0) {
+            container.innerHTML = `<p style="opacity:0.5; font-size:12px;">Za tento měsíc nebyla najeta žádná směna.</p>`;
+            return;
+        }
+
+        list.forEach(data => {
+            let delayHtml = "Žádné";
+            if(data.delays && data.delays.length > 0) {
+                delayHtml = data.delays.map(d => `+${d.min} min, ${d.stop} (${d.reason}) v ${d.time}`).join("<br>");
+            }
+
+            container.innerHTML += `
+                <div class="history-item" onclick="toggleHistoryDetails(this)">
+                    <div class="history-top" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; opacity: 0.9;">
+                            <span>${data.dateText}</span>
+                            <span>  |  &nbsp;${data.provozovna}</span>
+                            <span>  |  &nbsp;${data.rz}</span>
+                            <span>  |  &nbsp;ev.č. ${data.evc}</span>
+                            <span>  |  &nbsp;Turnus ${data.turnus}</span>
+                        </div>
+                        <div style="color: #ffd84d; font-weight: 700; white-space: nowrap;">
+                            najeto ${data.najetoKm} km &nbsp;▾
+                        </div>
+                    </div>
+                    
+                    <div class="history-details" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+                        <strong>Linky turnusu:</strong> ${data.linky}<br>
+                        <strong>Tachometr:</strong> před ${data.tachStart} km, po ${data.tachKonec} km<br>
+                        <strong>Tankování:</strong> ${data.tankMisto ? `+${data.tankProcenta}%, ${data.tankMisto} (Tach: ${data.tankTach} km)` : "N/A"}<br>
+                        <strong>Zpoždění:</strong><br>${delayHtml}
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) { console.error(err); }
+}
+
+document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if(zvoleneLinky.length === 0) {
+        alert("Chyba: Musíš vybrat aspoň jednu linku turnusu!");
+        return;
+    }
+
+    const zadaneEvc = document.getElementById("evc").value.trim();
+    if (!existujiciVozidla.includes(zadaneEvc)) {
+        alert(`Chyba: Vozidlo s ev.č. ${zadaneEvc} neexistuje v evidenci firmy!`);
+        return;
+    }
+
+    const option = document.querySelector('input[name="datumSmeny"]:checked').value;
+    const targetDate = new Date();
+    if(option === "vcera") targetDate.setDate(targetDate.getDate() - 1);
+    const dateText = targetDate.toLocaleDateString("cs-CZ");
+
+    const delays = [];
+    document.querySelectorAll(".delay-row").forEach(row => {
+        delays.push({
+            min: row.querySelector(".delay-min").value,
+            stop: row.querySelector(".delay-stop").value,
+            reason: row.querySelector(".delay-reason").value,
+            time: row.querySelector(".delay-time").value
+        });
+    });
+
+    const startKm = parseFloat(document.getElementById("tachStart").value) || 0;
+    const konecKm = parseFloat(document.getElementById("tachKonec").value) || 0;
+    const najetoKm = konecKm - startKm;
+
+    if(najetoKm < 0) {
+        alert("Chyba: Stav tachometru na konci nemůže být nižší než na začátku!");
+        return;
+    }
+
+    // 🕵️ KONTROLA PŘIDĚLENÉHO VOZIDLA PRO AUTOMATICKÝ BONUS 20%
+    let automatickyBonusKm = 0;
+    let automatickyBonusDuvod = "";
+
+    try {
+        // Podíváme se na kartu přidělení pro toto konkrétní vozidlo
+        const assignSnap = await getDoc(doc(db, "assignments", zadaneEvc));
+        if (assignSnap.exists()) {
+            const assignData = assignSnap.data();
+            const schvaleniDriveri = assignData.drivers || [];
+            
+            // Zkontrolujeme, zda přihlášený řidič figuruje mezi schválenými řidiči tohoto auta
+            const jeToMojePrideleneAuto = schvaleniDriveri.some(d => d.email.toLowerCase().trim() === userEmail.toLowerCase().trim());
+            
+            if (jeToMojePrideleneAuto) {
+                // Výpočet 20% ze základu, zaokrouhleno na 1 desetinné místo
+                automatickyBonusKm = Math.round(((najetoKm * 20) / 100) * 10) / 10;
+                automatickyBonusDuvod = "Automatický bonus +20% za jízdu s přiděleným vozidlem";
+            }
+        }
+    } catch (errAssign) {
+        console.error("Nepodařilo se ověřit přidělenku vozu pro bonus:", errAssign);
+    }
+
+    // Příprava dat dokumentu
+    // Příprava dat dokumentu
+    const docData = {
+        userEmail: userEmail,
+        evc: zadaneEvc,
+        rz: document.getElementById("rz").value.trim(),
+        dateText: dateText,
+        provozovna: document.getElementById("provozovna").value,
+        tachStart: startKm,
+        tachKonec: konecKm,
+        turnus: document.getElementById("turnus").value.trim(),
+        linky: zvoleneLinky.join(", "),
+        delays: delays,
+        tankTach: document.getElementById("tankTach").value || "N/A",
+        tankProcenta: document.getElementById("tankProcenta").value || "N/A",
+        tankMisto: document.getElementById("tankMisto").value.trim() || "",
+        najetoKm: najetoKm,
+        bonusKm: automatickyBonusKm, // 🚀 OPRAVENO: Už bez překlepu
+        bonusDuvod: automatickyBonusDuvod,
+        createdAt: new Date()
+    };
+
+    try {
+        await addDoc(collection(db, "dzva"), docData);
+        
+        const msg = document.getElementById("statusMsg");
+        
+        // Změna textu potvrzení, pokud řidič získal věrnostní bonus
+        if (automatickyBonusKm > 0) {
+            msg.innerHTML = `Směna zapsána s přiděleným vozzidlem (Bonus +${automatickyBonusKm} km) ✓`;
+        } else {
+            msg.innerHTML = `Směna zapsána ✓`;
+        }
+        
+        msg.style.display = "block";
+        
+        document.getElementById("dzvaForm").reset();
+        document.getElementById("delaysContainer").innerHTML = "";
+        zvoleneLinky.length = 0;
+        document.getElementById("multiselectTrigger").innerText = "Vyber linky...";
+        document.querySelectorAll(".multiselect-option input").forEach(cb => cb.checked = false);
+        
+        calculateKm();
+        updateDateSelection();
+
+        setTimeout(() => { msg.style.display = "none"; }, 4000);
+        await loadMyDzvaHistory();
+    } catch (err) {
+        alert("Chyba při odesílání výkazu: " + err.message);
+    }
+});
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
+</script>
+</body>
+</html>

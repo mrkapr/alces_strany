@@ -1,418 +1,197 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<title>O nás | alces, a. s.</title>
-<link rel="icon" href="favicon.png" type="image/png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Google font Poppins -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-<style>
-body {
-    margin: 0;
-    font-family: 'Poppins', Arial, sans-serif;
-    background: #222;
-    color: white;
-}
-
-/* ================= HORNÍ LIŠTA ================= */
-
-.topbar {
-    height: 50px;
-    background: #555;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-
-    z-index: 999;
-}
-
-.logo img {
-    height: 30px;
-    margin-top: 6px;
-}
-
-.footer {
-    text-align: center;
-
-    padding: 35px;
-
-    opacity: 0.55;
-
-    font-size: 14px;
-}
-
-    .menu {
-    display: flex;
-    align-items: center;
-    gap: 25px; /* rozestupy mezi položkami */
-    margin-right: 20px; /* posune celé menu doleva */
-    }
-
-    .divider {
-    height: 20px;
-    width: 2.5px;
-    background: rgb(255, 255, 255);
-    margin: 0 3px;
-    }
-
-.menu a {
-    color: white;
-    margin-left: 20px;
-    text-decoration: none;
-    font-weight: 600;
-    display: inline-block;
-
-    transition: 
-        transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-        opacity 0.25s ease,
-        filter 0.25s ease;
-}
-
-.menu:hover a {
-    opacity: 0.4;
-    transform: scale(0.9);
-}
-
-.menu a:hover {
-    opacity: 1 !important;
-    transform: scale(1.08);
-    filter: blur(0px);
-}
-
-.menu a:active {
-    transform: scale(0.9);
-}
-
-.menu:hover a {
-    opacity: 0.4;
-    transform: scale(0.9);
-}
-
-.menu a:hover {
-    opacity: 1 !important;
-    transform: scale(1.08);
-    filter: blur(0px);
-}
-
-.menu a:active {
-    transform: scale(0.9);
-}
-
-.divider {
-    height: 20px;
-    width: 2.5px;
-    background: white;
-}
-
-.login-btn {
-    background: darkgreen;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Poppins', Arial, sans-serif;
-}
-
-/* ================= HERO ================= */
-
-.hero {
-    background: linear-gradient(
-        rgba(0,0,0,0.6),
-        rgba(0,0,0,0.6)
-    ),
-    url("fotky/INDEX/za_logem.jpg");
-    background-size: cover;
-    background-position: center;
-    padding: 100px 40px;
-    text-align: center;
-}
-
-.hero-logo {
-    max-width: 320px;
-    width: 100%;
-    height: auto;
-    margin-top: 20px; /* posune celé logo dolů */
-}
-
-.hero h1 {
-    font-size: 64px;
-    margin-bottom: 20px;
-}
-
-/* ================= OBSAH ================= */
-
-.section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    padding: 60px;
-    align-items: center;
-}
-
-.section img {
-    width: 100%;
-    border-radius: 12px;
-}
-
-.text-block {
-    line-height: 1.6;
-}
-
-/* ===== popup ===== */
-.popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.popup {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-30px);
-    background: #ffd84d;
-    color: #000;
-    width: 90%;
-    max-width: 420px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    z-index: 9999;
-    opacity: 0;
-    transition: all 0.4s ease;
-    font-family: 'Poppins', Arial, sans-serif;
-}
-
-.popup.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-.popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    padding: 14px 16px 8px 16px;
-}
-
-.popup-body {
-    padding: 0 16px 16px 16px;
-    font-size: 14px;
-    font-weight: 400;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.hidden {
-    display: none;
-}
-
-/* ===== overlay ===== */
-#recruitment-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-/* aktivní stav */
-#recruitment-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* ===== popup ===== */
-#recruitment-popup {
-    background: #ffd500;
-    color: #000;
-    width: 90%;
-    max-width: 520px;
-    padding: 30px 40px;
-    border-radius: 16px;
-    text-align: center;
-    position: relative;
-
-    transform: translateY(-60px);
-    opacity: 0;
-    transition: all 0.45s ease;
-}
-
-/* animace nájezdu do středu */
-#recruitment-overlay.active #recruitment-popup {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-#recruitment-popup h2 {
-    margin: 0 0 12px 0;
-    font-size: 28px;
-    font-weight: 700;
-}
-
-#recruitment-popup p {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 400;
-}
-
-/* křížek */
-.close-btn {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-
-
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 900px) {
-    .section {
-        grid-template-columns: 1fr;
-    }
-
-    .hero h1 {
-        font-size: 42px;
-    }
-}
-
-@media (max-width: 768px) {
-
-    /* ===== horní lišta ===== */
-    .topbar {
-        flex-direction: column;
-        height: auto;
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .menu {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        margin-right: 0;
-    }
-
-    .menu a {
-        margin-left: 0;
-        font-size: 14px;
-    }
-
-    .divider {
-        display: none; /* na mobilu zbytečné */
-    }
-
-    .logout {
-        margin-left: 0;
-    }
-
-    /* ===== obsah ===== */
-    .content,
-    .page {
-        margin: 20px;
-        padding: 0;
-    }
-
-    h1 {
-        font-size: 26px;
-    }
-
-    h2 {
-        font-size: 16px;
-    }
-
-    /* ===== vedení – karty ===== */
-    .cards {
-        grid-template-columns: 1fr; /* místo 2 sloupců jen 1 */
-    }
-
-    .card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .profile {
-        width: 80px;
-        height: 80px;
-    }
-
-    .role,
-    .rolemajitel,
-    .rolevedeni,
-    .roledispecink,
-    .roleprovozak {
-        margin-left: 0;
-    }
-
-    /* ===== post-1 (text + obrázek) ===== */
-    .post-content {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .post-content img {
-        width: 100%;
-        height: auto;
-    }
-}
-
-</style>
+    <meta charset="UTF-8">
+    <title>O nás | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0; font-family: 'Poppins', Arial, sans-serif;
+            background: #121212; min-height: 100vh; color: white;
+        }
+
+        /* ================= HORNÍ LIŠTA ================= */
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+
+        .menu {
+            display: flex;
+            align-items: center;
+            gap: 25px; 
+            height: 100%;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            transition: 
+                transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+                opacity 0.25s ease;
+        }
+
+        .menu:hover > a:not(:hover) {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .menu a:hover {
+            opacity: 1 !important;
+            transform: scale(1.05);
+        }
+
+        .divider {
+            height: 20px;
+            width: 2.5px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0 5px;
+        }
+
+        .login-btn {
+            background: #00b84f;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .login-btn:hover { background: #00963f; transform: scale(1.02); }
+
+        /* Tlačítko dole v patičce */
+        .accessibility-toggle {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 6px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 15px;
+            vertical-align: middle;
+            transition: all 0.2s;
+        }
+        .accessibility-toggle:hover {
+            background: #ffd84d;
+            color: #121212;
+            border-color: #ffd84d;
+        }
+
+        /* ================= HERO ================= */
+        .hero {
+            background: linear-gradient(
+                rgba(0,0,0,0.7),
+                rgba(0,0,0,0.7)
+            ),
+            url("fotky/INDEX/za_logem.jpg");
+            background-size: cover;
+            background-position: center;
+            padding: 120px 40px 80px 40px;
+            text-align: center;
+        }
+
+        .hero-logo {
+            max-width: 320px;
+            width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+
+        /* ================= OBSAH ================= */
+        .content { margin: 40px; }
+
+        .section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .text-block {
+            line-height: 1.8;
+            font-size: 20.5px;
+        }
+        .text-block p { margin-bottom: 15px; }
+
+        /* Třídy pro dynamické skrývání textu a ukazování emoji */
+        .emoji-only {
+            display: none;
+            font-size: 40px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Aktivní stav emoji módu */
+        body.emoji-mode .text-hide { display: none !important; }
+        body.emoji-mode .emoji-only { display: block !important; }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.6;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* ─── 📱 MOBILNÍ RESPONSIVNÍ DESIGN (Max 768px) ─── */
+        @media (max-width: 768px) {
+            .topbar {
+                top: 8px; left: 12px; right: 12px; height: 50px;
+                padding: 0 14px; border-radius: 16px;
+            }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 13px; margin-left: 12px; }
+            .login-btn { padding: 6px 14px; font-size: 12px; }
+            .divider { display: none; }
+
+            .content { margin: 20px 16px; }
+            .section { grid-template-columns: 1fr; gap: 20px; padding: 20px; border-radius: 16px; }
+            .section:nth-of-type(2) img { grid-row: 1; }
+            
+            .hero { padding: 90px 20px 40px 20px; }
+            .hero-logo { max-width: 220px; }
+            .footer { flex-direction: column; gap: 10px; }
+            .accessibility-toggle { margin-left: 0; }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
-
-<div id="recruitment-overlay">
-    <div id="recruitment-popup">
-        <button class="close-btn" onclick="closePopup()">✕</button>
-        <h2>Nábor je u konce!</h2>
-        <p>Čas na vyplnění náborového formuláře je u konce. Výsledky se dozvíte co nejdříve.</p>
-        <p>Děkujeme za účast!</p>
-    </div>
-</div>
-
- ===== PROBÍHÁ NÁBOR KONEC ===== -->
-
-
-<!-- ===== HORNÍ LIŠTA ===== -->
 <div class="topbar">
-
     <div class="logo">
         <a href="index.html">
             <img src="fotky/univ/logo.png" alt="alces">
@@ -420,70 +199,77 @@ body {
     </div>
 
     <div class="menu">
-        <a href="#">O nás</a>
-        <a href="https://alces-as.fun/nabor/">Nábor</a>
+        <a href="#"><span class="text-hide">O nás</span><span class="emoji-only" style="font-size:16px;">O NÁSℹ️</span></a>
+        <a href="https://alces-as.fun/nabor/"><span class="text-hide">Nábor</span><span class="emoji-only" style="font-size:16px;">PŘIDAT SE📝</span></a>
         <span class="divider"></span>
-        <a href="login.html">
-        <button class="login-btn"><b>Přihlásit se</b></button>
-        <a href="#"></a>
+        <a href="login.html" style="height:auto; display:inline-block; margin-left:0;">
+            <button class="login-btn"><span class="text-hide">Přihlásit se</span><span class="emoji-only" style="font-size:14px;">🔑</span></button>
         </a>
     </div>
 </div>
 
-<!-- ===== HERO ===== -->
 <div class="hero">
     <img src="fotky/univ/logo.png" alt="logo" class="hero-logo">
 </div>
 
-
-<!-- ===== OBSAH 1 ===== -->
-<div class="section">
-    <div class="text-block">
-        <p>
-            <b>alces, a. s. je virtuální dopravní podnik zajišťující dopravu v rámci Pražské integrované dopravy, IDOL a IDS JMK. Byl založen na počátku roku 2025 a je spolehlivým dopravcem v oblasti středních a severních Čech a jižní Moravy.</b>
-        </p>
-        <p>
-            <b>Naše vozidla jsou pravidelně kontrolována proškolenými techniky, abychom zajistili, že se do své destinace dostanete v pořádku. Vaše bezpečnost a pohodlí je naší prioritou a samozřejmostí.</b>
-        </p>
+<div class="content">
+    <div class="section">
+        <div class="text-block">
+            <div class="text-hide">
+                <p>
+                    <b>alces, a. s. je virtuální dopravní podnik zajišťující dopravu v rámci Pražské integrované dopravy, IDOL a IDS JMK. Byl založen na počátku roku 2025 a je spolehlivým dopravcem v oblasti středních a severních Čech a jižní Moravy.</b>
+                </p>
+                <p>
+                    <b>Naše vozidla jsou pravidelně kontrolována proškolenými techniky, abychom zajistili, že se do své destinace dostanete v pořádku. Vaše bezpečnost a pohodlí je naší prioritou a samozřejmostí.</b>
+                </p>
+            </div>
+            <div class="emoji-only">alces, a. s. = VDP 🚌 zajišťující dopravu v rámci PID, IDOL a IDS JMK. 🔰 2025, dopravce v oblasti středních a severních Čech a jižní Moravy 👍</div>
+        </div>
+        <img src="fotky/INDEX/knihovna1.jpg" alt="bus">
     </div>
 
-    <img src="fotky/INDEX/knihovna1.jpg" alt="bus">
-</div>
-
-<!-- ===== OBSAH 2 ===== -->
-<div class="section">
-    <img src="fotky/INDEX/knihovna2.jpg" alt="bus">
-
-    <div class="text-block">
-        <p>
-            <b>Pro naše zaměstnance často pořádáme různé eventy a soutěže, takže se nemusíte bát, že se u nás budete nudit!</b>
-        </p>
-        <p>
-            <b>V blízké době plánujeme spustit nábor do naší společnosti. Mějte oči na stopkách, budeme se na vás těšit!</b>
-        </p>
+    <div class="section">
+        <img src="fotky/INDEX/knihovna2.jpg" alt="bus">
+        <div class="text-block">
+            <div class="text-hide">
+                <p>
+                    <b>Pro naše zaměstnance často pořádáme různé eventy a soutěže, takže se nemusíte bát, že se u nás budete nudit!</b>
+                </p>
+                <p>
+                    <b>Pravidlně pořádáme nábory. Pokud máte zájem se k nám přidat, sledujte tuto stránku. Budeme se na vás těšit!</b>
+                </p>
+            </div>
+            <div class="emoji-only">Soutěže 🏆, časté nábory👥</div>
+        </div>
     </div>
 </div>
 
 <div class="footer">
-    © alces, a. s.
+    <span>© alces, a. s.</span>
+    <button class="accessibility-toggle" onclick="toggleEmojiMode()">Snadné čtení</button>
 </div>
 
-<!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====
-
 <script>
-window.addEventListener("load", () => {
-    setTimeout(() => {
-        document.getElementById("recruitment-overlay").classList.add("active");
-    }, 300); // malé zpoždění = hezčí efekt
-});
+    function toggleEmojiMode() {
+        document.body.classList.toggle("emoji-mode");
+    }
 
-function closePopup() {
-    document.getElementById("recruitment-overlay").classList.remove("active");
-}
+    function upravFaviconuPodleRezimu() {
+        const favicon = document.getElementById('favicon');
+        if (!favicon) return;
+
+        const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (jeTemnyRezim) {
+            favicon.href = 'fotky/univ/favicon.png'; 
+        } else {
+            favicon.href = 'fotky/univ/favicon-cerna.png';
+        }
+    }
+
+    upravFaviconuPodleRezimu();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
-
-===== PROBÍHÁ NÁBOR KONEC ===== -->
-
 
 </body>
 </html>

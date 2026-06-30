@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přidělení vozidel | alces, a. s.</title>
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28); box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { display: flex; align-items: center; margin-left: 0 !important; height: 100%; }
+        .topbar .logo img { height: 34px; width: auto; display: block; margin: auto 0; }
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        
+        .content { margin: 120px 40px 40px 40px; }
+        
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
+        .content-header h1 { font-size: 28px; font-weight: 700; margin: 0; color: #ffd84d; }
+        
+        /* 🚀 STRUKTURA PRO VYHLEDÁVAČ A FILTR */
+        .controls-container { display: flex; gap: 10px; width: auto; min-width: 300px; }
+        .search-input {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+            color: white; padding: 10px 14px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box; width: 200px;
+        }
+        .search-input:focus, .filter-select:focus { outline: none; border-color: #ffd84d; }
+        
+        .filter-select {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+            color: white; padding: 10px 14px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box; cursor: pointer;
+        }
+        .filter-select option { background: #1e1e1e; color: white; }
+
+        .user-status-panel {
+            background: rgba(255, 216, 77, 0.05); border: 1px solid rgba(255, 216, 77, 0.2);
+            border-radius: 16px; padding: 15px 25px; margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        .status-meta { font-size: 14px; opacity: 0.9; }
+        .status-meta strong { color: #ffd84d; }
+        .lock-alert { color: #ff4d4d; font-weight: 600; font-size: 13px; background: rgba(255,77,77,0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,77,77,0.2); }
+
+        .co-approve-banner {
+            background: rgba(255, 165, 0, 0.15); border: 1px solid #ffaa00;
+            border-radius: 14px; padding: 15px 20px; margin-bottom: 20px;
+            display: none; justify-content: space-between; align-items: center; gap: 20px;
+            animation: pulse-border 2s infinite alternate;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 5px rgba(255,170,0,0.2); }
+            100% { box-shadow: 0 0 15px rgba(255,170,0,0.5); }
+        }
+        .co-approve-text { font-size: 14px; font-weight: 600; color: #ffaa00; }
+        .co-btn-zone { display: flex; gap: 8px; }
+
+        .list-container { display: flex; flex-direction: column; gap: 8px; }
+        
+        .vehicle-row { 
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); 
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center; 
+            justify-content: space-between; gap: 20px; transition: background 0.2s;
+        }
+        .vehicle-row:hover { background: rgba(255,255,255,0.07); }
+        
+        .col-main { display: flex; align-items: center; gap: 25px; flex: 1; }
+        .col-evc { font-size: 16px; font-weight: 700; color: #ffd84d; min-width: 90px; }
+        .col-drivers { font-size: 13px; opacity: 0.9; flex: 1; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .driver-tag { background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+        .waiting-tag { color: #ffaa00; font-style: italic; font-size: 12px; }
+
+        .col-actions { display: flex; align-items: center; gap: 10px; }
+        
+        .badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; }
+        .status-free { color: #00ff66; background: rgba(0, 184, 79, 0.15); }
+        .status-occupied { color: #66b2ff; background: rgba(0, 123, 255, 0.15); }
+        .status-full { color: #ff4d4d; background: rgba(255, 77, 77, 0.15); }
+        .status-waiting { color: #ffaa00; background: rgba(255, 165, 0, 0.15); }
+        
+        .btn-action { 
+            background: #ffd84d; color: #121212; border: none; padding: 6px 14px; 
+            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; 
+            font-family: 'Poppins', sans-serif; white-space: nowrap; transition: background 0.2s;
+        }
+        .btn-action:hover:not(:disabled) { background: #ffe280; }
+        .btn-action:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2) !important; cursor: not-allowed; border: 1px solid rgba(255,255,255,0.05); }
+        
+        .btn-co-yes { background: #00b84f; color: white; }
+        .btn-co-yes:hover { background: #00963f; }
+        .btn-co-no { background: #ff4d4d; color: white; }
+        .btn-co-no:hover { background: #cc3333; }
+        
+        .btn-leave { background: #ff4d4d; color: white; }
+        .btn-leave:hover { background: #cc3333; }
+
+        @media (max-width: 768px) {
+            .vehicle-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; }
+            .col-main { flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+            .col-actions { width: 100%; justify-content: space-between; }
+            .controls-container { width: 100%; flex-direction: column; gap: 8px; }
+            .search-input, .filter-select { width: 100%; }
+            .user-status-panel { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
+            .co-approve-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .co-btn-zone { width: 100%; justify-content: stretch; }
+            .co-btn-zone button { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo"><a href="home.html"><img src="fotky/univ/logo.png" alt="alces"></a></div>
+    <div><a href="home.html">Domů</a></div>
+</div>
+
+<div class="content">
+    
+    <div class="user-status-panel">
+        <div class="status-meta">
+            👤 Řidič: <strong id="panelDriverName">Načítám...</strong> (OČ: <span id="panelDriverOc">-</span>) | 
+            Přidělený vůz: <strong id="panelAssignedVehicle">-</strong>
+        </div>
+        <div id="panelLockZone" style="display: none;">
+            <span class="lock-alert" id="panelLockText">Momentálně si nelze přidělit vozidlo</span>
+        </div>
+    </div>
+
+    <div id="coApproveBanner" class="co-approve-banner">
+        <div class="co-approve-text" id="coApproveText">
+            Nová žádost o spolupřidělení vozidla
+        </div>
+        <div class="co-btn-zone" id="coApproveActionBtnZone"></div>
+    </div>
+
+    <div class="content-header">
+        <h1>Přidělení vozidel</h1>
+        
+        <div class="controls-container">
+            <input type="text" id="vehicleSearch" class="search-input" placeholder="🔍 Hledat ev.č...">
+            <select id="vehicleFilter" class="filter-select">
+                <option value="vse-vzestupne">Vše (dle ev.č. vzestupně)</option>
+                <option value="vse-sestupne">Vše (dle ev.č. sestupně)</option>
+                <option value="pouze-nepridelene">Pouze nepřidělené</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="vehiclesContainer" class="list-container">
+        <p style="opacity: 0.5; font-size: 13px;">Načítám vozový park...</p>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUserEmail = "";
+let currentUserName = "";
+let currentUserOc = "";
+let allVehiclesData = [];
+let userLastAssignmentTime = null; 
+let uzMaNecoPridelenoNeboZazadano = false;
+let myCurrentCarEvc = "-";
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUserEmail = user.email;
+        await refreshUserLockStatus();
+        await loadVehiclesAllocation();
+    } else {
+        window.location.href = "login.html";
+    }
+});
+
+async function refreshUserLockStatus() {
+    try {
+        const userSnap = await getDoc(doc(db, "users", currentUserEmail));
+        if (userSnap.exists()) {
+            const uData = userSnap.data();
+            currentUserName = uData.name || uData.username || currentUserEmail;
+            currentUserOc = uData.osobni_cislo || uData.osobniCislo || uData.oc || "-";
+            
+            document.getElementById("panelDriverName").innerText = currentUserName;
+            document.getElementById("panelDriverOc").innerText = currentUserOc;
+
+            if (uData.lastVehicleAssignmentAt) {
+                userLastAssignmentTime = new Date(uData.lastVehicleAssignmentAt);
+                
+                const diffTime = Math.abs(new Date() - userLastAssignmentTime);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays < 90) {
+                    const unlockDate = new Date(userLastAssignmentTime);
+                    unlockDate.setDate(unlockDate.getDate() + 90);
+                    document.getElementById("panelLockZone").style.display = "block";
+                    document.getElementById("panelLockText").innerText = `🔒 Nelze přidělit (do ${unlockDate.toLocaleDateString("cs-CZ")})`;
+                } else {
+                    document.getElementById("panelLockZone").style.display = "none";
+                    userLastAssignmentTime = null;
+                }
+            } else {
+                userLastAssignmentTime = null;
+                document.getElementById("panelLockZone").style.display = "none";
+            }
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function loadVehiclesAllocation() {
+    try {
+        const vehiclesSnap = await getDocs(collection(db, "vehicles"));
+        let assignmentsMap = {};
+        
+        try {
+            const assignmentsSnap = await getDocs(collection(db, "assignments"));
+            assignmentsSnap.forEach(d => { assignmentsMap[d.id] = d.data(); });
+        } catch (err) { console.warn(err); }
+
+        allVehiclesData = [];
+        uzMaNecoPridelenoNeboZazadano = false;
+        myCurrentCarEvc = "-";
+        
+        document.getElementById("coApproveBanner").style.display = "none";
+        document.getElementById("coApproveActionBtnZone").innerHTML = "";
+
+        vehiclesSnap.forEach(vDoc => {
+            const evc = vDoc.id;
+            const assignData = assignmentsMap[evc] || { drivers: [], pendingRequests: [], waitingForCoDriver: null };
+            allVehiclesData.push({ evc: evc, assignData: assignData });
+
+            if (assignData.drivers.some(d => d.email === currentUserEmail)) {
+                uzMaNecoPridelenoNeboZazadano = true;
+                myCurrentCarEvc = `Ev.č. ${evc}`;
+            } else if (assignData.pendingRequests.some(r => r.email === currentUserEmail)) {
+                uzMaNecoPridelenoNeboZazadano = true;
+                myCurrentCarEvc = `Ev.č. ${evc} (čeká na schálení vedením)`;
+            } else if (assignData.waitingForCoDriver && assignData.waitingForCoDriver.email === currentUserEmail) {
+                uzMaNecoPridelenoNeboZazadano = true;
+                myCurrentCarEvc = `Ev.č. ${evc} (v procesu)`;
+            }
+
+            const jsemZdeRidic = assignData.drivers.some(d => d.email === currentUserEmail);
+            if (jsemZdeRidic && assignData.waitingForCoDriver) {
+                const wReq = assignData.waitingForCoDriver;
+                
+                const banner = document.getElementById("coApproveBanner");
+                banner.style.display = "flex";
+                document.getElementById("coApproveText").innerHTML = `Ev.č. ${evc} | Řidič <strong>${wReq.name}</strong> tě žádá o spolupřidělení vozidla.`;
+                
+                const btnZone = document.getElementById("coApproveActionBtnZone");
+                btnZone.innerHTML = `
+                    <button class="btn-action btn-co-yes" onclick="resolveCoDriverAction('${evc}', true)">Schválit</button>
+                    <button class="btn-action btn-co-no" onclick="resolveCoDriverAction('${evc}', false)">Zamítnout</button>
+                `;
+            }
+        });
+
+        document.getElementById("panelAssignedVehicle").innerText = myCurrentCarEvc;
+        
+        // Spustíme filtr a seřazení dat
+        applyFiltersAndRender();
+
+    } catch (e) { console.error(e); }
+}
+
+// 🚀 POMOCNÁ FUNKCE PRO FILTROVÁNÍ, ŘAZENÍ A VYKRESLENÍ ZÁROVEŇ
+function applyFiltersAndRender() {
+    const searchQuery = document.getElementById("vehicleSearch").value.trim().toLowerCase();
+    const filterType = document.getElementById("vehicleFilter").value;
+
+    let processedData = [...allVehiclesData];
+
+    // 1. Krok: Vyhledávání textu
+    if (searchQuery) {
+        processedData = processedData.filter(v => v.evc.toLowerCase().includes(searchQuery));
+    }
+
+    // 2. Krok: Filtr "Pouze nepřidělené"
+    if (filterType === "pouze-nepridelene") {
+        processedData = processedData.filter(v => v.assignData.drivers.length === 0);
+    }
+
+    // 3. Krok: Seřazení vzestupně / sestupně
+    if (filterType === "vse-sestupne") {
+        processedData.sort((a, b) => b.evc.localeCompare(a.evc, undefined, { numeric: true }));
+    } else {
+        // Výchozí vzestupně (pro vse-vzestupne i pouze-nepridelene)
+        processedData.sort((a, b) => a.evc.localeCompare(b.evc, undefined, { numeric: true }));
+    }
+
+    renderVehicles(processedData);
+}
+
+function renderVehicles(vehiclesArray) {
+    const container = document.getElementById("vehiclesContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (vehiclesArray.length === 0) {
+        container.innerHTML = `<p style="opacity:0.5; font-size: 13px; padding: 10px;">Žádná vozidla neodpovídají nastavení filtru.</p>`;
+        return;
+    }
+
+    let lockByTime = false;
+    if (userLastAssignmentTime) {
+        const diffTime = Math.abs(new Date() - userLastAssignmentTime);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 90) lockByTime = true;
+    }
+
+    vehiclesArray.forEach(item => {
+        const evc = item.evc;
+        const assignData = item.assignData;
+        const assignedDrivers = assignData.drivers || [];
+        const waitingReq = assignData.waitingForCoDriver || null;
+        const pendingReqs = assignData.pendingRequests || [];
+        
+        let statusText = "Volný";
+        let statusClass = "status-free";
+        let disableBtn = false;
+        let showLeaveBtn = false;
+
+        if (assignedDrivers.length === 1) {
+            statusText = "1 Řidič";
+            statusClass = "status-occupied";
+            if (waitingReq) {
+                statusText = "Čeká na kolegu";
+                statusClass = "status-waiting";
+            }
+        } else if (assignedDrivers.length >= 2) {
+            statusText = "Plno";
+            statusClass = "status-full";
+            disableBtn = true;
+        }
+
+        const mamPrideleno = assignedDrivers.some(d => d.email === currentUserEmail);
+
+        if (mamPrideleno) {
+            showLeaveBtn = true; 
+            disableBtn = false; 
+        } else {
+            if (lockByTime || uzMaNecoPridelenoNeboZazadano) {
+                disableBtn = true;
+            }
+        }
+
+        let driversHtml = "";
+        if (assignedDrivers.length === 0) {
+            driversHtml = `<span style="opacity: 0.4;">Vozidlo není dosud přiděleno.</span>`;
+        } else {
+            assignedDrivers.forEach(d => { 
+                driversHtml += `<span class="driver-tag">👤 <strong>${d.name}</strong> (OČ: ${d.oc || "-"})</span>`; 
+            });
+        }
+
+        if (waitingReq) {
+            driversHtml += `<span class="waiting-tag">⏳ Žádá: <strong>${waitingReq.name}</strong></span>`;
+        }
+
+        if (waitingReq && !assignedDrivers.some(d => d.email === currentUserEmail)) {
+            disableBtn = true;
+        }
+
+        let mainButtonHtml = "";
+        if (showLeaveBtn) {
+            mainButtonHtml = `<button class="btn-action btn-leave" onclick="leaveVehicle('${evc}')">Odpřidělit</button>`;
+        } else {
+            let btnTitle = "Zažádat o vůz";
+            if (lockByTime) btnTitle = "Nelze přidělit";
+            else if (uzMaNecoPridelenoNeboZazadano) btnTitle = "Máš aktivní žádost";
+            mainButtonHtml = `<button class="btn-action" ${disableBtn ? "disabled" : ""} onclick="requestVehicle('${evc}', ${assignedDrivers.length})">${btnTitle}</button>`;
+        }
+
+        const row = document.createElement("div");
+        row.className = "vehicle-row";
+        row.innerHTML = `
+            <div class="col-main">
+                <div class="col-evc">🚍 ev.č. ${evc}</div>
+                <div class="col-drivers">${driversHtml}</div>
+            </div>
+            <div class="col-actions">
+                <span class="badge ${statusClass}">${statusText}</span>
+                ${mainButtonHtml}
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+// Navázání posluchačů změn na searchbar a select menu
+document.getElementById("vehicleSearch").addEventListener("input", applyFiltersAndRender);
+document.getElementById("vehicleFilter").addEventListener("change", applyFiltersAndRender);
+
+window.leaveVehicle = async function(evc) {
+    if (!confirm(`Odpravdu si chceš odpřidělit vozidlo ${evc}?`)) return;
+    try {
+        const assignRef = doc(db, "assignments", evc);
+        const assignSnap = await getDoc(assignRef);
+        if (assignSnap.exists()) {
+            let currentDrivers = assignSnap.data().drivers || [];
+            currentDrivers = currentDrivers.filter(d => d.email !== currentUserEmail);
+            
+            // 🔒 Bezpečný zápis, který nevyhodí chybu, ani když je pole řidičů prázdné
+            await setDoc(assignRef, { drivers: currentDrivers }, { merge: true });
+            
+            alert("Vozidlo bylo odpřiděleno. Tvoje 90denní lhůta pro výběr nového vozu stále běží.");
+            await refreshUserLockStatus();
+            await loadVehiclesAllocation();
+        }
+    } catch (e) { alert("Chyba: " + e.message); }
+};
+
+window.requestVehicle = async function(evc, currentDriversCount) {
+    try {
+        const assignRef = doc(db, "assignments", evc);
+        const assignSnap = await getDoc(assignRef);
+        let currentDrivers = [];
+        let currentRequests = [];
+        if (assignSnap.exists()) {
+            currentDrivers = assignSnap.data().drivers || [];
+            currentRequests = assignSnap.data().pendingRequests || [];
+        }
+
+        const timestampNow = new Date().toISOString();
+        const novaZadost = { email: currentUserEmail, name: currentUserName, oc: currentUserOc, requestedAt: timestampNow };
+
+        if (currentDriversCount === 0) {
+            currentRequests.push(novaZadost);
+            await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: null }, { merge: true });
+            
+            const userRef = doc(db, "users", currentUserEmail);
+            await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
+            alert(`Žádost o přidělení vozidla byla odeslána k vedení.`);
+        } else if (currentDriversCount === 1) {
+            const potvrdit = confirm(`⚠️ Vozidlo již má přidělený jiný řidič. Potvrzuješ předchozí domluvu?`);
+            if (!potvrdit) return;
+
+            await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: novaZadost }, { merge: true });
+            
+            const userRef = doc(db, "users", currentUserEmail);
+            await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
+            alert(`Žádost řidiči odeslána.`);
+        }
+        await refreshUserLockStatus();
+        await loadVehiclesAllocation();
+    } catch (e) { alert("Chyba: " + e.message); }
+};
+
+window.resolveCoDriverAction = async function(evc, isApproved) {
+    try {
+        const assignRef = doc(db, "assignments", evc);
+        const assignSnap = await getDoc(assignRef);
+        if (assignSnap.exists()) {
+            const data = assignSnap.data();
+            let pending = data.pendingRequests || [];
+            let waiting = data.waitingForCoDriver;
+
+            if (!waiting) return;
+
+            if (isApproved) {
+                pending.push(waiting);
+                await setDoc(assignRef, { drivers: data.drivers || [], pendingRequests: pending, waitingForCoDriver: null });
+                alert("Žádost byla potvrzena a přesunuta k vedení firmy.");
+            } else {
+                if (confirm(`Opravdu chceš tuto žádost zamítnout?`)) {
+                    await setDoc(assignRef, { drivers: data.drivers || [], pendingRequests: pending, waitingForCoDriver: null });
+                    const userRef = doc(db, "users", waiting.email);
+                    await updateDoc(userRef, { lastVehicleAssignmentAt: null });
+                    alert("Žádost byla zamítnuta.");
+                } else { return; }
+            }
+            await refreshUserLockStatus();
+            await loadVehiclesAllocation();
+        }
+    } catch (e) { alert("Chyba: " + e.message); }
+};
+</script>
+</body>
+</html>

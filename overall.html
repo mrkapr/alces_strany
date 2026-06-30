@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overall | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        .content { margin: 120px 24px 40px 24px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 5px; color: #fff; }
+        h2 { font-size: 16px; font-weight: 400; opacity: 0.6; margin: 0 0 25px 0; text-transform: uppercase; letter-spacing: 1px; }
+
+        .table-container {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 20px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+        
+        thead tr:first-child th {
+            font-size: 13px;            
+            letter-spacing: 0.5px;
+            padding-top: 3px;          
+            padding-bottom: 3px;       
+            height: auto;              
+        }
+        
+        th { 
+            background: rgba(0,0,0,0.4); 
+            color: #ffd84d; 
+            font-weight: 600;
+            padding: 6px 4px;          
+            border: 1px solid rgba(255,255,255,0.08); 
+        }
+        td { 
+            padding: 8px 6px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            min-width: 65px; 
+            font-size: 13px; 
+            font-family: 'Inter', sans-serif !important; 
+            font-weight: 700 !important;
+            letter-spacing: -0.2px; 
+        }     
+        th:first-child, td:first-child {
+            position: sticky; left: 0; z-index: 10; 
+            font-weight: 700; text-align: left; padding-left: 15px; min-width: 80px;
+            font-family: 'Poppins', Arial, sans-serif !important; 
+        }
+
+        .oc-majitel { background-color: rgba(255, 77, 77, 0.2) !important; color: #ff4d4d !important; border-left: 4px solid #ff4d4d; }
+        .oc-majitel-polovicni-uvazek { background-color: rgba(255, 118, 118, 0.15) !important; color: #ff7676 !important; border-left: 4px solid #ff7676; }
+        .oc-provozni { background-color: rgba(253, 236, 0, 0.12) !important; color: #fdec00 !important; border-left: 4px solid #fdec00; }
+        .oc-dispecer { background-color: rgba(240, 140, 0, 0.15) !important; color: #f08c00 !important; border-left: 4px solid #f08c00; }
+        .oc-team-manager { background-color: rgba(181, 124, 216, 0.15) !important; color: #b57cd8 !important; border-left: 4px solid #b57cd8; }
+        .oc-modder { background-color: rgba(117, 33, 0, 0.12) !important; color: #da7961 !important; border-left: 4px solid #8d1c00; }
+        .oc-provozni-reditel { background-color: rgba(253, 236, 0, 0.12) !important; color: #fdec00 !important; border-left: 4px solid #fdec00; }
+        .oc-management { background-color: #251235 !important; color: #dcb3ff !important; border-left: 4px solid #ff56e0; }
+        .oc-ridic { background-color: #0b2e13 !important; color: #28a745 !important; }
+        .oc-zkusebni { background-color: #212c24 !important; color: #8ba391 !important; }
+        .oc-zaslouzily { background-color: rgba(220, 79, 66, 0.15) !important; color: #dc4f42 !important; border-left: 4px solid #dc4f42 !important; }
+        
+        .cell-omluven { background: rgba(0, 123, 255, 0.35) !important; color: #66b2ff; font-weight: 600; }
+        .cell-chyba { background: rgba(240, 140, 0, 0.35) !important; color: #ffaa44; font-weight: 700; }
+        .cell-neomluven { background: rgba(255, 77, 77, 0.35) !important; color: #ff6666; font-weight: 600; }
+        .cell-future { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.2) !important; }
+
+        .total-row td { background: rgba(0,0,0,0.6) !important; color: #ffd84d; font-weight: 700; border-top: 2px solid rgba(255,255,255,0.15); }
+        .cell-total-column { background: rgba(255,255,255,0.05); font-weight: 700; color: #ffd84d; }
+
+        .legend { display: flex; gap: 20px; margin-bottom: 20px; font-size: 12px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 10px; display: inline-flex; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        
+        #monthsHeaderRow th {
+            font-size: 13px;            
+            color: #ffffff;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        th:first-child {
+            font-size: 13px;
+            color: #ffd84d !important;
+            padding: 6px 10px;         
+            background: #1a1a24 !important;
+        }
+
+        .current-highlight {
+            color: #ffd84d !important;
+            background: rgba(255, 216, 77, 0.15) !important;
+            border: 1px solid rgba(255, 216, 77, 0.4) !important;
+            font-weight: 700 !important;
+        }
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 34px; width: auto; display: block; }
+        
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 20px; margin: 0 20px; }
+        ::-webkit-scrollbar-thumb { background: rgba(248, 244, 228, 0.2); border: 1px solid rgba(248, 244, 228, 0.2); border-radius: 20px; transition: background 0.2s; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(252, 246, 225, 0.5); box-shadow: 0 0 10px rgba(255, 216, 77, 0.3); }
+
+        * { scrollbar-width: thin; scrollbar-color: rgba(248, 244, 228, 0.2) rgba(0, 0, 0, 0.2); }
+        
+        @media (max-width: 768px) {
+            .topbar { top: 8px; left: 8px; right: 8px; height: 50px; padding: 0 12px; border-radius: 14px; position: absolute; }
+            .topbar a { font-size: 13px; margin-left: 10px; }
+            .logo img { height: 26px; }
+            .content { margin: 80px 12px 20px 12px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 12px; margin-bottom: 15px; }
+            .table-container { padding: 10px; border-radius: 14px; }
+            th { padding: 5px 3px; font-size: 12px; }
+            td { padding: 6px 4px; font-size: 11px; min-width: 50px; }
+            th:first-child, td:first-child { padding-left: 8px; min-width: 60px; }
+            .legend { gap: 10px; padding: 8px 12px; font-size: 11px; display: flex; width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
+    <div>
+        <a href="vykazy.html">Výkazy</a>
+        <a href="home.html">Domů</a>
+    </div>
+</div>
+
+<div class="content">
+    <h1>alces, a. s. - OVERALL</h1>
+    <h2>Hlavní přehled výkonů a kilometrické evidence</h2>
+
+    <div class="legend">
+        <div class="legend-item"><span style="color:#66b2ff; font-weight:700;">/</span> Omluven</div>
+        <div class="legend-item"><span style="color:#ffaa44; font-weight:700;">!</span> Chyba ve výkazu</div>
+        <div class="legend-item"><span style="color:#ff6666; font-weight:700;">X</span> Neomluven</div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr id="quartersHeaderRow">
+                    <th>Kvartál →</th>
+                </tr>
+                <tr id="monthsHeaderRow">
+                    <th>Řidič ↓</th>
+                </tr>
+            </thead>
+            <tbody id="overallTableBody">
+                <tr>
+                    <td id="loadingCell" style="text-align:center; opacity:0.5; padding:30px;">Načítám...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const sledovaneMesice = [
+    "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09",
+    "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03",
+    "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+    "2026-10", "2026-11", "2026-12", "2027-01"
+];
+
+const d = new Date();
+const aktualniMesicKlic = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+const kvartalMap = {
+    "2025-04": "q2-25", "2025-05": "q2-25", "2025-06": "q2-25",
+    "2025-07": "q3-25", "2025-08": "q3-25", "2025-09": "q3-25",
+    "2025-10": "q4-25", "2025-11": "q4-25", "2025-12": "q4-25",
+    "2026-01": "q1-26", "2026-02": "q1-26", "2026-03": "q1-26",
+    "2026-04": "q2-26", "2026-05": "q2-26", "2026-06": "q2-26", 
+    "2026-07": "q3-26", "2026-08": "q3-26", "2026-09": "q3-26",
+    "2026-10": "q4-26", "2026-11": "q4-26", "2026-12": "q4-26",
+    "2027-01": "q1-27"
+};
+const aktualniKvartalId = kvartalMap[aktualniMesicKlic] || "";
+
+// 📊 Dynamické roztažení nápisu "Načítám..." ihned při startu podle počtu měsíců
+const indexAktualnihoMesiceStart = sledovaneMesice.indexOf(aktualniMesicKlic);
+const pocetSloupcuStart = (indexAktualnihoMesiceStart !== -1 ? indexAktualnihoMesiceStart + 1 : sledovaneMesice.length) + 2;
+const loadingCell = document.getElementById("loadingCell");
+if (loadingCell) loadingCell.colSpan = pocetSloupcuStart;
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        ZvyrazniHlavičku();
+        await buildOverallDashboard();
+    } else {
+        window.location.href = "login.html";
+    }
+});
+
+function ZvyrazniHlavičku() {
+    if (aktualniKvartalId) {
+        const thKvartal = document.getElementById(aktualniKvartalId);
+        if (thKvartal) thKvartal.classList.add("current-highlight");
+    }
+    const thMesice = document.querySelectorAll("#monthsHeaderRow th");
+    const zjednodusenyFormat = `${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`;
+    thMesice.forEach(th => {
+        if (th.innerText.trim() === zjednodusenyFormat) {
+            th.classList.add("current-highlight");
+        }
+    });
+}
+
+function ziskejBarvuSkaly(aktualniKm, limit) {
+    if (aktualniKm >= limit) return "rgba(0, 184, 79, 0.6)"; 
+    const pomer = aktualniKm / limit; 
+    let r, g, b;
+    if (pomer < 0.5) {
+        r = 150; g = Math.round(pomer * 2 * 120); b = 30;
+    } else {
+        r = Math.round(150 - (pomer - 0.5) * 2 * 110); g = 130; b = 30;
+    }
+    return `rgba(${r}, ${g}, ${b}, 0.35)`;
+}
+
+function smartSortOc(a, b) {
+    const cleanA = a.replace("Z", "");
+    const cleanB = b.replace("Z", "");
+    return parseInt(cleanA || 999999) - parseInt(cleanB || 999999);
+}
+
+async function buildOverallDashboard() {
+    try {
+        // 1. DYNAMICKÉ OŘEZÁNÍ MĚSÍCŮ PO AKTUÁLNÍ MĚSÍC
+        const indexAktualnihoMesice = sledovaneMesice.indexOf(aktualniMesicKlic);
+        const zobrazeneMesice = indexAktualnihoMesice !== -1 
+            ? sledovaneMesice.slice(0, indexAktualnihoMesice + 1) 
+            : [...sledovaneMesice];
+
+        // 2. DYNAMICKÉ VYGENEROVÁNÍ HLAVIČKY (KVARTÁLY A MĚSÍCE)
+        const quartersHeaderRow = document.getElementById("quartersHeaderRow");
+        const monthsHeaderRow = document.getElementById("monthsHeaderRow");
+
+        if (quartersHeaderRow && monthsHeaderRow) {
+            quartersHeaderRow.innerHTML = "<th>Kvartál →</th>";
+            monthsHeaderRow.innerHTML = "<th>Řidič ↓</th>";
+
+            let kvartalPocetSloupcu = {};
+            zobrazeneMesice.forEach(m => {
+                const qId = kvartalMap[m] || "unknown";
+                kvartalPocetSloupcu[qId] = (kvartalPocetSloupcu[qId] || 0) + 1;
+            });
+
+            let zpracovaneKvartaly = [];
+            zobrazeneMesice.forEach(m => {
+                const qId = kvartalMap[m];
+                if (qId && !zpracovaneKvartaly.includes(qId)) {
+                    zpracovaneKvartaly.push(qId);
+                    const thQ = document.createElement("th");
+                    thQ.id = qId;
+                    thQ.style.color = "#a0aec0";
+                    thQ.colSpan = kvartalPocetSloupcu[qId];
+                    const qText = qId.replace("q", "Q").replace("-", "/");
+                    thQ.innerText = qText;
+                    quartersHeaderRow.appendChild(thQ);
+                }
+            });
+
+            const thCelkemKvartal = document.createElement("th");
+            thCelkemKvartal.innerText = "celkem:";
+            quartersHeaderRow.appendChild(thCelkemKvartal);
+
+            zobrazeneMesice.forEach(m => {
+                const thM = document.createElement("th");
+                const [rok, mesic] = m.split("-");
+                thM.innerText = `${parseInt(mesic)}/${rok.slice(-2)}`;
+                monthsHeaderRow.appendChild(thM);
+            });
+
+            const thCelkemMesic = document.createElement("th");
+            thCelkemMesic.innerText = "Celkem";
+            monthsHeaderRow.appendChild(thCelkemMesic);
+        }
+
+        ZvyrazniHlavičku();
+
+        // 3. NAČTENÍ DAT Z FIREBASE
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        let ridiciMap = {}; 
+        let dočasnýSeznamCisel = [];
+
+        usersSnapshot.forEach(uDoc => {
+            const uData = uDoc.data();
+            const oc = String(uData.oc || uData.osobniCislo || "").toUpperCase().trim();
+            const rank = String(uData.rank || "ridic").toLowerCase().trim();
+            const rName = String(uData.rankName || "").trim();
+            
+            if (oc) {
+                ridiciMap[uDoc.id.toLowerCase()] = { oc: oc, rank: rank, rankName: rName };
+                if (rank === "zkusebni-ridic") return;
+                if (!dočasnýSeznamCisel.includes(oc)) {
+                    dočasnýSeznamCisel.push(oc);
+                }
+            }
+        });
+
+        function ziskejUzivatelData(oc) {
+            for (const [em, info] of Object.entries(ridiciMap)) {
+                if (info.oc === oc) return info;
+            }
+            return { rank: "ridic", rankName: "" };
+        }
+
+        // 🚀 SEŘAZENÍ PODLE HIERARCHIE (Zasloužilý řidič skočil pod Team Managera)
+        let majitele = [];
+        let majitelePolovicni = [];
+        let management = [];
+        let provozniReditele = [];
+        let dispeceri = [];
+        let manageri = [];
+        let zaslouziliRidici = [];
+        let ridici = [];
+
+        dočasnýSeznamCisel.forEach(oc => {
+            const uData = ziskejUzivatelData(oc);
+            const r = uData.rank;
+            const rn = uData.rankName.toLowerCase();
+
+            if (r === "management" && (rn.includes("úvazek") || rn.includes("poloviční"))) {
+                majitelePolovicni.push(oc);
+            } else if (r === "majitel") {
+                majitele.push(oc);
+            } else if (r === "management") {
+                management.push(oc);
+            } else if (r === "provozni-reditel" || r === "provozni_reditel" || r.includes("reditel")) {
+                provozniReditele.push(oc);
+            } else if (r === "dispecer") {
+                dispeceri.push(oc);
+            } else if (r === "team-manager" || r === "team_manager" || r === "manager") {
+                manageri.push(oc);
+            } else if (r === "zasloužily-ridic" || r === "zaslouzily_ridic") {
+                zaslouziliRidici.push(oc);
+            } else {
+                ridici.push(oc);
+            }
+        });
+
+        majitele.sort(smartSortOc);
+        majitelePolovicni.sort(smartSortOc);
+        management.sort(smartSortOc);
+        provozniReditele.sort(smartSortOc);
+        dispeceri.sort(smartSortOc);
+        manageri.sort(smartSortOc);
+        zaslouziliRidici.sort(smartSortOc);
+        ridici.sort(smartSortOc);
+
+        const seznamOsobníchCiselSerazeny = [
+            ...majitele,
+            ...majitelePolovicni,
+            ...management,
+            ...provozniReditele,
+            ...dispeceri,
+            ...manageri,
+            ...zaslouziliRidici, 
+            ...ridici
+        ];
+
+        let matrix = {};
+        let omluvenkyMatrix = {}; 
+
+        seznamOsobníchCiselSerazeny.forEach(oc => {
+            matrix[oc] = {};
+            omluvenkyMatrix[oc] = {};
+            zobrazeneMesice.forEach(m => {
+                matrix[oc][m] = { type: "empty", val: 0 };
+                omluvenkyMatrix[oc][m] = false;
+            });
+        });
+
+        const absencesSnapshot = await getDocs(collection(db, "absences"));
+        absencesSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const email = String(data.userEmail || "").toLowerCase().trim();
+            const rInfo = ridiciMap[email];
+
+            if (rInfo && data.status === "schvaleno" && data.from) {
+                const startMesic = data.from;
+                const konecMesic = data.to || data.from; 
+                zobrazeneMesice.forEach(m => {
+                    if (m >= startMesic && m <= konecMesic) {
+                        if (omluvenkyMatrix[rInfo.oc]) {
+                            omluvenkyMatrix[rInfo.oc][m] = true;
+                        }
+                    }
+                });
+            }
+        });
+
+        const archiveSnapshot = await getDocs(collection(db, "ridici_archivy"));
+        archiveSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const email = String(data.userEmail || "").toLowerCase().trim();
+            const mStr = data.archiveMonth;
+            
+            const rInfo = ridiciMap[email];
+            
+            if (rInfo && mStr) {
+                const oc = rInfo.oc; 
+                if (matrix[oc] && matrix[oc][mStr]) {
+                    const status = data.statusText || "";
+                    if (status === "/" || status === "X" || status === "!" || status === "?") {
+                        matrix[oc][mStr] = { type: "status", val: status };
+                    } else if (data.najetoKm !== undefined) {
+                        if (matrix[oc][mStr].type !== "km") matrix[oc][mStr] = { type: "km", val: 0 };
+                        matrix[oc][mStr].val += parseFloat(data.najetoKm || 0);
+                    }
+                }
+            }
+        });
+
+        const dzvaSnapshot = await getDocs(collection(db, "dzva"));
+        dzvaSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const email = (data.userEmail || "").toLowerCase();
+            const rInfo = ridiciMap[email];
+            
+            if (rInfo && data.createdAt) {
+                const cDate = data.createdAt.toDate();
+                const mStr = `${cDate.getFullYear()}-${String(cDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (matrix[rInfo.oc] && matrix[rInfo.oc][mStr]) {
+                    if (matrix[rInfo.oc][mStr].type !== "km") {
+                        matrix[rInfo.oc][mStr] = { type: "km", val: 0 };
+                    }
+                    const zaklad = parseFloat(data.najetoKm || 0);
+                    const bonus = parseFloat(data.bonusKm || 0);
+                    matrix[rInfo.oc][mStr].val += (zaklad + bonus);
+                }
+            }
+        });
+
+        const tbody = document.getElementById("overallTableBody");
+        tbody.innerHTML = "";
+
+        let celkemZaMesice = {};
+        zobrazeneMesice.forEach(m => celkemZaMesice[m] = 0);
+        let globalniCelkovySumar = 0;
+
+        // 4. VYKRESLENÍ ŘÁDKŮ PRO ŘIDIČE
+        seznamOsobníchCiselSerazeny.forEach(oc => {
+            const uData = ziskejUzivatelData(oc);
+            const uRank = uData.rank;
+            const uRankName = uData.rankName.toLowerCase();
+            const limitProRidic = uRank === "ridic" ? 70 : 50;
+            
+            let ocStyleClass = "oc-ridic"; 
+            if (uRank === "management" && (uRankName.includes("úvazek") || uRankName.includes("poloviční"))) {
+                ocStyleClass = "oc-majitel-polovicni-uvazek";
+            } else if (uRank === "majitel") {
+                ocStyleClass = "oc-majitel";
+            } else if (uRank === "management") {
+                ocStyleClass = "oc-management";
+            } else if (uRank === "provozni-reditel" || uRank === "provozni_reditel" || uRank.includes("reditel")) {
+                ocStyleClass = "oc-provozni-reditel";
+            } else if (uRank === "dispecer") {
+                ocStyleClass = "oc-dispecer";
+            } else if (uRank === "team-manager" || uRank === "team_manager" || uRank === "manager") {
+                ocStyleClass = "oc-team-manager";
+            } else if (uRank === "zasloužily-ridic" || uRank === "zaslouzily_ridic") {
+                ocStyleClass = "oc-zaslouzily";
+            }
+
+            if (uRankName.includes("modder")) {
+                ocStyleClass = "oc-modder";
+            }
+
+            let rowHtml = `<tr><td class="${ocStyleClass}">${oc}</td>`;
+            let sumaRidicKm = 0;
+
+            let mesicPrvniAktivity = "";
+            for (const m of zobrazeneMesice) {
+                if (matrix[oc][m] && ((matrix[oc][m].type === "km" && matrix[oc][m].val > 0) || matrix[oc][m].type === "status")) {
+                    mesicPrvniAktivity = m;
+                    break;
+                }
+            }
+            if (!mesicPrvniAktivity) mesicPrvniAktivity = aktualniMesicKlic;
+
+            zobrazeneMesice.forEach(m => {
+                const cell = matrix[oc][m];
+                const maPauzuVTomtoMesici = omluvenkyMatrix[oc][m]; 
+                const jeOmluven = (maPauzuVTomtoMesici || (cell.type === "status" && cell.val === "/"));
+
+                if (mesicPrvniAktivity && m < mesicPrvniAktivity) {
+                    rowHtml += `<td class="cell-future">-</td>`;
+                }
+                else if (cell.type === "status" && cell.val !== "X" && cell.val !== "/") {
+                    let cssClass = "cell-future";
+                    if (cell.val === "!") cssClass = "cell-chyba";
+                    rowHtml += `<td class="${cssClass}">${cell.val}</td>`;
+                } 
+                else {
+                    const kilometry = cell.type === "km" ? Math.round(cell.val) : 0;
+
+                    if (kilometry === 0) {
+                        if (jeOmluven) {
+                            rowHtml += `<td class="cell-omluven">/</td>`;
+                        } else if (m === aktualniMesicKlic) {
+                            rowHtml += `<td class="cell-future">-</td>`;
+                        } else {
+                            rowHtml += `<td class="cell-neomluven">X</td>`;
+                        }
+                    } else {
+                        sumaRidicKm += kilometry;
+                        celkemZaMesice[m] += kilometry;
+
+                        if (jeOmluven) {
+                            rowHtml += `<td class="cell-omluven" style="font-weight:600;">${kilometry}</td>`;
+                        } else {
+                            const cellBgColor = ziskejBarvuSkaly(kilometry, limitProRidic);
+                            const isSplneno = kilometry >= limitProRidic;
+                            const textStyle = isSplneno ? "color:#00ff66; font-weight:700;" : "color:#fff;";
+                            rowHtml += `<td style="background-color: ${cellBgColor}; ${textStyle}">${kilometry}</td>`;
+                        }
+                    }
+                }
+            });
+
+            const zaokrouhlenaSumaRidicKm = Math.round(sumaRidicKm);
+            rowHtml += `<td class="cell-total-column">${zaokrouhlenaSumaRidicKm}</td></tr>`;
+            globalniCelkovySumar += zaokrouhlenaSumaRidicKm;
+            tbody.innerHTML += rowHtml;
+        });
+
+        // 5. SPODNÍ FINÁLNÍ ŘÁDEK CELKŮ
+        let totalRowHtml = `<tr class="total-row"><td>Celkem</td>`;
+        zobrazeneMesice.forEach(m => {
+            totalRowHtml += `<td>${Math.round(celkemZaMesice[m])}</td>`;
+        });
+        totalRowHtml += `<td>${Math.round(globalniCelkovySumar)}</td></tr>`;
+        
+        tbody.innerHTML += totalRowHtml;
+
+    } catch (err) {
+        console.error("Chyba dashboardu:", err);
+    }
+}
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; 
+    }
+}
+
+upravFaviconuPodleRezimu();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Správa dílen | alces, a. s.</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -14,10 +14,17 @@
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
         }
-        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
         .content { margin: 120px 40px 40px 40px; }
         h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; color: #ffd84d; }
@@ -125,7 +132,7 @@
 
                 <div class="form-group" id="evcGroup">
                     <label>Evidenční čísla vozidel (odděluj čárkou)</label>
-                    <input type="text" id="vehicleEvc" placeholder="Začni psát ev.č. (např. 7002)">
+                    <input type="text" id="vehicleEvc" placeholder="Začni psát ev.č. (např. 2104)">
                     <ul id="suggestions" class="suggestions-box"></ul>
                 </div>
 
@@ -450,7 +457,7 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
     if (type === "Aktualizace repaintu") {
         finalTitle = "Aktualizace repaintu";
         if (evcArray.length === 1) {
-            finalLogText = `Na disk byl nahrána nová repaint vozidla ${evcArray[0]}.`;
+            finalLogText = `Na disk byla nahrána nová verze repaintu vozidla ${evcArray[0]}.`;
         } else {
             finalLogText = `Na disk byly nahrány nové verze repaintů vozidel ${evcArray.join(", ")}.`;
         }
@@ -497,13 +504,13 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
 
         // 🚀 3. NOVÉ: DISCORD WEBHOOK PRO DÍLNY
         // Sem vlož URL webhooku (může být stejný jako na omluvenky, nebo jiný veřejný kanál)
-        const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1519715536508817560/43mE_t36uwfo_I3mG7KtVoYBVeplA5yedjeYFjnB1cOeRIrdC4oae1D5N2qtiJ-QlRSa"; 
 
         // Nastavení barvy embedu podle typu akce
         let embedColor = 8421504; // Výchozí šedá pro "Jiné"
-        if (type === "Aktualizace repaintu") embedColor = 15151221;  // Červená/Růžová pro repainty
-        if (type === "Nová úprava pro vozidlo") embedColor = 3447003; // Modrá pro úpravy
-        if (type === "Aktualizace mapy") embedColor = 3066993;        // Zelená pro mapy
+        if (type === "Aktualizace repaintu") embedColor = 16429312;
+        if (type === "Nová úprava pro vozidlo") embedColor = 16729956;
+        if (type === "Aktualizace mapy") embedColor = 3066993;  
 
         const discordMessage = {
             embeds: [{
@@ -511,10 +518,10 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
                 description: `${finalLogText}`,
                 color: embedColor,
                 fields: [
-                    { name: "✍️ Publikoval", value: authorName, inline: true },
-                    { name: "🚍 Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "Celý vozový park / Mapa", inline: true }
+                    { name: "👤 Publikoval", value: authorName, inline: true },
+                    { name: "🚍 Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "-", inline: true }
                 ],
-                footer: { text: "alces, a. s. — Technické zázemí (Dílny)" },
+                footer: { text: "alces-as.fun" },
                 timestamp: timestamp.toISOString()
             }]
         };
@@ -534,6 +541,23 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
         await loadAdminWorkshopSystem(); 
     } catch (err) { alert("Chyba: " + err.message); }
 });
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>
 </html>

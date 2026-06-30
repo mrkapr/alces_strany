@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Správa uživatelů | alces, a. s.</title>
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -16,14 +16,22 @@
         background-size: cover; background-position: center top; background-repeat: no-repeat;
         min-height: 100vh; color: white;
     }
-    .topbar {
-        height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
-        background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-        display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
-        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
-    }
-    .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
-    .content { margin: 120px 40px 40px 40px; display: none; }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        .content { margin: 120px 40px 40px 40px; }
     
     h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
     
@@ -35,13 +43,12 @@
         padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
     }
     .panel-sticky {
-    position: -webkit-sticky; /* Podpora pro Safari */
-    position: sticky;
-    top: 100px; /* Mezera od horního okraje prohlížeče, aby to nenaráželo do topbaru */
-}
+        position: -webkit-sticky;
+        position: sticky;
+        top: 100px;
+    }
     .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
 
-    /* Formulář */
     .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
     label { font-size: 14px; font-weight: 600; opacity: 0.9; }
     input, select {
@@ -59,7 +66,13 @@
     .btn-add:hover { background: #e6c240; }
     .btn-cancel { background: rgba(255,255,255,0.1); color: white; width: 100%; margin-top: 5px; }
 
-    /* Stylování skupin */
+    .sort-controls {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+        background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .sort-controls label { font-size: 13px; color: #ffd84d; }
+    .sort-controls select { padding: 6px 12px; font-size: 13px; background: rgba(0,0,0,0.5); width: auto; }
+
     .rank-category-block {
         margin-bottom: 25px; background: rgba(255,255,255,0.02);
         border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;
@@ -69,7 +82,6 @@
         border-left: 4px solid #ffd84d; padding-left: 10px; text-transform: uppercase; letter-spacing: 1px;
     }
 
-    /* Tabulka */
     .user-table { width: 100%; border-collapse: collapse; text-align: left; }
     .user-table th, .user-table td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .user-table th { color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12px; text-transform: uppercase; }
@@ -77,7 +89,6 @@
     
     .actions { display: flex; gap: 6px; justify-content: flex-end; }
     
-    /* Styly tlačítek v tabulce */
     .btn-promo { background: rgba(255, 216, 77, 0.2); color: #ffd84d; border: 1px solid rgba(255, 216, 77, 0.4); padding: 5px 12px; font-size: 12px; }
     .btn-promo:hover { background: rgba(255, 216, 77, 0.4); transform: scale(1.02); }
     
@@ -86,16 +97,9 @@
     
     .btn-delete { background: rgba(212, 0, 0, 0.15); color: #ff4d4d; border: 1px solid rgba(212, 0, 0, 0.3); padding: 5px 12px; font-size: 12px; }
     .btn-delete:hover { background: rgba(212, 0, 0, 0.3); }
-                .logo {
-    display: flex;
-    align-items: center;
-    }
-
-.logo img {
-    height: 34px;
-    width: auto;
-    display: block;
-}
+    
+    .logo { display: flex; align-items: center; }
+    .logo img { height: 34px; width: auto; display: block; }
 
     #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
 </style>
@@ -103,7 +107,7 @@
 <body>
 
 <div class="topbar">
-        <div class="logo">
+    <div class="logo">
         <a href="home.html">
             <img src="fotky/univ/logo.png" alt="alces">
         </a>
@@ -123,15 +127,26 @@
             <h2 id="formTitle">Vytvořit účet uživatele</h2>
             <form id="userForm">
                 <div class="form-group">
-                    <label>E-mail uživatele (Slouží jako login ID)</label>
+                    <label>E-mail uživatele</label>
                     <input type="email" id="userEmail" required placeholder="např. ridic@gmail.com">
                 </div>
                 <div class="form-group">
                     <label>Jméno uživatele</label>
                     <input type="text" id="userName" required placeholder="např. Josef N.">
                 </div>
+                
                 <div class="form-group">
-                    <label>Rank (Kód hodnosti)</label>
+                    <label>Osobní číslo řidiče</label>
+                    <input type="text" id="userOc" placeholder="např. 7001 nebo Z001">
+                </div>
+
+                <div class="form-group">
+                    <label>Discord ID uživatele</label>
+                    <input type="text" id="userDiscordId" placeholder="např. 318520073072123456">
+                </div>
+
+                <div class="form-group">
+                    <label>Rank</label>
                     <select id="userRank" required>
                         <option value="zkusebni-ridic" selected>zkusebni-ridic</option>
                         <option value="ridic">ridic</option>
@@ -147,7 +162,8 @@
                     <label>Zobrazovaný rank (rankName)</label>
                     <input type="text" id="userRankName" required placeholder="např. Řidič - zkušební doba">
                 </div>
-                <div class="form-group">
+                
+                <div class="form-group" id="mentorFormGroup">
                     <label>Přidělený Mentor (mentorId)</label>
                     <select id="userMentor">
                         <option value="">-- Bez mentora --</option>
@@ -161,9 +177,18 @@
         </div>
 
         <div class="panel">
-            <h2>Uživatelé seřazení dle hodností</h2>
+            <h2>Uživatelé seřazení dle pozice</h2>
+            
+            <div class="sort-controls">
+                <label>Řadit uživatele v jednotlivých pozicích podle:</label>
+                <select id="sortSelect">
+                    <option value="oc" selected>Osobního čísla (OČ)</option>
+                    <option value="jmeno">Abecedy (jména)</option>
+                </select>
+            </div>
+
             <div id="rankedListsContainer">
-                <p style="opacity: 0.5; padding: 15px;">Načítám uživatele z Firebase...</p>
+                <p style="opacity: 0.5; padding: 15px;">Načítám uživatele...</p>
             </div>
         </div>
     </div>
@@ -209,8 +234,25 @@ const rankNameMapping = {
     "majitel": "Majitel"
 };
 
+let cachedUsersData = [];
+
+function toggleMentorField(rankValue) {
+    const mentorGroup = document.getElementById("mentorFormGroup");
+    if (rankValue === "zkusebni-ridic") {
+        mentorGroup.style.display = "flex";
+    } else {
+        mentorGroup.style.display = "none";
+        document.getElementById("userMentor").value = "";
+    }
+}
+
 document.getElementById("userRank").addEventListener("change", (e) => {
     document.getElementById("userRankName").value = rankNameMapping[e.target.value] || "";
+    toggleMentorField(e.target.value);
+});
+
+document.getElementById("sortSelect").addEventListener("change", () => {
+    renderUsersList(cachedUsersData);
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -218,139 +260,164 @@ onAuthStateChanged(auth, async (user) => {
     if (email === "ytkapr@gmail.com") {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
-        await loadAllUsers();
+        toggleMentorField("zkusebni-ridic");
+        await fetchUsersFromFirebase();
     } else {
         document.getElementById("error-screen").style.display = "block";
     }
 });
 
-async function loadAllUsers() {
+async function fetchUsersFromFirebase() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        cachedUsersData = [];
+        querySnapshot.forEach((userDoc) => {
+            cachedUsersData.push({ email: userDoc.id, data: userDoc.data() });
+        });
+        renderUsersList(cachedUsersData);
+    } catch(e) {
+        console.error(e);
+        document.getElementById("rankedListsContainer").innerHTML = `<p style="color:#ff4d4d; padding:15px;">Chyba načítání: ${e.message}</p>`;
+    }
+}
+
+function renderUsersList(usersArray) {
     const container = document.getElementById("rankedListsContainer");
     container.innerHTML = "";
     
-    try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const groups = {};
-        rankOrder.forEach(r => groups[r] = []);
+    const sortMethod = document.getElementById("sortSelect").value;
+    const groups = {};
+    rankOrder.forEach(r => groups[r] = []);
 
-        querySnapshot.forEach((userDoc) => {
-            const data = userDoc.data();
-            const email = userDoc.id;
-            const rank = data.rank || "zkusebni-ridic";
-            
-            if (groups[rank]) {
-                groups[rank].push({ email, data });
-            } else {
-                if(!groups["zkusebni-ridic"]) groups["zkusebni-ridic"] = [];
-                groups["zkusebni-ridic"].push({ email, data });
-            }
-        });
+    usersArray.forEach(user => {
+        const rank = user.data.rank || "zkusebni-ridic";
+        if (groups[rank]) {
+            groups[rank].push(user);
+        } else {
+            if(!groups["zkusebni-ridic"]) groups["zkusebni-ridic"] = [];
+            groups["zkusebni-ridic"].push(user);
+        }
+    });
 
-        let totalCount = 0;
+    let totalCount = 0;
 
-        rankOrder.forEach((currentRank) => {
-            const usersInRank = groups[currentRank];
-            if (usersInRank.length === 0) return;
-            totalCount += usersInRank.length;
+    rankOrder.forEach((currentRank) => {
+        const usersInRank = groups[currentRank];
+        if (usersInRank.length === 0) return;
+        totalCount += usersInRank.length;
 
-            const block = document.createElement("div");
-            block.className = "rank-category-block";
-            
-            const humanReadableTitle = rankNameMapping[currentRank] || currentRank;
-            block.innerHTML = `
-                <div class="rank-category-title">${humanReadableTitle} (${usersInRank.length})</div>
-                <table class="user-table">
-                    <thead>
-                        <tr>
-                            <th>Jméno</th>
-                            <th>E-mail</th>
-                            <th>Mentor</th>
-                            <th style="text-align:right;">Akce</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            `;
-
-            const tbody = block.querySelector("tbody");
-
-            usersInRank.forEach((user) => {
-                const uName = user.data.name || user.data.username || "Bez jména";
-                const uMentor = user.data.mentorId ? user.data.mentorId : "—";
-                
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="font-weight:600;">${uName}</td>
-                    <td style="opacity:0.6; font-size:13px;">${user.email}</td>
-                    <td style="color:#ffd84d; font-weight:600; font-size:13px;">${uMentor}</td>
-                    <td class="actions"></td>
-                `;
-
-                const tdActions = tr.querySelector(".actions");
-
-                // LOGIKA RYCHLÉHO POVÝŠENÍ (Kouzelné tlačítko)
-                if (currentRank === "zkusebni-ridic" || currentRank === "ridic") {
-                    const btnPromo = document.createElement("button");
-                    btnPromo.className = "btn-promo";
-                    btnPromo.innerText = "Povýšit ↑";
-                    
-                    btnPromo.addEventListener("click", async () => {
-                        let nextRank = "";
-                        let nextRankName = "";
-                        
-                        if (currentRank === "zkusebni-ridic") {
-                            nextRank = "ridic";
-                            nextRankName = "Řidič";
-                        } else if (currentRank === "ridic") {
-                            nextRank = "zasloužily-ridic";
-                            nextRankName = "Zasloužilý řidič";
-                        }
-                        
-                        if (confirm(`Chceš řidiče ${uName} povýšit na hodnost: ${nextRankName}?`)) {
-                            try {
-                                await updateDoc(doc(db, "users", user.email), {
-                                    rank: nextRank,
-                                    rankName: nextRankName
-                                });
-                                await loadAllUsers(); // Obnoví seznam
-                            } catch (err) {
-                                alert("Chyba při povyšování: " + err.message);
-                            }
-                        }
-                    });
-                    tdActions.appendChild(btnPromo);
-                }
-
-                const btnEdit = document.createElement("button");
-                btnEdit.className = "btn-edit";
-                btnEdit.innerText = "Upravit";
-                btnEdit.addEventListener("click", () => startEdit(user.email, user.data));
-
-                const btnDelete = document.createElement("button");
-                btnDelete.className = "btn-delete";
-                btnDelete.innerText = "Smazat";
-                btnDelete.addEventListener("click", async () => {
-                    if(confirm(`Opravdu chceš úplně SMAZAT uživatele ${uName}?`)) {
-                        await deleteDoc(doc(db, "users", user.email));
-                        loadAllUsers();
-                    }
-                });
-
-                tdActions.appendChild(btnEdit);
-                tdActions.appendChild(btnDelete);
-                tbody.appendChild(tr);
+        if (sortMethod === "oc") {
+            // 🚀 ROBUSTNÍ ŘAZENÍ: Odřízne případné písmeno "Z" a správně seřadí nováčky podle číselného stavu
+            usersInRank.sort((a, b) => {
+                const strA = String(a.data.oc || a.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
+                const strB = String(b.data.oc || b.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
+                return parseInt(strA) - parseInt(strB);
             });
-
-            container.appendChild(block);
-        });
-
-        if (totalCount === 0) {
-            container.innerHTML = `<p style="opacity: 0.5; padding: 15px;">V databázi nejsou žádní uživatelé.</p>`;
+        } else if (sortMethod === "jmeno") {
+            usersInRank.sort((a, b) => {
+                const nameA = (a.data.name || a.data.username || "").toLowerCase();
+                const nameB = (b.data.name || b.data.username || "").toLowerCase();
+                return nameA.localeCompare(nameB, "cs");
+            });
         }
 
-    } catch(e) {
-        console.error(e);
-        container.innerHTML = `<p style="color:#ff4d4d; padding:15px;">Chyba načítání: ${e.message}</p>`;
+        const block = document.createElement("div");
+        block.className = "rank-category-block";
+        
+        const humanReadableTitle = rankNameMapping[currentRank] || currentRank;
+        const mentorHeaderHtml = (currentRank === "zkusebni-ridic") ? "<th>Mentor</th>" : "";
+
+        block.innerHTML = `
+            <div class="rank-category-title">${humanReadableTitle} (${usersInRank.length})</div>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>OČ</th>
+                        <th>Jméno</th>
+                        <th>E-mail</th>
+                        ${mentorHeaderHtml}
+                        <th style="text-align:right;">Akce</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        `;
+
+        const tbody = block.querySelector("tbody");
+
+        usersInRank.forEach((user) => {
+            const uName = user.data.name || user.data.username || "Bez jména";
+        const uMentor = user.data.mentorId ? user.data.mentorId : "-";
+        const uOc = user.data.oc || user.data.osobniCislo || "-";
+            const mentorTdHtml = (currentRank === "zkusebni-ridic") 
+                ? `<td style="color:#ffd84d; font-weight:600; font-size:13px;">${uMentor}</td>` 
+                : "";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="color:#ffd84d; font-weight:700;">${uOc}</td>
+                <td style="font-weight:600;">${uName}</td>
+                <td style="opacity:0.6; font-size:13px;">${user.email}</td>
+                ${mentorTdHtml}
+                <td class="actions"></td>
+            `;
+
+            const tdActions = tr.querySelector(".actions");
+
+            if (currentRank === "zkusebni-ridic" || currentRank === "ridic") {
+                const btnPromo = document.createElement("button");
+                btnPromo.className = "btn-promo";
+                btnPromo.innerText = "Povýšit ↑";
+                
+                btnPromo.addEventListener("click", async () => {
+                    let nextRank = "";
+                    let nextRankName = "";
+                    if (currentRank === "zkusebni-ridic") {
+                        nextRank = "ridic"; nextRankName = "Řidič";
+                    } else if (currentRank === "ridic") {
+                        nextRank = "zasloužily-ridic"; nextRankName = "Zasloužilý řidič";
+                    }
+                    
+                    if (confirm(`Chceš řidiče ${uName} povýšit na hodnost: ${nextRankName}?`)) {
+                        try {
+                            await updateDoc(doc(db, "users", user.email), {
+                                rank: nextRank,
+                                rankName: nextRankName
+                            });
+                            await fetchUsersFromFirebase();
+                        } catch (err) {
+                            alert("Chyba při povyšování: " + err.message);
+                        }
+                    }
+                });
+                tdActions.appendChild(btnPromo);
+            }
+
+            const btnEdit = document.createElement("button");
+            btnEdit.className = "btn-edit";
+            btnEdit.innerText = "Upravit";
+            btnEdit.addEventListener("click", () => startEdit(user.email, user.data));
+
+            const btnDelete = document.createElement("button");
+            btnDelete.className = "btn-delete";
+            btnDelete.innerText = "Smazat";
+            btnDelete.addEventListener("click", async () => {
+                if(confirm(`Opravdu chceš úplně SMAZAT uživatele ${uName}?`)) {
+                    await deleteDoc(doc(db, "users", user.email));
+                    await fetchUsersFromFirebase();
+                }
+            });
+
+            tdActions.appendChild(btnEdit);
+            tdActions.appendChild(btnDelete);
+            tbody.appendChild(tr);
+        });
+
+        container.appendChild(block);
+    });
+
+    if (totalCount === 0) {
+        container.innerHTML = `<p style="opacity: 0.5; padding: 15px;">V databázi nejsou žádní uživatelé.</p>`;
     }
 }
 
@@ -364,9 +431,13 @@ function startEdit(email, data) {
     emailField.disabled = true;
 
     document.getElementById("userName").value = data.name || data.username || "";
+    document.getElementById("userOc").value = data.oc || "";
+    document.getElementById("userDiscordId").value = data.discordId || "";
     document.getElementById("userRank").value = data.rank || "zkusebni-ridic";
     document.getElementById("userRankName").value = data.rankName || "";
     document.getElementById("userMentor").value = data.mentorId || "";
+    
+    toggleMentorField(data.rank || "zkusebni-ridic");
 }
 
 document.getElementById("cancelBtn").addEventListener("click", resetForm);
@@ -382,6 +453,7 @@ function resetForm() {
     
     document.getElementById("userForm").reset();
     document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
+    toggleMentorField("zkusebni-ridic");
 }
 
 document.getElementById("userForm").addEventListener("submit", async (e) => {
@@ -389,6 +461,8 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
     
     const email = document.getElementById("userEmail").value.trim();
     const name = document.getElementById("userName").value.trim();
+    const oc = document.getElementById("userOc").value.trim();
+    const discordId = document.getElementById("userDiscordId").value.trim();
     const rank = document.getElementById("userRank").value;
     const rankName = document.getElementById("userRankName").value.trim();
     const mentorId = document.getElementById("userMentor").value;
@@ -396,6 +470,8 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
     const userObject = {
         name: name,
         username: name,
+        oc: oc,
+        discordId: discordId,
         rank: rank,
         rankName: rankName,
         mentorId: mentorId
@@ -405,11 +481,28 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
         await setDoc(doc(db, "users", email), userObject, { merge: true });
         alert("Uživatel byl úspěšně uložen!");
         resetForm();
-        await loadAllUsers();
+        await fetchUsersFromFirebase();
     } catch(err) {
         alert("Chyba při zápisu: " + err.message);
     }
 });
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>
 </html>

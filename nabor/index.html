@@ -41,83 +41,33 @@ body {
 }
 
 @keyframes pageFade {
-
-    0% {
-        opacity: 0;
-        transform: scale(1.03);
-        filter: blur(8px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-        filter: blur(0px);
-    }
+    0% { opacity: 0; transform: scale(1.03); filter: blur(8px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0px); }
 }
 
 @keyframes heroTitle {
-
-    0% {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0px);
-    }
+    0% { opacity: 0; transform: translateY(40px); }
+    100% { opacity: 1; transform: translateY(0px); }
 }
 
 @keyframes heroText {
-
-    0% {
-        opacity: 0;
-        transform: translateY(25px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0px);
-    }
+    0% { opacity: 0; transform: translateY(25px); }
+    100% { opacity: 1; transform: translateY(0px); }
 }
 
 @keyframes sectionFade {
-
-    0% {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0px);
-    }
+    0% { opacity: 0; transform: translateY(50px); }
+    100% { opacity: 1; transform: translateY(0px); }
 }
 
 @keyframes galleryFade {
-
-    0% {
-        opacity: 0;
-        transform: scale(0.96);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0.96); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes buttonFade {
-
-    0% {
-        opacity: 0;
-        transform: translateY(40px) scale(0.9);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0px) scale(1);
-    }
+    0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0px) scale(1); }
 }
 
 * {
@@ -128,739 +78,298 @@ body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
     color: white;
-
     padding-top: 60px;
-
-    background:
-        linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.82)),
-        url("fotky/foto3.png");
-
+    background: linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.82)), url("fotky/foto3.png");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    /* 🚀 DOČASNÉ UZAMČENÍ: Vypne scrollování celého webu, dokud je nábor vypnutý */
+    overflow: hidden; 
 }
 
 /* ===== animated glow ===== */
-
 body::before {
     content: "";
-
     position: fixed;
     inset: 0;
-
-    background:
-        radial-gradient(circle at center, rgba(255,255,255,0.04), transparent 45%);
-
+    background: radial-gradient(circle at center, rgba(255,255,255,0.04), transparent 45%);
     pointer-events: none;
-
     animation: glowMove 12s ease-in-out infinite alternate;
 }
 
 @keyframes glowMove {
+    0% { transform: scale(1) translateY(0px); }
+    100% { transform: scale(1.08) translateY(-20px); }
+}
 
-    0% {
-        transform: scale(1) translateY(0px);
-    }
+/* ─── 🚀 STOP OBRAZOVKA: ABSOLUTNÍ BLOKACE WEBU ─── */
+.nabor-closed-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    /* 100% neprůhledná šedá barva pozadí podniku alces */
+    background: #252527; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999; /* Musí být nad topbarem i vším ostatním */
+    padding: 24px;
+}
 
-    100% {
-        transform: scale(1.08) translateY(-20px);
-    }
+.nabor-closed-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 50px 40px;
+    border-radius: 28px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+    animation: sectionFade 0.8s ease;
+}
+
+.nabor-closed-box .icon-bus {
+    font-size: 64px;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.nabor-closed-box h2 {
+    margin: 0 0 15px 0;
+    font-size: 36px;
+    font-weight: 700;
+    color: #ffd500; /* Firemní žlutá alces */
+}
+
+.nabor-closed-box p {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    line-height: 1.7;
+    opacity: 0.85;
+}
+
+.nabor-closed-box p:last-of-type {
+    margin-bottom: 0;
+    font-weight: 600;
+    color: #fff;
 }
 
 /* ===== topbar ===== */
-
 .topbar {
     height: 60px;
-
     background: rgba(25,25,25,0.75);
-
     backdrop-filter: blur(12px);
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     padding: 0 30px;
-
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-
+    top: 0; left: 0; right: 0; width: 100%;
     z-index: 999;
 }
 
-.logo img {
-    height: 34px;
-    width: auto;
-    display: block;
+.logo img { height: 34px; width: auto; display: block; }
 
-    margin-top: 0px;
-}
-
-.menu {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
+.menu { display: flex; align-items: center; gap: 24px; }
 .menu a {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-
-    transition:
-        transform 0.18s ease,
-        opacity 0.18s ease;
+    color: white; text-decoration: none; font-weight: 600;
+    transition: transform 0.18s ease, opacity 0.18s ease;
 }
-
-.menu:hover a {
-    opacity: 0.45;
-    transform: scale(0.92);
-}
-
-.menu a:hover {
-    opacity: 1 !important;
-    transform: scale(1.05);
-}
-
-.menu a:active {
-    transform: scale(0.9);
-}
+.menu:hover a { opacity: 0.45; transform: scale(0.92); }
+.menu a:hover { opacity: 1 !important; transform: scale(1.05); }
+.menu a:active { transform: scale(0.9); }
 
 /* ===== hero ===== */
-
-.hero {
-    text-align: center;
-    padding: 120px 20px 90px 20px;
-}
-
-.hero h1 {
-    margin: 0;
-
-    font-size: 82px;
-    font-weight: 700;
-
-    text-shadow:
-        0 0 20px rgba(255,255,255,0.15);
-}
-
-.hero p {
-    margin-top: 20px;
-
-    font-size: 22px;
-
-    opacity: 0.9;
-}
+.hero { text-align: center; padding: 120px 20px 90px 20px; }
+.hero h1 { margin: 0; font-size: 82px; font-weight: 700; text-shadow: 0 0 20px rgba(255,255,255,0.15); }
+.hero p { margin-top: 20px; font-size: 22px; opacity: 0.9; }
 
 /* ===== text ===== */
-
-.section {
-    max-width: 1200px;
-    margin: auto;
-    padding: 30px;
-}
-
+.section { max-width: 1200px; margin: auto; padding: 30px; }
 .text-area {
-    background: rgba(255,255,255,0.07);
-
-    border: 1px solid rgba(255,255,255,0.08);
-
-    border-radius: 30px;
-
-    padding: 45px;
-
-    backdrop-filter: blur(12px);
-
-    box-shadow:
-        0 20px 60px rgba(0,0,0,0.25);
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 30px; padding: 45px; backdrop-filter: blur(12px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
 }
-
-.text-area h2 {
-    margin-top: 0;
-
-    font-size: 42px;
-}
-
-.text-area p {
-    font-size: 18px;
-
-    line-height: 1.9;
-
-    opacity: 0.92;
-}
+.text-area h2 { margin-top: 0; font-size: 42px; }
+.text-area p { font-size: 18px; line-height: 1.9; opacity: 0.92; }
 
 /* ===== galerie ===== */
-
 #lightbox-author {
-    position: absolute;
-
-    bottom: 25px;
-    right: 30px;
-
-    color: white;
-
-    font-size: 14px;
-    font-weight: 500;
-
-    opacity: 0.75;
-
-    background: rgba(0,0,0,0.22);
-
-    padding: 8px 14px;
-
-    border-radius: 999px;
-
-    backdrop-filter: blur(8px);
+    position: absolute; bottom: 25px; right: 30px; color: white;
+    font-size: 14px; font-weight: 500; opacity: 0.75;
+    background: rgba(0,0,0,0.22); padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(8px);
 }
 
-.gallery-title {
-    text-align: center;
-
-    font-size: 48px;
-
-    margin-top: 80px;
-    margin-bottom: 35px;
-}
-
-.gallery {
-    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-
-    gap: 22px;
-}
-
-.gallery img {
-    width: 100%;
-    height: 250px;
-
-    object-fit: cover;
-
-    border-radius: 24px;
-
-    transition:
-        transform 0.22s ease,
-        opacity 0.22s ease,
-        box-shadow 0.22s ease;
-}
-
-.gallery img:hover {
-    transform: scale(1.03);
-
-    box-shadow:
-        0 15px 40px rgba(0,0,0,0.35);
-
-    opacity: 0.95;
-}
+.gallery-title { text-align: center; font-size: 48px; margin-top: 80px; margin-bottom: 35px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+.gallery img { width: 100%; height: 250px; object-fit: cover; border-radius: 24px; transition: transform 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease; }
+.gallery img:hover { transform: scale(1.03); box-shadow: 0 15px 40px rgba(0,0,0,0.35); opacity: 0.95; }
 
 /* ===== button ===== */
-
-.form-section {
-    text-align: center;
-
-    padding: 100px 20px 130px 20px;
-}
-
+.form-section { text-align: center; padding: 100px 20px 130px 20px; }
 .form-button {
-    display: inline-block;
-
-    padding: 24px 65px;
-
-    border-radius: 999px;
-
-    background: #ffd500;
-    color: black;
-
-    text-decoration: none;
-
-    font-size: 30px;
-    font-weight: 700;
-
-    box-shadow:
-        0 15px 40px rgba(255,213,0,0.3);
-
-    transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        background 0.18s ease;
+    display: inline-block; padding: 24px 65px; border-radius: 999px;
+    background: #ffd500; color: black; text-decoration: none;
+    font-size: 30px; font-weight: 700; box-shadow: 0 15px 40px rgba(255,213,0,0.3);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-
-.form-button:hover {
-    transform: scale(0.95);
-
-    box-shadow:
-        0 8px 25px rgba(255,213,0,0.22);
-}
-
-.form-button:active {
-    transform: scale(0.88);
-}
+.form-button:hover { transform: scale(0.95); box-shadow: 0 8px 25px rgba(255,213,0,0.22); }
+.form-button:active { transform: scale(0.88); }
 
 /* ===== footer ===== */
+.footer { text-align: center; padding: 35px; opacity: 0.55; font-size: 14px; }
 
-.footer {
-    text-align: center;
-
-    padding: 35px;
-
-    opacity: 0.55;
-
-    font-size: 14px;
-}
-
-.reveal {
-    opacity: 0;
-    transform: translateY(70px);
-
-    transition:
-        opacity 1s ease,
-        transform 1s ease;
-}
-
-.reveal.active {
-    opacity: 1;
-    transform: translateY(0px);
-}
+.reveal { opacity: 0; transform: translateY(70px); transition: opacity 1s ease, transform 1s ease; }
+.reveal.active { opacity: 1; transform: translateY(0px); }
 
 #lightbox {
-    position: fixed;
-    inset: 0;
-
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(14px);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-
-    z-index: 99999;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(14px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 99999;
 }
-
-#lightbox.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#lightbox-image {
-    max-width: 86%;
-    max-height: 88vh;
-    border-radius: 18px;
-
-    box-shadow: 0 20px 70px rgba(0,0,0,0.45);
-
-    transform: scale(0.92);
-    transition: transform 0.25s ease;
-}
-
-#lightbox.active #lightbox-image {
-    transform: scale(1);
-}
-
-#close-lightbox {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-
-    font-size: 42px;
-    color: white;
-    cursor: pointer;
-}
+#lightbox.active { opacity: 1; pointer-events: auto; }
+#lightbox-image { max-width: 86%; max-height: 88vh; border-radius: 18px; box-shadow: 0 20px 70px rgba(0,0,0,0.45); transform: scale(0.92); transition: transform 0.25s ease; }
+#lightbox.active #lightbox-image { transform: scale(1); }
+#close-lightbox { position: absolute; top: 20px; right: 30px; font-size: 42px; color: white; cursor: pointer; }
 
 .lightbox-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-
-    border: none;
-    background: transparent;
-
-    color: white;
-
-    font-size: 90px;
-    font-weight: 300;
-
-    cursor: pointer;
-
-    opacity: 0.7;
-
-    transition:
-        transform 0.18s ease,
-        opacity 0.18s ease;
+    position: absolute; top: 50%; transform: translateY(-50%);
+    border: none; background: transparent; color: white; font-size: 90px; font-weight: 300;
+    cursor: pointer; opacity: 0.7; transition: transform 0.18s ease, opacity 0.18s ease;
 }
-
-.lightbox-arrow:hover {
-    opacity: 1;
-    transform: translateY(-50%) scale(0.92);
-}
-
-#prev-lightbox {
-    left: 35px;
-}
-
-#next-lightbox {
-    right: 35px;
-}
-
-.gallery img {
-    cursor: pointer;
-}
-
-.lightbox-image-animate {
-    animation: imageSwitch 0.22s ease;
-}
+.lightbox-arrow:hover { opacity: 1; transform: translateY(-50%) scale(0.92); }
+#prev-lightbox { left: 35px; }
+#next-lightbox { right: 35px; }
+.gallery img { cursor: pointer; }
+.lightbox-image-animate { animation: imageSwitch 0.22s ease; }
 
 @keyframes imageSwitch {
-
-    0% {
-        opacity: 0.4;
-        transform: scale(0.96);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    0% { opacity: 0.4; transform: scale(0.96); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 #scrollDownBtn {
-    position: fixed;
-
-    bottom: 24px;
-    right: 24px;
-
-    width: 64px;
-    height: 64px;
-
-    border: 1px solid rgba(255, 210, 0, 0.28);
-
-    border-radius: 50%;
-
-    background: rgba(255, 208, 0, 0.18);
-
-    color: #ffd500;
-
-    font-size: 28px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-
-    box-shadow:
-        0 12px 30px rgba(0,0,0,0.22),
-        inset 0 1px 0 rgba(255,255,255,0.12),
-        0 0 24px rgba(255, 213, 0, 0.16);
-
-    z-index: 9999;
-
-    opacity: 1;
-
-    transition:
-        opacity 0.35s ease,
-        transform 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
+    position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px;
+    border: 1px solid rgba(255, 210, 0, 0.28); border-radius: 50%;
+    background: rgba(255, 208, 0, 0.18); color: #ffd500; font-size: 28px; font-weight: 600;
+    cursor: pointer; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 24px rgba(255, 213, 0, 0.16);
+    z-index: 999; opacity: 1;
+    transition: opacity 0.35s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
-
-#scrollDownBtn:hover {
-    transform: scale(0.94);
-
-    background: rgba(255, 213, 0, 0.26);
-
-    box-shadow:
-        0 14px 34px rgba(0,0,0,0.24),
-        0 0 32px rgba(255, 213, 0, 0.28);
-}
-
-#scrollDownBtn:active {
-    transform: scale(0.88);
-}
-
-#scrollDownBtn.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* ===== overlay ===== */
-#recruitment-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-/* aktivní stav */
-#recruitment-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* ===== popup ===== */
-#recruitment-popup {
-    background: #ffd500;
-    color: #000;
-    width: 90%;
-    max-width: 520px;
-    padding: 30px 40px;
-    border-radius: 16px;
-    text-align: center;
-    position: relative;
-
-    transform: translateY(-60px);
-    opacity: 0;
-    transition: all 0.45s ease;
-}
-
-/* animace nájezdu do středu */
-#recruitment-overlay.active #recruitment-popup {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-#recruitment-popup h2 {
-    margin: 0 0 12px 0;
-    font-size: 28px;
-    font-weight: 700;
-}
-
-#recruitment-popup p {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 400;
-}
-
-/* křížek */
-.close-btn {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    font-weight: 600;
-} 
+#scrollDownBtn:hover { transform: scale(0.94); background: rgba(255, 213, 0, 0.26); box-shadow: 0 14px 34px rgba(0,0,0,0.24), 0 0 32px rgba(255, 213, 0, 0.28); }
+#scrollDownBtn:active { transform: scale(0.88); }
+#scrollDownBtn.hidden { opacity: 0; pointer-events: none; }
 
 /* ===== MOBIL ===== */
-
 @media (max-width: 768px) {
-
-    body {
-        padding-top: 70px;
-        background-attachment: scroll;
-        background-position: center top;
-    }
-
-    .topbar {
-        height: 70px;
-        padding: 0 16px;
-    }
-
-    .logo img {
-        height: 28px;
-    }
-
-    .menu {
-        gap: 14px;
-    }
-
-    .menu a {
-        font-size: 14px;
-    }
-
-    .hero {
-        padding: 80px 18px 55px 18px;
-    }
-
-    .hero h1 {
-        font-size: 48px;
-    }
-
-    .hero p {
-        font-size: 17px;
-    }
-
-    .section {
-        padding: 18px;
-    }
-
-    .text-area {
-        padding: 28px 22px;
-        border-radius: 22px;
-    }
-
-    .text-area h2 {
-        font-size: 30px;
-    }
-
-    .text-area p {
-        font-size: 15.5px;
-        line-height: 1.75;
-    }
-
-    .gallery-title {
-        font-size: 34px;
-        margin-top: 55px;
-        margin-bottom: 25px;
-    }
-
-    .gallery {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .gallery img {
-        height: 210px;
-        border-radius: 18px;
-    }
-
-    .form-section {
-        padding: 70px 18px 95px 18px;
-    }
-
-    .form-button {
-        width: 100%;
-        max-width: 340px;
-
-        padding: 20px 25px;
-
-        font-size: 24px;
-    }
-
-    .footer {
-        padding: 25px;
-        font-size: 12px;
-    }
-
-    #scrollDownBtn {
-        width: 58px;
-        height: 58px;
-
-        bottom: 18px;
-        right: 18px;
-
-        font-size: 24px;
-
-        backdrop-filter: blur(22px);
-
-        box-shadow:
-            0 10px 26px rgba(0,0,0,0.26),
-            0 0 24px rgba(255, 213, 0, 0.22);
-    }
+    body { padding-top: 70px; background-attachment: scroll; background-position: center top; }
+    .topbar { height: 70px; padding: 0 16px; }
+    .logo img { height: 28px; }
+    .menu { gap: 14px; }
+    .menu a { font-size: 14px; }
+    .hero { padding: 80px 18px 55px 18px; }
+    .hero h1 { font-size: 44px; }
+    .hero p { font-size: 17px; }
+    .section { padding: 18px; }
+    .text-area { padding: 28px 22px; border-radius: 22px; }
+    .text-area h2 { font-size: 26px; }
+    .text-area p { font-size: 15.5px; line-height: 1.75; }
+    .gallery-title { font-size: 34px; margin-top: 55px; margin-bottom: 25px; }
+    .gallery { grid-template-columns: 1fr; gap: 16px; }
+    .gallery img { height: 210px; border-radius: 18px; }
+    .form-section { padding: 70px 18px 95px 18px; }
+    .form-button { width: 100%; max-width: 340px; padding: 20px 25px; font-size: 24px; }
+    .footer { padding: 25px; font-size: 12px; }
+    #scrollDownBtn { width: 58px; height: 58px; bottom: 18px; right: 18px; font-size: 24px; backdrop-filter: blur(22px); box-shadow: 0 10px 26px rgba(0,0,0,0.26), 0 0 24px rgba(255, 213, 0, 0.22); }
+    .nabor-closed-box h2 { font-size: 28px; }
+    .nabor-closed-box p { font-size: 14px; }
 }
-
 
 </style>
 </head>
 
-
-
 <body>
 
-    <button id="scrollDownBtn">
-    ↓
-</button>
-<!-- TOPBAR -->
+<div class="nabor-closed-overlay">
+    <a href="https://alces-as.fun" style="
+        position: absolute;
+        top: 30px;
+        left: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 
+            0 8px 32px 0 rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.25s ease;
+        z-index: 99999999;
+    " onmouseover="this.style.background='rgba(255, 255, 255, 0.12)'; this.style.borderColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.borderColor='rgba(255, 255, 255, 0.15)'; this.style.transform='translateY(0)';" onmousedown="this.style.transform='translateY(0) scale(0.98)';">
+        <span style="font-size: 16px;">←</span> Zpět na web
+    </a>
+    <div class="nabor-closed-box">
+        <div style="margin-bottom: 25px; display: flex; justify-content: center;">
+            <img src="../fotky/univ/logo.png" alt="alces" style="height: 80px; width: auto; max-width: 100%;">
+        </div>
+        
+        <h2>Nábor je uzavřen</h2>
+        <p>
+            Nábor je momentálně uzavřen.
+        </p>
+        <p>
+            S případným náborovým řízením budete obeznámeni na těchto stránkách, na Instagramu, či na Discordu.
+        </p>
+        <p>Děkujeme za zájem.</p>
+    </div>
+</div>
+
+<button id="scrollDownBtn">↓</button>
 
 <div class="topbar">
-
     <div class="logo">
         <a href="https://alces-as.fun">
             <img src="..\logo.png">
         </a>
     </div>
-
     <div class="menu">
         <a href="https://alces-as.fun">O nás</a>
         <a href="https://alces-as.fun/nabor/">Nábor</a>
     </div>
-
 </div>
-
-<div id="recruitment-overlay">
-    <div id="recruitment-popup">
-        <button class="close-btn" onclick="closePopup()">✕</button>
-        <h2>Upozornění o konci náboru</h2>
-        <p>Vážení uchazeči, náborové řízení bylo ukončeno v neděli 7. 6. v <b>17:00</b>. Vedení aktuálně vyhodnocuje výsledky a v blízkých dne rozešle výsledky.</p>
-        <p>Děkujeme za zájem.</p>
-    </div>
-</div>
-
-<!-- HERO -->
 
 <section class="hero">
-
     <h1>Nábor</h1>
-
-    <p>
-        alces, a. s. hledá nové řidiče!
-    </p>
-
+    <p>alces, a. s. hledá nové řidiče!</p>
 </section>
 
-<!-- TEXT -->
-
 <section class="section reveal">
-
     <div class="text-area">
-
-        <h2>Pátý nábor je tu!</h1>
-
-        <p>
-            Chceš se stát řidičem autobusu, jenomže máš problém - nevíš kde? Tak to jsi na správném místě! Od 25. května do 7. června pořádáme nábor na pozici řidič autobusu.
-        </p>
-
+        <h2>Pátý nábor je tu!</h2>
+        <p>Chceš se stát řidičem autobusu, jenomže máš problém - nevíš kde? Tak to jsi na správném místě! Od 25. května do 7. června pořádáme nábor na pozici řidič autobusu.</p>
         <h2>Proč se připojit zrovna k nám?</h2>
-
-        <p>
-            Nabídneme Ti upravenou verzi Středočeska (např. výluku na Slapské hrázi, linku MHD Benešov, upravené garáže, přestavěné oblasti a spoustu dalšího!), rozmanité IDOL a PID + IDOL repainty, obstojný výběr českých provozoven, přátelský kolektiv a vedení, které Ti pomůže s různými dotazy a problémy týkající se OMSI. Zároveň se můžete těšit na různé eventy, jako ježdění, propracované úpravy autobusů vytvořené našimi pokročilými moddery, každoměsíční soutěže, bonusy a věrnou simulaci dopravního podniku.
-        </p>
-
+        <p>Nabídneme Ti upravenou verzi Středočeska (např. výluku na Slapské hrázi, linku MHD Benešov, upravené garáže, přestavěné oblasti a spoustu dalšího!), rozmanité IDOL a PID + IDOL repainty, obstojný výběr českých provozoven, přátelský kolektiv a vedení, které Ti pomůže s různými dotazy a problémy týkající se OMSI.</p>
         <h2>Co od Tebe očekáváme my?</h2>
-
-        <p>
-            Od našich řidičů očekáváme spolehlivost, aktivitu, vstřícnost a alespoň 100 kilometrů měsíčně. Po připojení na server Tě čeká přibližně měsíc a půl dlouhá zkušební doba, během které budeš běžně jezdit a postupně se seznamovat s chodem podniku. V tomto období od Tebe očekáváme především trpělivost a aktivní přístup. Potřebujeme si tak ověřit, že jsi vhodným uchazečem o tuto pozici.
-        </p>
-
-        <h2>Jak se k nám můžeš připojit?</h2>
-        <p>
-            Níže pod fotogalerií, kde můžeš vidět naše povedené screeny a podnikové úpravy, je žluté tlačítko “Formulář”. Ten stačí vyplnit, nemělo by Ti to trvat déle než 10 minut. Výsledky budou vyhodnoceny 7. června ve večerních hodinách a budou rozesílány během následujícího dne (tj. 8. červen). Pokud budeš přijat, bude Ti ve stejném mailu poslána i pozvánka na náš server. Zde se následně dozvíš zbytek.
-        </p>
-
-        <h2>Co to pro Tebe znamená?</h2>
-         <p>
-            V čas vyplň formulář a čekej na výsledek!
-         </p>
-         <p>Budeme se na Tebe s celým týmem alcesu těšit!</p>
-
+        <p>Od našich řidičů očekáváme spolehlivost, aktivitu, vstřícnost a alespoň 100 kilometrů měsíčně.</p>
     </div>
-
 </section>
 
-<!-- GALERIE -->
-
 <section class="section reveal">
-
-    <h2 class="gallery-title">
-        Fotogalerie
-    </h2>
-
+    <h2 class="gallery-title">Fotogalerie</h2>
     <div class="gallery reveal">
-
         <img src="fotky/foto1.png" data-author="7001">
         <img src="fotky/foto2.png" data-author="7001">
         <img src="fotky/fotoright.png" data-author="7067">
@@ -870,179 +379,83 @@ body::before {
         <img src="fotky/foto7.png" data-author="7074">
         <img src="fotky/foto8.png" data-author="7001">
         <img src="fotky/foto9.png" data-author="7094">
-
     </div>
-
 </section>
-
-<!-- FORM -->
 
 <section class="form-section reveal">
-
-    <a href="https://docs.google.com/forms/d/1EnpFUsibMUz5HmuS0g0R0Fdu6BwDE-D2xS0_FkxLnvI/edit" class="form-button">
-        FORMULÁŘ
-    </a>
-
+    <a href="https://docs.google.com/forms/d/ EnpFUsibMUz5HmuS0g0R0Fdu6BwDE-D2xS0_FkxLnvI/edit" class="form-button">FORMULÁŘ</a>
 </section>
 
-<!-- FOOTER -->
-
-<div class="footer">
-    © alces, a. s.
-</div>
+<div class="footer">© alces, a. s.</div>
 
 <div id="lightbox">
     <button id="prev-lightbox" class="lightbox-arrow">‹</button>
-
     <img id="lightbox-image">
-    
     <div id="lightbox-author"></div>
-
     <button id="next-lightbox" class="lightbox-arrow">›</button>
-
     <span id="close-lightbox">✕</span>
 </div>
 
 <script>
-
-    const scrollBtn = document.getElementById("scrollDownBtn");
-
+const scrollBtn = document.getElementById("scrollDownBtn");
 scrollBtn.addEventListener("click", () => {
-
-    window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-    });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 });
 
 window.addEventListener("scroll", () => {
-
-    const nearBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 180;
-
-    if (nearBottom) {
-        scrollBtn.classList.add("hidden");
-    } else {
-        scrollBtn.classList.remove("hidden");
-    }
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 180;
+    if (nearBottom) { scrollBtn.classList.add("hidden"); } else { scrollBtn.classList.remove("hidden"); }
 });
 
 const reveals = document.querySelectorAll(".reveal");
-
 function revealOnScroll() {
     reveals.forEach(element => {
         const windowHeight = window.innerHeight;
         const revealTop = element.getBoundingClientRect().top;
-
-        if (revealTop < windowHeight - 100) {
-            element.classList.add("active");
-        }
+        if (revealTop < windowHeight - 100) { element.classList.add("active"); }
     });
 }
-
 window.addEventListener("scroll", revealOnScroll);
 revealOnScroll();
 
 const galleryImages = Array.from(document.querySelectorAll(".gallery img"));
-
 const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightbox-image");
 const lightboxAuthor = document.getElementById("lightbox-author");
 const closeLightbox = document.getElementById("close-lightbox");
 const prevLightbox = document.getElementById("prev-lightbox");
 const nextLightbox = document.getElementById("next-lightbox");
-
 let currentImageIndex = 0;
 
 function updateLightboxImage() {
     const currentImage = galleryImages[currentImageIndex];
-
     lightboxImage.classList.remove("lightbox-image-animate");
-
     setTimeout(() => {
         lightboxImage.src = currentImage.src;
-
         const author = currentImage.dataset.author || "neuveden";
         lightboxAuthor.innerText = "Autor: " + author;
-
         lightboxImage.classList.add("lightbox-image-animate");
     }, 10);
 }
 
-function openLightbox(index) {
-    currentImageIndex = index;
-    updateLightboxImage();
-    lightbox.classList.add("active");
-}
+function openLightbox(index) { currentImageIndex = index; updateLightboxImage(); lightbox.classList.add("active"); }
+function closeLightboxFunc() { lightbox.classList.remove("active"); }
+function showNextImage() { currentImageIndex++; if (currentImageIndex >= galleryImages.length) { currentImageIndex = 0; } updateLightboxImage(); }
+function showPrevImage() { currentImageIndex--; if (currentImageIndex < 0) { currentImageIndex = galleryImages.length - 1; } updateLightboxImage(); }
 
-function closeLightboxFunc() {
-    lightbox.classList.remove("active");
-}
-
-function showNextImage() {
-    currentImageIndex++;
-
-    if (currentImageIndex >= galleryImages.length) {
-        currentImageIndex = 0;
-    }
-
-    updateLightboxImage();
-}
-
-function showPrevImage() {
-    currentImageIndex--;
-
-    if (currentImageIndex < 0) {
-        currentImageIndex = galleryImages.length - 1;
-    }
-
-    updateLightboxImage();
-}
-
-galleryImages.forEach((image, index) => {
-    image.addEventListener("click", () => {
-        openLightbox(index);
-    });
-});
-
+galleryImages.forEach((image, index) => { image.addEventListener("click", () => { openLightbox(index); }); });
 closeLightbox.addEventListener("click", closeLightboxFunc);
 nextLightbox.addEventListener("click", showNextImage);
 prevLightbox.addEventListener("click", showPrevImage);
-
-lightbox.addEventListener("click", (e) => {
-    if (e.target === lightbox) {
-        closeLightboxFunc();
-    }
-});
+lightbox.addEventListener("click", (e) => { if (e.target === lightbox) { closeLightboxFunc(); } });
 
 document.addEventListener("keydown", (e) => {
     if (!lightbox.classList.contains("active")) return;
-
-    if (e.key === "ArrowRight") {
-        showNextImage();
-    }
-
-    if (e.key === "ArrowLeft") {
-        showPrevImage();
-    }
-
-    if (e.key === "Escape") {
-        closeLightboxFunc();
-    }
+    if (e.key === "ArrowRight") { showNextImage(); }
+    if (e.key === "ArrowLeft") { showPrevImage(); }
+    if (e.key === "Escape") { closeLightboxFunc(); }
 });
-
-window.addEventListener("load", () => {
-    setTimeout(() => {
-        document.getElementById("recruitment-overlay").classList.add("active");
-    }, 300); // malé zpoždění = hezčí efekt
-});
-
-function closePopup() {
-    document.getElementById("recruitment-overlay").classList.remove("active");
-}
-
 </script>
 
 </body>
-
 </html>

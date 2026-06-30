@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Domů | alces, a. s.</title>
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
 <!-- Google font Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -407,11 +407,11 @@
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     color: white;
+    box-sizing: border-box;
     
-    /* TADY JE TA ZMĚNA PRO STATICKÝ BOX SE SCROLLOVÁNÍM */
-    max-height: 400px;      /* Box bude vysoký maximálně 400px */
-    overflow-y: auto;       /* Pokud bude oznámení víc, uvnitř boxu se objeví scrollbar */
-    box-sizing: border-box; /* Aby padding nerozbil šířku */
+    /* 🚀 FIX: Uzamčení výšky a zapnutí vnitřního scrollování */
+    max-height: 434px;    /* Box už nepřeleze 400px výšky */
+    overflow-y: auto;     /* Jakmile text přeteče, scrolluje se uvnitř boxu */
 }
 
 .announcements-title {
@@ -949,6 +949,107 @@
     transform: translateY(-2px); /* Lehké naddvihnuti při najetí */
 }
 
+/* Stylování čtvercových tlačítek s velkým emotikonem */
+.glass-square-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: white;
+    text-decoration: none;
+    padding: 15px 10px;
+    aspect-ratio: 1 / 1; /* Vynutí dokonalý čtverec */
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Velký emotikon */
+.glass-square-btn .sq-emoji {
+    font-size: 26px;
+    margin-bottom: 4px;
+    transition: transform 0.25s ease;
+}
+
+/* Menší popisek pod ním */
+.glass-square-btn .sq-text {
+    font-weight: 600;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* Efekt při najetí myší - čtvereček se rozsvítí a emotikon vyskočí */
+.glass-square-btn:hover {
+    background: rgba(255, 216, 77, 0.12);
+    border-color: rgba(255, 216, 77, 0.4);
+    color: #ffd84d;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.glass-square-btn:hover .sq-emoji {
+    transform: scale(1.2); /* Emotikon se zvětší */
+}
+
+.glass-square-btn:active {
+    transform: translateY(0);
+}
+
+/* Nastavení šířky posuvníku */
+.announcements-box::-webkit-scrollbar {
+    display: none;
+}
+
+/* Skryje posuvník pro Firefox a staré IE */
+.announcements-box {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* 🚀 ELEGANTNÍ TUNING POSUVNÍKU PRO BOX S OZNÁMENÍM */
+
+/* Cílíme na konkrétní kontejner s oznámeními (uprav si třídu/ID podle tvého HTML) */
+.oznameni-box, .news-container, #newsBox {
+    scrollbar-width: thin; /* Pro Firefox */
+    scrollbar-color: rgba(255, 216, 77, 0.2) rgba(0, 0, 0, 0.2); /* Pro Firefox (žlutý posuvník na tmavém) */
+}
+
+/* Pro prohlížeče Chrome, Safari a Edge (WebKit) */
+.oznameni-box::-webkit-scrollbar, 
+.news-container::-webkit-scrollbar, 
+#newsBox::-webkit-scrollbar {
+    width: 6px;  /* Extrémně tenký a decentní posuvník */
+    height: 6px;
+}
+
+.oznameni-box::-webkit-scrollbar-track, 
+.news-container::-webkit-scrollbar-track, 
+#newsBox::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3); /* Tmavé podbarvení dráhy */
+    border-radius: 20px;
+}
+
+.oznameni-box::-webkit-scrollbar-thumb, 
+.news-container::-webkit-scrollbar-thumb, 
+#newsBox::-webkit-scrollbar-thumb {
+    background: rgba(255, 216, 77, 0.2); /* Jemná průhledná Alces žlutá v základu */
+    border: 1px solid rgba(255, 216, 77, 0.2);
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+/* Když na posuvník řidič najede myší, víc se rozsvítí */
+.oznameni-box::-webkit-scrollbar-thumb:hover, 
+.news-container::-webkit-scrollbar-thumb:hover, 
+#newsBox::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 216, 77, 0.6); /* Sytější Alces žlutá při hoveru */
+    box-shadow: 0 0 8px rgba(255, 216, 77, 0.4);
+}
+
 /* 📱 PODMÍNKA PRO MOBILY (Responzivita) */
 /* 📱 Optimalizace pro mobil */
 @media (max-width: 768px) {
@@ -1164,20 +1265,14 @@
     <div class="menu">
         <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing" class="rank-ridic">Pravidla</a>
         <span class="divider rank-ridic"></span>
-        <a href="vedeni.html" class="rank-ridic">Vedení</a>
-        <span class="divider rank-ridic"></span>
-        <!-- <a href="absence.html" class="rank-ridic">Absence</a> -->
-        <span class="divider rank-ridic"></span>
         <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783" class="rank-ridic">Vozidla + výpravy</a>
-        <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211" class="rank-ridic">Výkazy (MZVŘ)</a>        
+        <a href="vykazy.html" class="rank-ridic">Výkazy (DZVA)</a>        
         <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing" class="rank-ridic">Repainty</a>
         <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing" class="rank-zkusebni-ridic">Pravidla</a>
         <span class="divider rank-zkusebni-ridic"></span>
-        <a href="vedeni.html" class="rank-zkusebni-ridic">Vedení</a>
-        <span class="divider rank-zkusebni-ridic"></span>
-        <a href="https://docs.google.com/spreadsheets/d/10DNASdUey0SMEpWCyeJ_xTIUkzxHehMS2R4j42dSl0w/edit?gid=962915084#gid=962915084" class="rank-zkusebni-ridic">Vozidla + výpravy</a>
-        <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211" class="rank-zkusebni-ridic">Výkazy (MZVŘ)</a>        
-        <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing" class="rank-zkusebni-ridic">Repainty</a>
+        <a href="https://docs.google.com/spreadsheets/d/10DNASdUey0SMEpWCyeJ_xTIUkzxHehMS2R4j42dSl0w/edit?usp=sharing" class="rank-zkusebni-ridic">Vozidla + výpravy</a>
+        <a href="https://docs.google.com/spreadsheets/d/1qMGb0Y8CQ-7hjnbJakajMIJfCT5gk51lpOmwPZ-PBwM/edit?usp=sharing" class="rank-zkusebni-ridic">Výkazy (MZVŘ)</a>        
+        <a href="https://drive.google.com/drive/folders/1FT_wgV4-7yC1Ecc_EmOy4dkxITXSnLbe?usp=sharing" class="rank-zkusebni-ridic">Repainty</a>
         <span class="divider"></span>
         <button class="logout" onclick="logout()">Odhlásit se</button>
     </div>
@@ -1188,10 +1283,13 @@
         <button type="button" class="close-btn" onclick="toggleSidebar()">✕</button>
     </div>
     <div class="sidebar-links">
+        <a href="https://drive.google.com/drive/folders/1pjoK4N97B9gJfk4w7VouoS69WucpEtWp?usp=sharing" class="sidebar-link rank-team-manager">Disk vedení</a>
         <a href="oznameni-sprava.html" class="sidebar-link rank-team-manager">Správa oznámení</a>
         <a href="mentori.html" class="sidebar-link rank-team-manager">Panel mentorů</a>
         <a href="absence-sprava.html" class="sidebar-link rank-team-manager">Správa absencí</a>
-        <a href="dilny-sprava.html" class="sidebar-link rank-majitel">Správa dílen</a>
+        <a href="dilny-sprava.html" class="sidebar-link rank-dispecer">Správa dílen</a>
+        <a href="vykazy-sprava.html" class="sidebar-link rank-team-manager">Správa výkazů</a>
+        <a href="pridelenky-sprava.html" class="sidebar-link rank-team-manager">Správa přidělenek</a>
         <a href="admin.html" class="sidebar-link rank-majitel">Správa uživatelů</a>
         </div>
 </div>
@@ -1244,19 +1342,68 @@ Načítám...
         </div>
 
     </div>
-<div style="display: flex; gap: 24px; margin-top: 40px; align-items: start; max-width: 1200px; width: 100%; flex-wrap: wrap;">
+<div style="display: flex; gap: 24px; margin-top: 40px; align-items: start; max-width: 1300px; width: 100%; flex-wrap: wrap;">
     
-    <div class="announcements-box" style="flex: 1; min-width: 300px; margin-top: 0;">
+    <div class="announcements-box" style="flex: 1.2; min-width: 300px; margin-top: 0;">
         <div class="announcements-title">Oznámení</div>
         <div id="announcementsList">
             <p style="opacity: 0.5;">Načítám aktuální oznámení...</p>
         </div>
     </div>
 
-    <div id="workshopAlertsBox" class="announcements-box" style="flex: 1; min-width: 300px; margin-top: 0; display: none;">
-        <div class="announcements-title" style="color: #ffd84d;">Dílny</div>
-        <div id="workshopAlertsContainer">
-            </div>
+    <div id="workshopAlertsBox" class="announcements-box" style="flex: 1.2; min-width: 300px; margin-top: 0; display: none;">
+        <div class="announcements-title" style="color: #ffd84d;">📢 Aktuální úpravy z dílen</div>
+        <div id="workshopAlertsContainer"></div>
+    </div>
+
+    <div class="announcements-box" style="flex: 0.6; min-width: 240px; margin-top: 0;">
+        <div class="announcements-title" style="color: #ffd84d;">🔗 Odkazy</div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 15px;">
+            
+            <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783" target="_blank" class="glass-square-btn ridici">
+                <span class="sq-emoji">🚍</span>
+                <span class="sq-text">Vozy + Výpravy</span>
+            </a>
+            
+            <a href="vykazy.html" target="_blank" class="glass-square-btn ridici">
+                <span class="sq-emoji">📊</span>
+                <span class="sq-text">Výkazy (DZVA)</span>
+            </a>
+            
+            <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing" target="_blank" class="glass-square-btn ridici">
+                <span class="sq-emoji">🎨</span>
+                <span class="sq-text">Repainty</span>
+            </a>
+            
+            <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing" target="_blank" class="glass-square-btn ridici">
+                <span class="sq-emoji">📜</span>
+                <span class="sq-text">Pravidla</span>
+            </a>
+
+            <a href="overall.html" class="glass-square-btn rank-ridic" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
+                <span style="font-size: 18px;">ℹ️</span>
+                <span>Overall</span>
+            </a>
+
+            <a href="dilny.html" class="glass-square-btn" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
+                <span style="font-size: 18px;">🛠️</span>
+                <span>Dílny</span>
+            </a>
+            <a href="absence.html" class="glass-square-btn" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
+                <span style="font-size: 18px;">➖</span>
+                <span>Absence</span>
+            </a>
+            <a href="vedeni.html" class="glass-square-btn" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
+                <span style="font-size: 18px;">👥</span>
+                <span>Zobrazit vedení</span>
+            </a>
+            <a href="prideleni-vozidel.html" class="glass-square-btn rank-ridic" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
+                <span style="font-size: 18px;">➕</span>
+                <span>Přidělení vozidel</span>
+            </a>
+            
+        </div>
     </div>
 
 </div>
@@ -1444,6 +1591,14 @@ onAuthStateChanged(auth, async (user) => {
 
         // Zviditelníme plovoucí tlačítko správy pouze pro vedení firmy
         const userRank = localStorage.getItem("rank") || "";
+        // 🚀 KONTROLA PRO ZKUŠEBNÍ ŘIDIČE:
+        if (userRank === "zkusebni-ridic") {
+            // Najdeme všechna 4 tlačítka se společnou třídou a kompletně je vymažeme z toku stránky
+            const tlacitkaKeSchovani = document.querySelectorAll(".ridici");
+            tlacitkaKeSchovani.forEach(btn => {
+                btn.style.display = "none";
+            });
+        }
         if (allowedRanks.includes(userRank)) {
             const toggleBtn = document.getElementById("menuToggleBtn");
             if (toggleBtn) toggleBtn.style.display = "inline-block";
@@ -1519,7 +1674,7 @@ async function loadAnnouncements() {
                 <h3>${annData.title || "Bez nadpisu"}</h3>
                 <div class="announcement-meta" style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">
                     ${dateString ? `<span>📅 ${dateString}</span>` : ""}
-                    ${annData.author ? `<span style="margin-left: 12px;">✍️ Publikoval: <strong>${annData.author}</strong></span>` : ""}
+                    ${annData.author ? `<span style="margin-left: 12px;">👤 Publikoval: <strong>${annData.author}</strong></span>` : ""}
                 </div>
                 <p>${annData.text || ""}</p>
                 <div class="announcement-footer"></div>
@@ -1645,6 +1800,23 @@ async function confirmWorkshopLog(logId, userEmail) {
         alert("Chyba při potvrzení: " + err.message);
     }
 }
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 
 <!-- ===== PROBÍHÁ NÁBOR ZAČÁTEK =====

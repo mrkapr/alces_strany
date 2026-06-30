@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absence | alces, a. s.</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2=family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,10 +17,17 @@
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
         }
-        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
         .content { margin: 120px 40px 40px 40px; }
         h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
@@ -68,6 +75,51 @@
     width: auto;
     display: block;
 }
+
+/* ─── 📱 MOBILNÍ RESPONSIVNÍ DESIGN (Max 768px) ─── */
+        @media (max-width: 768px) {
+            /* Sjednocený mobilní topbar - dokonalé centrování prvků */
+            .topbar {
+                top: 8px; left: 12px; right: 12px; height: 50px;
+                padding: 0 14px; border-radius: 16px;
+            }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 13px; margin-left: 12px; }
+
+            /* Odsazení obsahu a zmenšení nadpisů */
+            .content { margin: 85px 16px 20px 16px; }
+            h1 { font-size: 24px; margin-bottom: 15px; line-height: 1.2; }
+
+            /* Zmenšení vnitřních rozestupů panelů */
+            .panel { padding: 16px; border-radius: 16px; margin-bottom: 15px; }
+            .panel h2 { font-size: 18px; margin-bottom: 15px; }
+
+            /* Úprava formulářových prvků na celou šířku */
+            .form-group { margin-bottom: 12px; }
+            label { font-size: 13px; }
+            input, select, textarea { padding: 10px; font-size: 13px; }
+            button.btn-add { padding: 12px; font-size: 14px; }
+
+            /* 🚀 MOBILNÍ TUNING PRO TABULKU ŽÁDOSTÍ */
+            .absence-table { font-size: 12px; display: block; width: 100%; }
+            
+            /* Povolíme tabulce plynulé posouvání do stran, pokud by byl důvod moc dlouhý */
+            .panel:has(.absence-table) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            
+            .absence-table th { padding: 8px 4px; font-size: 11px; }
+            .absence-table td { padding: 10px 4px; }
+            
+            /* Zamezení roztažení sloupce s poznámkou */
+            .absence-table td[style*="max-width"] {
+                max-width: 130px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* Responzivní pravé menu (Sidebar) */
+            .sidebar-right { width: 100vw; right: -100vw; }
+        }
     </style>
 </head>
 <body>
@@ -159,7 +211,7 @@ function handleTypeChange() {
         // Skryjeme políčko "Do měsíce"
         groupTo.style.display = "none";
         inputTo.removeAttribute("required");
-        labelFrom.innerText = "Vyber aktuální měsíc";
+        labelFrom.innerText = "Měsíc k omluvení";
         
         // Vynutíme POUZE aktuální měsíc – min i max nastavíme na stejnou hodnotu
         inputFrom.value = currentMonthString;
@@ -344,7 +396,23 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
         alert("Chyba při odesílání: " + err.message);
     }
 });
-</script>
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>
 </html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schvalování přidělenek | alces, a. s.</title>
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28); box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { display: flex; align-items: center; margin-left: 0 !important; height: 100%; }
+        .topbar .logo img { height: 34px; width: auto; display: block; margin: auto 0; }
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .content { margin: 120px 40px 40px 40px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 20px; color: #ffd84d; }
+        .panel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); padding: 24px; border-radius: 24px; margin-bottom: 25px; }
+        .request-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .request-table th { color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.1); padding: 10px; }
+        .request-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .btn-approve { background: #00b84f; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: 5px; font-family: 'Poppins', sans-serif; }
+        .btn-reject { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo"><a href="home.html"><img src="fotky/univ/logo.png" alt="alces"></a></div>
+    <div><a href="prideleni-vozidel.html">← Zobrazení pro řidiče</a></div>
+</div>
+
+<div id="error-screen">Ověřuji, zda má uživatel dostatečná oprávnění...</div>
+
+<div class="content" id="mainContent" style="display: none;">
+    <h1>Správa a schvalování přidělení vozů</h1>
+    <div class="panel">
+        <table class="request-table">
+            <thead>
+                <tr>
+                    <th>Ev.č. vozu</th>
+                    <th>Řidič</th>
+                    <th>Osobní číslo</th>
+                    <th>E-mail</th>
+                    <th>Datum žádosti</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+            <tbody id="requestsTableBody">
+                <tr>
+                    <td colspan="6" style="opacity: 0.5; text-align: center; padding: 20px;">Žádné aktivní žádosti o přidělení.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+
+onAuthStateChanged(auth, async (user) => {
+    const userRank = localStorage.getItem("rank") || "";
+    if (user && allowedRanks.includes(userRank)) {
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("error-screen").style.display = "none";
+        await loadPendingRequests();
+    } else {
+        document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto sekci může spravovat pouze vedení.";
+        document.getElementById("error-screen").style.display = "block";
+    }
+});
+
+async function loadPendingRequests() {
+    const tbody = document.getElementById("requestsTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "assignments"));
+        let hasAnyRequest = false;
+
+        querySnapshot.forEach(vDoc => {
+            const evc = vDoc.id;
+            const data = vDoc.data();
+            const pending = data.pendingRequests || [];
+
+            pending.forEach((req) => {
+                hasAnyRequest = true;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>🚍 Ev.č. ${evc}</strong></td>
+                    <td>${req.name}</td>
+                    <td><strong>${req.oc || "-"}</strong></td>
+                    <td>${req.email}</td>
+                    <td>${new Date(req.requestedAt).toLocaleDateString("cs-CZ")}</td>
+                    <td>
+                        <button class="btn-approve" onclick="resolveRequest('${evc}', '${req.email}', true)">Schválit ✓</button>
+                        <button class="btn-reject" onclick="resolveRequest('${evc}', '${req.email}', false)">Zamítnout ✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        if (!hasAnyRequest) {
+            tbody.innerHTML = `<tr><td colspan="6" style="opacity: 0.5; text-align: center; padding: 20px;">Žádné aktivní žádosti o vozidla.</td></tr>`;
+        }
+    } catch (e) { console.error(e); }
+}
+
+window.resolveRequest = async function(evc, driverEmail, isApproved) {
+    try {
+        const assignRef = doc(db, "assignments", evc);
+        const assignSnap = await getDoc(assignRef);
+
+        if (assignSnap.exists()) {
+            const data = assignSnap.data();
+            let currentDrivers = data.drivers || [];
+            let currentRequests = data.pendingRequests || [];
+
+            const foundRequest = currentRequests.find(r => r.email === driverEmail);
+            currentRequests = currentRequests.filter(r => r.email !== driverEmail);
+
+            if (isApproved && foundRequest) {
+                const timestampNow = new Date().toISOString();
+                currentDrivers.push({
+                    email: foundRequest.email,
+                    name: foundRequest.name,
+                    oc: foundRequest.oc || "-",
+                    assignedAt: timestampNow
+                });
+                
+                const userRef = doc(db, "users", foundRequest.email);
+                await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
+            } 
+            else if (!isApproved && foundRequest) {
+                // 🚀 POJISTKA PRO VEDENÍ: Vedení neschválilo žádost -> Vymažeme řidiči časový zámek v users profilu
+                try {
+                    const userRef = doc(db, "users", foundRequest.email);
+                    await updateDoc(userRef, { lastVehicleAssignmentAt: null });
+                } catch (uErr) { console.error("Chyba při odblokování řidiče vedením:", uErr); }
+            }
+
+            await updateDoc(assignRef, {
+                drivers: currentDrivers,
+                pendingRequests: currentRequests
+            });
+
+            alert(isApproved ? "Přidělení vozidla bylo úspešně schváleno." : "Žádost byla zamítnuta.");
+            await loadPendingRequests();
+        }
+    } catch (e) { alert("Chyba při zpracování: " + e.message); }
+};
+</script>
+</body>
+</html>

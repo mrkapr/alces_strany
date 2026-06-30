@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Technické zázemí | alces, a. s.</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <title>Dílny | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -14,10 +14,17 @@
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
         }
-        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
         .content { margin: 120px 40px 40px 40px; }
         h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
@@ -62,19 +69,69 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99998; }
         .sidebar-overlay.open { display: block; }
         .sidebar-right button { background: none; color: white; border: none; cursor: pointer; }
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 34px; width: auto;
+    display: block;
+}
+
+/* ─── 📱 MOBILNÍ RESPONSIVNÍ DESIGN (Max 768px) ─── */
+        @media (max-width: 768px) {
+            /* Kompaktnější verze topbaru, shodná s ostatními stránkami */
+            .topbar {
+                top: 8px; left: 12px; right: 12px; height: 50px;
+                padding: 0 14px; border-radius: 16px;
+            }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 13px; margin-left: 12px; }
+
+            /* Úprava odsazení hlavního obsahu */
+            .content { margin: 85px 16px 20px 16px; }
+            h1 { font-size: 24px; margin-bottom: 15px; }
+
+            /* Zrušení fixního lepení pravého panelu (na mobilu musí plynule odjet dolů) */
+            .panel[style*="position: sticky"] { 
+                position: static !important; 
+                top: auto !important; 
+            }
+            
+            /* Zmenšení vnitřních okrajů boxů */
+            .panel { padding: 16px; border-radius: 16px; margin-bottom: 15px; }
+            .panel h2 { font-size: 18px; margin-bottom: 12px; }
+
+            /* Úprava vyhledávacího pole a seznamu aut */
+            .search-box { padding: 10px; font-size: 13px; margin-bottom: 12px; }
+            .vehicle-item { padding: 10px 14px; border-radius: 10px; margin-bottom: 6px; }
+            .vehicle-evc { font-size: 14px; }
+            .vehicle-date { font-size: 10px; }
+            .vehicle-details { font-size: 12px; margin-top: 8px; padding-top: 6px; }
+
+            /* Úprava historie hlášení z dílen */
+            .log-item { padding: 14px; border-radius: 12px; margin-bottom: 12px; }
+            .log-title { font-size: 16px; }
+            .log-meta { font-size: 10px; margin-bottom: 8px; }
+            .log-item div[style*="font-size:14px"] { font-size: 13px !important; }
+
+            /* Úprava případného vysouvacího menu */
+            .sidebar-right { width: 100vw; right: -100vw; }
+        }
+
     </style>
 </head>
 <body>
 
 <div class="topbar">
-    <div style="font-weight:700; font-size:18px;">alces, a. s. — Technické zázemí</div>
+        <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
     <div>
         <a href="home.html">Domů</a>
     </div>
 </div>
 
 <div class="content">
-    <h1>Záznamy z dílen a stav vozů</h1>
+    <h1>Archiv oznámení z dílen a stav vozidel</h1>
     
     <div class="layout-grid">
         <div>
@@ -87,7 +144,7 @@
         </div>
 
         <div class="panel" style="position: sticky; top: 100px;">
-            <h2>Stav vozového parku (Ev.č.)</h2>
+            <h2>Stav vozového parku (ev.č.)</h2>
             <input type="text" id="vehicleSearch" class="search-box" placeholder="🔍 Hledat evidenční číslo..." oninput="filterVehicles()">
             <div class="vehicle-list" id="vehiclesContainer">
                 <p style="opacity:0.5;">Načítám evidenci vozů...</p>
@@ -199,8 +256,8 @@ async function loadVehiclesPark() {
             container.innerHTML += `
                 <div class="vehicle-item" data-evc="${v.id}" onclick="toggleVehicleDetails(this)">
                     <div class="vehicle-header">
-                        <span class="vehicle-evc">🚍 Ev.č. ${v.id}</span>
-                        <span class="vehicle-date">Aktualizace: ${date}</span>
+                        <span class="vehicle-evc">ev.č. ${v.id}</span>
+                        <span class="vehicle-date">Poslední aktualizace: ${date}</span>
                     </div>
                     <div class="vehicle-details"><strong>Poslední stav / záznam:</strong>\n${v.data.lastStatus || "Žádné záznamy."}</div>
                 </div>
@@ -208,6 +265,23 @@ async function loadVehiclesPark() {
         });
     } catch (err) { console.error(err); }
 }
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>
 </html>

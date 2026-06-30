@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Vedení | alces, a. s.</title>
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="favicon.png" type="image/png" id="favicon">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Google font Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -14,383 +13,145 @@
 body {
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-
     background-image:
         linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.62)),
         url("fotky/home/gradient.png"),
         url("fotky/home/pozadi.png");
-
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
     background-attachment: fixed;
-
     color: white;
-
     min-height: 100vh;
 }
 
-/* ================= HORNÍ LIŠTA (STEJNÁ JAKO LANDING) ================= */
-
+/* ================= HORNÍ LIŠTA ================= */
 .topbar {
-    height: 58px;
-
-    position: fixed;
-    top: 16px;
-    left: 24px;
-    right: 24px;
-    z-index: 999;
-
-    overflow: hidden;
-
-    background: rgba(255,255,255,0.09);
-    border: 1px solid rgba(255,255,255,0.18);
-
-    color: white;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 18px;
-
-    border-radius: 24px;
-
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-
-    box-shadow:
-        0 18px 55px rgba(0,0,0,0.28),
-        inset 0 1px 0 rgba(255,255,255,0.18);
+    height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+    overflow: hidden; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+    color: white; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px; border-radius: 24px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 18px 55px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18);
 }
+.logo img { height: 34px; width: auto; display: block; }
+.menu { display: flex; align-items: center; gap: 25px; }
+.menu a { color: white; text-decoration: none; font-weight: 600; display: inline-block; transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.menu:hover a { opacity: 0.45; transform: scale(0.92); }
+.menu a:hover { opacity: 1 !important; transform: scale(1.06); }
+.divider { height: 20px; width: 2.5px; background: white; border-radius: 3px; }
 
-.topbar::after {
-    content: "";
-    position: absolute;
-
-    width: 90px;
-    height: 90px;
-
-    left: var(--mouse-x, 50%);
-    top: var(--mouse-y, 50%);
-
-    transform: translate(-50%, -50%);
-
-    background: radial-gradient(
-        circle,
-        rgba(255,255,255,0.22) 0%,
-        rgba(255,255,255,0.10) 30%,
-        transparent 68%
-    );
-
-    pointer-events: none;
-    opacity: 0;
-    filter: blur(8px);
-
-    transition:
-        opacity 0.25s ease,
-        left 0.002s linear,
-        top 0.002s linear;
+.logout {
+    margin-left: 20px; background: rgba(212, 0, 0, 0.55); color: white; border: 1px solid rgba(255,255,255,0.18);
+    padding: 7px 14px; cursor: pointer; border-radius: 999px; font-family: inherit; backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 8px 24px rgba(0,0,0,0.18); transition: all 0.18s ease;
 }
-
-.topbar:hover::after {
-    opacity: 1;
-}
-
-.logo img {
-    height: 34px;
-    width: auto;
-    display: block;
-}
-
-.menu {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-}
-
-.menu a {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-
-    display: inline-block;
-
-    transition: 
-        transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-        opacity 0.25s ease;
-}
-
-.menu:hover a {
-    opacity: 0.45;
-    transform: scale(0.92);
-}
-
-.menu a:hover {
-    opacity: 1 !important;
-    transform: scale(1.06);
-}
-
-.menu a:active {
-    transform: scale(0.9);
-}
-
-.divider {
-    height: 20px;
-    width: 2.5px;
-    background: white;
-    border-radius: 3px;
-}
+.logout:hover { transform: scale(0.94); background: rgba(190,0,0,0.7); }
 
 /* ================= OBSAH ================= */
+.page { padding: 120px 40px 40px 40px; }
+h1 { font-size: 42px; font-weight: 700; margin: 0; text-shadow: 0 6px 30px rgba(0,0,0,0.35); }
+h2 { font-size: 20px; font-weight: 500; margin: 8px 0 30px; color: rgba(255,255,255,0.72); }
 
-.page {
-    padding: 120px 40px 40px 40px;
-}
-
-h1 {
-    font-size: 42px;
-    font-weight: 700;
-    margin: 0;
-
-    text-shadow: 0 6px 30px rgba(0,0,0,0.35);
-}
-
-h2 {
-    font-size: 20px;
-    font-weight: 500;
-    margin: 8px 0 30px;
-    color: rgba(255,255,255,0.72);
-}
-
-/* grid */
+/* Grid a Karty */
 .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px 30px;
+    align-items: start; 
 }
 
-/* karta */
 .card {
-    background: rgba(255,255,255,0.08);
-
-    border: 1px solid rgba(255,255,255,0.16);
-
-    border-radius: 26px;
-
-    padding: 18px 22px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    backdrop-filter: blur(22px);
+    background: rgba(255,255,255,0.06); 
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 26px; 
+    padding: 20px; 
+    backdrop-filter: blur(22px); 
     -webkit-backdrop-filter: blur(22px);
-
-    box-shadow:
-        0 18px 40px rgba(0,0,0,0.22),
-        inset 0 1px 0 rgba(255,255,255,0.12);
-
-    transition:
-        transform 0.22s ease,
-        background 0.22s ease,
-        border 0.22s ease;
-}
-
-.card:hover {
-    transform: translateY(-4px) scale(1.01);
-
-    background: rgba(255,255,255,0.10);
-
-    border: 1px solid rgba(255,255,255,0.22);
-}
-
-/* profilovka */
-.profile {
-    width: 120px;
-    height: 120px;
-
-    border-radius: 50%;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.22); 
+    cursor: pointer;
     overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                background 0.25s ease, 
+                border-color 0.25s ease;
+}
+.card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.24); }
 
-    flex-shrink: 0;
+.card-main { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 
-    border: 2px solid rgba(255,255,255,0.24);
-
-    box-shadow:
-        0 8px 24px rgba(0,0,0,0.28),
-        inset 0 1px 0 rgba(255,255,255,0.18);
+/* OPRAVENÁ ANIMACE: Odstraněno duplicitní display:none, které rozbíjelo plynulost */
+.bio-section {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.3s ease, 
+                margin-top 0.4s ease, 
+                padding-top 0.4s ease;
+    font-size: 13px; 
+    line-height: 1.6;
 }
 
-.profile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.bio-section.open {
+    max-height: 500px; 
+    opacity: 1;
+    margin-top: 15px; 
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
 }
 
-/* info */
-.info {
-    margin-left: 16px;
-    flex-grow: 1;
+.profile {
+    width: 100px; height: 100px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.24); box-shadow: 0 8px 24px rgba(0,0,0,0.28);
 }
+.profile img { width: 100%; height: 100%; object-fit: cover; }
+.info { margin-left: 20px; flex-grow: 1; }
+.name { font-weight: 600; font-size: 18px; }
+.details { font-size: 13px; opacity: 0.7; margin-top: 2px; }
 
-.name {
-    font-weight: 600;
+.bio-text { opacity: 0.9; white-space: pre-wrap; }
+
+/* Editor pro konkrétního člena vedení */
+.bio-editor { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+.bio-textarea {
+    width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px; color: white; padding: 10px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box;
 }
-
-.details {
-    font-size: 14px;
+.bio-textarea:focus { outline: none; border-color: #ffd84d; }
+.bio-save-btn {
+    align-self: flex-end; background: #00b84f; color: white; border: none;
+    padding: 6px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px;
 }
+.bio-save-btn:hover { background: #00963f; }
 
-/* role */
-.rolemajitel { color: #940002; font-weight: 600; }
-.rolemajitelvasa { color: #883333; font-weight: 600; }
-.rolevedeni { color: #ff56e0; font-weight: 600; }
-.roledispecink { color: #f08c00; font-weight: 600; }
-.roleprovozak { color: #fdec00; font-weight: 600; }
-.roleteammanager { color: #71368a; font-weight: 600; }
-.login-btn {
-    background: darkgreen;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Poppins', Arial, sans-serif;
-}
-
-.logout {
-    margin-left: 20px;
-
-    background: rgba(212, 0, 0, 0.55);
-    color: white;
-
-    border: 1px solid rgba(255,255,255,0.18);
-
-    padding: 7px 14px;
-
-    cursor: pointer;
-
-    border-radius: 999px;
-
-    font-family: 'Poppins', Arial, sans-serif;
-
-    backdrop-filter: blur(12px);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.16),
-        0 8px 24px rgba(0,0,0,0.18);
-
-    transition: 
-        transform 0.18s ease,
-        background 0.18s ease;
-}
-
-.logout:hover {
-    transform: scale(0.94);
-    opacity: 0.95;
-    background: rgba(190,0,0,0.7);
-}
-
-.logout:active {
-    transform: scale(0.88);
-}
+/* Role barevnost */
+.rolemajitel { color: #ff4d4d; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.rolemajitelvasa { color: #ff7676; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.rolevedeni { color: #ff56e0; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.roledispecink { color: #f08c00; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.roleprovozak { color: #fdec00; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.roleteammanager { color: #b57cd8; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
 
 @media (max-width: 768px) {
-
-    /* ===== horní lišta ===== */
-    .topbar {
-        flex-direction: column;
-        height: auto;
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .menu {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        margin-right: 0;
-    }
-
-    .menu a {
-        margin-left: 0;
-        font-size: 14px;
-    }
-
-    .divider {
-        display: none; /* na mobilu zbytečné */
-    }
-
-    .logout {
-        margin-left: 0;
-    }
-
-    /* ===== obsah ===== */
-    .content,
-    .page {
-        margin: 20px;
-        padding: 0;
-    }
-
-    h1 {
-        font-size: 26px;
-    }
-
-    h2 {
-        font-size: 16px;
-    }
-
-    /* ===== vedení – karty ===== */
-    .cards {
-        grid-template-columns: 1fr; /* místo 2 sloupců jen 1 */
-    }
-
-    .card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .profile {
-        width: 80px;
-        height: 80px;
-    }
-
-    .role,
-    .rolemajitel,
-    .rolevedeni,
-    .roledispecink,
-    .roleprovozak {
-        margin-left: 0;
-    }
-
-    /* ===== post-1 (text + obrázek) ===== */
-    .post-content {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .post-content img {
-        width: 100%;
-        height: auto;
-    }
+    .topbar { flex-direction: column; height: auto; padding: 10px; gap: 10px; }
+    .menu { flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .divider { display: none; }
+    .logout { margin-left: 0; }
+    .page { padding: 160px 20px 20px 20px; }
+    h1 { font-size: 28px; }
+    .cards { grid-template-columns: 1fr; }
+    .card-main { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .info { margin-left: 0; }
 }
-
 </style>
 </head>
-
 <body>
 
-<!-- ================= HORNÍ LIŠTA ================= -->
 <div class="topbar">
-
     <div class="logo">
         <a href="home.html">
             <img src="fotky/logo.png" alt="alces">
         </a>
     </div>
-
 
     <div class="menu">
         <a href="https://docs.google.com/document/d/12wPYNcB0jMdGctoVTnKWPKA1ezRAuSWsdNNbrYMAcl8/edit?usp=sharing">Pravidla</a>
@@ -402,114 +163,235 @@ h2 {
         <a href="https://docs.google.com/spreadsheets/d/1g09QR10bl0h3smFniVOR513EZskczfaHee-k-azh3ck/edit?gid=1297485211#gid=1297485211">Výkazy (MZVŘ)</a>        
         <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing">Repainty</a>
         <span class="divider"></span>
-        <button class="logout" onclick="logout()">Odhlásit se</button>
+        <button class="logout" id="logoutBtn">Odhlásit se</button>
     </div>
 </div>
 
-<!-- ================= OBSAH ================= -->
 <div class="page">
     <h1>Vedení – alces, a. s.</h1>
-    <h2>Kontakty</h2>
+    <h2>Kontakty a vizitky členů</h2>
 
     <div class="cards">
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7001.jpg"></div>
-            <div class="info">
-                <div class="name">Karel P. M.</div>
-                <div class="details">O.č.: 7001<br>@mrkapr</div>
+        <div class="card" data-oc="7001">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7001.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Karel P. M.</div>
+                    <div class="details">O.č.: 7001<br>@mrkapr</div>
+                </div>
+                <div class="rolemajitel">Majitel</div>
             </div>
-            <div class="rolemajitel">Majitel</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7002.jpg"></div>
-            <div class="info">
-                <div class="name">Vašek K.</div>
-                <div class="details">O.č.: 7002<br>@janevym00</div>
+        <div class="card" data-oc="7002">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7002.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Vašek K.</div>
+                    <div class="details">O.č.: 7002<br>@janevym00</div>
+                </div>
+                <div class="rolemajitelvasa">Majitel - poloviční úvazek</div>
             </div>
-            <div class="rolemajitelvasa">Majitel - poloviční úvazek</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7003.jpg"></div>
-            <div class="info">
-                <div class="name">Vít V.</div>
-                <div class="details">O.č.: 7003<br>@vilux12realcz</div>
+        <div class="card" data-oc="7003">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7003.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Vít V.</div>
+                    <div class="details">O.č.: 7003<br>@vilux12realcz</div>
+                </div>
+                <div class="rolevedeni">Management</div>
             </div>
-            <div class="rolevedeni">Management</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7021.jpg"></div>
-            <div class="info">
-                <div class="name">Adam V.</div>
-                <div class="details">O.č.: 7021<br>@tenadamko</div>
+        <div class="card" data-oc="7021">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7021.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Adam V.</div>
+                    <div class="details">O.č.: 7021<br>@tenadamko</div>
+                </div>
+                <div class="roleprovozak">Provozní ředitel</div>
             </div>
-            <div class="roleprovozak">Provozní ředitel</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7063.jpg"></div>
-            <div class="info">
-                <div class="name">Jakub S.</div>
-                <div class="details">O.č.: 7063<br>@kubo160</div>
+        <div class="card" data-oc="7063">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7063.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Jakub S.</div>
+                    <div class="details">O.č.: 7063<br>@kubo160</div>
+                </div>
+                <div class="roledispecink">Dispečer</div>
             </div>
-            <div class="roledispecink">Dispečer</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7067.jpg"></div>
-            <div class="info">
-                <div class="name">Jan H.</div>
-                <div class="details">O.č.: 7067<br>@horrys86</div>
+        <div class="card" data-oc="7067">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7067.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Jan H.</div>
+                    <div class="details">O.č.: 7067<br>@horrys86</div>
+                </div>
+                <div class="roleteammanager">Team Manager</div>
             </div>
-            <div class="roleteammanager">Team Manager</div>
+            <div class="bio-section">
+                </div>
         </div>
 
-        <div class="card">
-            <div class="profile"><img src="profilovky/7102.jpg"></div>
-            <div class="info">
-                <div class="name">Matěj F.</div>
-                <div class="details">O.č.: 7102<br>@matejcz</div>
+        <div class="card" data-oc="7102">
+            <div class="card-main">
+                <div class="profile"><img src="profilovky/7102.jpg" onerror="this.src='profilovky/default.jpg'"></div>
+                <div class="info">
+                    <div class="name">Matěj F.</div>
+                    <div class="details">O.č.: 7102<br>@matejcz</div>
+                </div>
+                <div class="roleprovozak">Provozní ředitel</div>
             </div>
-            <div class="roleprovozak">Provozní ředitel</div>
+            <div class="bio-section">
+                </div>
         </div>
 
     </div>
 </div>
 
-<!--<div class="card">
-            <div class="profile"><img src="profilovky/7011.jpg"></div>
-            <div class="info">
-                <div class="name">Lukáš B.</div>
-                <div class="details">O.č.: 7011<br>@milovicak.</div>
-            </div>
-            <div class="roledispecink">Dispečer</div>
-        </div>-->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-<script>
-const username = localStorage.getItem("username");
-if (!username) window.location.href = "login.html";
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
 
-function logout() {
-    localStorage.removeItem("username");
-    window.location.href = "index.html";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUserOc = "";
+
+const emailToOcMap = {
+    "ytkapr@gmail.com": "7001",
+    "vasik.kovyt.stream@gmail.com": "7002",
+    "vitulda15@gmail.com": "7003",
+    "adamecek214@gmail.com": "7021",
+    "jakubkoschwarz@gmail.com": "7063",
+    "horry.sheron@gmail.com": "7067",
+    "foukalmates@gmail.com": "7102"
+};
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    currentUserOc = emailToOcMap[user.email] || "";
+    await loadAllBiographies();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "login.html";
+});
+
+// 🚀 OPRAVENÁ DETEKCE RENDERU: Kód se už nehroutí na neexistujících prvcích
+async function loadAllBiographies() {
+    const cards = document.querySelectorAll(".card");
+    
+    for (const card of cards) {
+        const oc = card.getAttribute("data-oc");
+        const bioSection = card.querySelector(".bio-section");
+        
+        try {
+            const docRef = doc(db, "biography", oc);
+            const docSnap = await getDoc(docRef);
+            
+            let currentBioContent = "Tento člen vedení o sobě zatím nic nenapsal.";
+            if (docSnap.exists() && docSnap.data().text) {
+                currentBioContent = docSnap.data().text;
+            }
+            
+            if (oc === currentUserOc) {
+                // Moje vlastní vizitka -> Editor
+                bioSection.innerHTML = `
+                    <div class="bio-editor">
+                        <label style="font-weight:600; color:#ffd84d; font-size:11px;">📝 Upravit svůj profil (vidí všichni):</label>
+                        <textarea class="bio-textarea" rows="4">${docSnap.exists() ? docSnap.data().text : ""}</textarea>
+                        <button class="bio-save-btn">Uložit profil</button>
+                    </div>
+                `;
+                
+                bioSection.querySelector(".bio-save-btn").addEventListener("click", async (e) => {
+                    e.stopPropagation(); 
+                    const newText = bioSection.querySelector(".bio-textarea").value.trim();
+                    try {
+                        await setDoc(doc(db, "biography", oc), { text: newText }, { merge: true });
+                        alert("Profil úspěšně aktualizován!");
+                    } catch (err) {
+                        alert("Chyba při ukládání: " + err.message);
+                    }
+                });
+                
+                bioSection.querySelector(".bio-textarea").addEventListener("click", (e) => e.stopPropagation());
+                
+            } else {
+                // Vizitka někoho jiného -> Pouze textová komponenta
+                bioSection.innerHTML = `<div class="bio-text">${currentBioContent}</div>`;
+            }
+            
+        } catch (err) {
+            console.error("Chyba loadu bio pro " + oc, err);
+            bioSection.innerHTML = `<div class="bio-text" style="color:#ff4d4d;">Nepodařilo se načíst profil člena.</div>`;
+        }
+        
+        // Plynulé otevírání a zavírání bez ovlivnění sousedních karet
+        card.addEventListener("click", () => {
+            const isOpen = bioSection.classList.contains("open");
+            
+            document.querySelectorAll(".bio-section").forEach(sec => {
+                sec.classList.remove("open");
+            });
+            
+            if (!isOpen) {
+                bioSection.classList.add("open");
+            }
+        });
+    }
 }
 
-const topbar = document.querySelector(".topbar");
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
 
-topbar.addEventListener("mousemove", (e) => {
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    const rect = topbar.getBoundingClientRect();
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+upravFaviconuPodleRezimu();
 
-    topbar.style.setProperty("--mouse-x", `${x}px`);
-    topbar.style.setProperty("--mouse-y", `${y}px`);
-});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
-
 </body>
 </html>

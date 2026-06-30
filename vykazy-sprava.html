@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Správa výkazů | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        .content { margin: 120px 40px 40px 40px; }
+        h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; color: #ffd84d; }
+        
+        .layout-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 30px; align-items: start; }
+        @media (max-width: 1000px) { .layout-grid { grid-template-columns: 1fr; } }
+        
+        .panel {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+            padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;
+        }
+        .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; position: relative; }
+        label { font-size: 14px; font-weight: 600; opacity: 0.9; }
+        input, select, textarea {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+            color: white; padding: 12px; font-family: 'Poppins', sans-serif; font-size: 14px; box-sizing: border-box; width: 100%;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+        button { font-family: 'Poppins', sans-serif; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+        
+        .btn-add { background: #ff4d4d; color: white; width: 100%; }
+        .btn-add:hover { background: #cc3333; transform: scale(1.01); }
+        
+        .btn-bonus-směna { background: #ffd84d; color: #121212; padding: 5px 10px; font-size: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-bonus-směna:hover { background: #ffe280; }
+
+        #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
+        
+        .active-smeny-list { display: flex; flex-direction: column; gap: 10px; }
+        .smena-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 18px; }
+        .smena-top { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .smena-info { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+        .smena-km { font-size: 15px; font-weight: 700; color: #ffd84d; text-align: right; }
+
+        .bonus-span { color: #00ff66; font-weight: 700; }
+        .bonus-note { display: block; font-size: 12px; color: rgba(255,255,255,0.5); font-style: italic; margin-top: 2px; }
+
+        .month-row {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px; padding: 15px 20px; margin-bottom: 12px; cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .month-row:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+        .month-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 16px; }
+        
+        .month-body {
+            max-height: 0; opacity: 0; overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.4s ease;
+        }
+        .month-row.open .month-body {
+            max-height: 1000px; opacity: 1; margin-top: 15px; padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .archive-block {
+            background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 12px 15px; margin-bottom: 12px; font-size: 13px; line-height: 1.6;
+        }
+        .archive-block h4 { margin: 0 0 6px 0; color: #ffd84d; font-size: 14px; }
+        .archive-list { list-style: none; padding: 0; margin: 0; }
+        .archive-list li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); opacity: 0.9; }
+        .archive-list li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
+    <div>
+        <a href="vykazy.html">← Zpět na výkazy</a>
+        <a href="home.html">Domů</a>
+    </div>
+</div>
+
+<div id="error-screen">Ověřuji oprávnění...</div>
+
+<div class="content" id="mainContent" style="display: none;">
+    <h1>Administrace a správa výkazů řidičů</h1>
+    
+    <div class="layout-grid">
+        <div>
+            <div class="panel">
+                <h2>Nová uzávěrka</h2>
+                <p style="font-size: 13px; opacity: 0.7; margin-bottom: 20px; line-height: 1.5;">
+                    Uzávěrka spočítá celkové kilometry za vybraný měsíc, vyhodnotí automaticky nejaktivnějšího řidiče pro Discord, uloží data do trvalého archivu vpravo a promaže staré DZVA.
+                </p>
+                <form id="closureForm">
+                    <div class="form-group">
+                    <label>Vyber měsíc k uzavření</label>
+                    <select id="archiveMonth" required>
+                    </select>
+                    </div>
+                    <button type="submit" class="btn-add" id="submitBtn">🗜️ Spustit uzávěrku měsíce</button>
+                    <button type="button" class="btn-bonus-směna" id="testWebhookBtn" style="margin-top: 15px; width: 100%; padding: 10px; font-size: 13px;">Test zprávy s bonusy</button>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h2>Přidělení bonusů</h2>
+                <p style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">
+                    Zde vidíš aktivní DZVA z probíhajícího měsíce. Můžeš k nim přidat libovolný bonus, který se ihned započítá řidiči do celkového nájezdu.
+                </p>
+                <div id="activeSmenyContainer" class="active-smeny-list">
+                    <p style="opacity: 0.5; margin: 0;">Načítám směny...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Archivované měsíce (Kliknutím rozbalíš)</h2>
+            <div id="archivesContainer">
+                <p style="opacity: 0.5; margin: 0;">Načítám archivy...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="bonusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+    <div style="background-color:#1e1e1e; color:#fff; padding:25px; border-radius:8px; width:90%; max-width:500px; box-shadow:0 4px 15px rgba(0,0,0,0.5); border: 2px solid #ffd84d;">
+        <h3 style="margin-top:0; color:#ffd84d; text-align:center;">🏆 Výsledky měsíčních bonusů 🏆</h3>
+        <p style="font-size:14px; color:#ccc; text-align:center; margin-bottom:20px;">Níže jsou zobrazeni výherci kategorií. Data byla uložena a bonusy připsány.</p>
+        
+        <div id="modalTextPreview" style="background:#2a2a2a; padding:15px; border-radius:5px; font-family:monospace; font-size:13px; white-space:pre-wrap; margin-bottom:20px; border:1px solid #444;"></div>
+        
+        <div style="display:flex; gap:10px;">
+            <button id="copyDiscordTextBtn" style="flex:1; background:#ffd84d; color:#000; border:none; padding:10px; font-weight:bold; border-radius:5px; cursor:pointer;">📋 Zkopírovat pro Discord</button>
+            <button id="closeBonusModalBtn" style="background:#555; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer;">Zavřít</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 🚫 Webhook URL ponechána jen jako systémová rezerva, kód už ji nikde sám nevolá
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R";
+const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+let adminEmail = "";
+
+const cachedUserOsobniCisla = {};
+const cachedUserDiscordIds = {};
+
+const mesiceNazvy = {
+    "2026-05": "Květen 2026",
+    "2026-06": "Červen 2026",
+    "2026-07": "Červenec 2026"
+};
+
+onAuthStateChanged(auth, async (user) => {
+    const userRank = localStorage.getItem("rank") || "";
+    if (user && allowedRanks.includes(userRank)) {
+        adminEmail = user.email;
+        document.getElementById("mainContent").style.display = "block";
+        document.getElementById("error-screen").style.display = "none";
+        
+        await precacheUserProfiles();
+        await loadActiveSmeny();
+        await loadAllArchives();
+        
+        // 🚀 TADY SPUSTÍME AUTOMATICKÉ GENEROVÁNÍ MĚSÍCŮ:
+        await vygenerujNeuzavreneMesice();
+    } else {
+        document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může spravovat pouze vedení.";
+        document.getElementById("error-screen").style.display = "block";
+    }
+});
+
+// Funkce pro dynamické a inteligentní generování měsíců k uzávěrce
+async function vygenerujNeuzavreneMesice() {
+    const select = document.getElementById("archiveMonth");
+    if (!select) return;
+    select.innerHTML = "";
+
+    try {
+        // 1. Zjistíme, které měsíce už jsou v DB uzavřené
+        const querySnapshot = await getDocs(collection(db, "monthly_archives"));
+        const uzavreneMesice = [];
+        querySnapshot.forEach(docSnap => {
+            uzavreneMesice.push(docSnap.id); // ID dokumentu je např. "2026-06"
+        });
+
+        // 2. Spočítáme si aktuální měsíc a měsíc předchozí
+        const dnes = new Date();
+        
+        // Aktuální měsíc
+        const aktualniRok = dnes.getFullYear();
+        const aktualniMesicNum = dnes.getMonth() + 1;
+        const klicAktualni = `${aktualniRok}-${String(aktualniMesicNum).padStart(2, '0')}`;
+
+        // Předchozí měsíc
+        const predchoziDatum = new Date();
+        predchoziDatum.setMonth(dnes.getMonth() - 1);
+        const predchoziRok = predchoziDatum.getFullYear();
+        const predchoziMesicNum = predchoziDatum.getMonth() + 1;
+        const klicPredchozi = `${predchoziRok}-${String(predchoziMesicNum).padStart(2, '0')}`;
+
+        // Seznam potenciálních měsíců k zobrazení (předchozí a pak aktuální)
+        const kandidati = [klicPredchozi, klicAktualni];
+
+        let pridanBaremJeden = false;
+
+        kandidati.forEach(klic => {
+            // Pokud měsíc NENÍ v uzavřených, přidáme ho do nabídky
+            if (!uzavreneMesice.includes(klic)) {
+                const opt = document.createElement("option");
+                opt.value = klic;
+                
+                // Pokud název měsíce nemáš v tabulce 'mesiceNazvy', vygeneruje se univerzální text
+                opt.innerText = mesiceNazvy[klic] || `Měsíc ${klic.split('-')[1]}/${klic.split('-')[0].slice(-2)}`;
+                
+                // Jako předvýběr (selected) dáme ten starší (předchozí) měsíc, pokud tam je
+                if (klic === klicPredchozi) {
+                    opt.selected = true;
+                }
+
+                select.appendChild(opt);
+                pridanBaremJeden = true;
+            }
+        });
+
+        // Pokud by byly oba měsíce už uzavřené, napíšeme informaci
+        if (!pridanBaremJeden) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.innerText = "Všechny měsíce jsou uzavřeny";
+            opt.disabled = true;
+            select.appendChild(opt);
+        }
+
+    } catch (err) {
+        console.error("Chyba při generování měsíců:", err);
+    }
+}
+
+async function precacheUserProfiles() {
+    try {
+        const snap = await getDocs(collection(db, "users"));
+        snap.forEach(d => {
+            const uData = d.data();
+            const emailKey = d.id.toLowerCase().trim(); 
+            const oc = uData.osobni_cislo || uData.osobniCislo || uData.oc || "";
+            if (oc) {
+                cachedUserOsobniCisla[emailKey] = oc;
+            }
+            if (uData.discordId) {
+                cachedUserDiscordIds[emailKey] = uData.discordId.trim();
+            }
+        });
+    } catch (e) {
+        console.error("Nepodařilo se přednačíst profily uživatelů:", e);
+    }
+}
+
+async function loadActiveSmeny() {
+    const container = document.getElementById("activeSmenyContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "dzva"));
+        const smeny = [];
+        querySnapshot.forEach(d => smeny.push({ id: d.id, data: d.data() }));
+
+        smeny.sort((a, b) => (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0));
+
+        if (smeny.length === 0) {
+            container.innerHTML = `<p style="opacity: 0.5; margin: 0;">Žádné aktivní směny nebyly nalezeny.</p>`;
+            return;
+        }
+
+        smeny.forEach(s => {
+            const sd = s.data;
+            const zaklad = parseFloat(sd.najetoKm || 0);
+            const bonus = parseFloat(sd.bonusKm || 0);
+            const duvod = sd.bonusDuvod || "";
+            
+            const jmenoRidice = sd.userName || sd.userEmail || "Neznámý řidič";
+            const emailKlic = (sd.userEmail || "").toLowerCase().trim();
+
+            let ocRidice = sd.osobni_cislo || sd.osobniCislo || sd.oc || cachedUserOsobniCisla[emailKlic] || "-";
+            const turnusText = sd.turnus || "-";
+
+            let bonusHtml = "";
+            if (bonus > 0) {
+                bonusHtml = ` <span class="bonus-span">+ ${bonus} km</span>`;
+            }
+            let duvodHtml = duvod ? `<span class="bonus-note">💬 "${duvod}"</span>` : "";
+
+            const div = document.createElement("div");
+            div.className = "smena-item";
+            div.innerHTML = `
+                <div class="smena-top">
+                    <div class="smena-info">
+                        📅 <strong>${sd.dateText || "Neznámé datum"}</strong> | 👤 <strong>${jmenoRidice}</strong> (OČ: ${ocRidice})<br>
+                        <span>🚍 Vůz: Ev.č. ${sd.evc || "-"} (${sd.rz || "-"}) | 📋 Turnus: ${turnusText}</span>
+                        ${duvodHtml}
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="smena-km">Celkem: ${zaklad + bonus} km</div>
+                        <div style="font-size:11px; opacity:0.6; margin-bottom: 5px;">(${zaklad}${bonusHtml})</div>
+                        <button class="btn-bonus-směna" onclick="pridatBonusDoDzva('${s.id}')">🎁 Přidat bonus ke směně</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+    } catch (err) {
+        console.error("Chyba při načítání aktivních směn:", err);
+        container.innerHTML = `<p style="color: #ff4d4d; margin: 0;">Nepodařilo se načíst aktivní směny.</p>`;
+    }
+}
+
+window.pridatBonusDoDzva = async function(docId) {
+    try {
+        const docRef = doc(db, "dzva", docId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+            alert("Tento lístek směny už neexistuje!");
+            return;
+        }
+
+        const aktData = docSnap.data();
+        const jmenoRidice = aktData.userName || aktData.userEmail || "Neznámý řidič";
+        const zakladniKm = parseFloat(aktData.najetoKm || 0);
+
+        const vstup = prompt(`Přidáváš bonus pro řidiče: ${jmenoRidice}\nZáklad směny: ${zakladniKm} km\n\nZadej bonus jako číslo (např. 4) NEBO s procentem (např. 10%):`);
+        if (vstup === null) return;
+
+        let km = 0;
+        const cistyVstup = vstup.trim();
+
+        if (cistyVstup.endsWith('%')) {
+            const procento = parseFloat(cistyVstup.replace('%', ''));
+            if (isNaN(procento) || procento <= 0) {
+                alert("Zadej platné procento větší než 0!");
+                return;
+            }
+            km = Math.round(((zakladniKm * procento) / 100) * 10) / 10;
+        } else {
+            km = parseFloat(cistyVstup);
+            if (isNaN(km) || km <= 0) {
+                alert("Zadej platné číslo větší než 0!");
+                return;
+            }
+        }
+
+        const duvod = prompt(`Zadaný bonus: ${km} km\n\nZadej text odůvodnění (např. Bonus za reprezentaci podniku):`);
+        if (duvod === null) return;
+
+        const soucasnyBonus = parseFloat(aktData.bonusKm || 0);
+
+        await updateDoc(docRef, {
+            bonusKm: soucasnyBonus + km,
+            bonusDuvod: duvod
+        });
+
+        alert(`Bonus ${km} km byl úspěšně připsán řidiči ${jmenoRidice}!`);
+        await loadActiveSmeny();
+
+    } catch (err) {
+        alert("Chyba při zápisu bonusu: " + err.message);
+    }
+};
+
+async function loadAllArchives() {
+    const container = document.getElementById("archivesContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "monthly_archives"));
+        const archivy = [];
+        querySnapshot.forEach(d => archivy.push({ id: d.id, data: d.data() }));
+        
+        archivy.sort((a, b) => b.id.localeCompare(a.id));
+
+        if (archivy.length === 0) {
+            container.innerHTML = `<p style="opacity: 0.5; margin: 0;">Zatím nebyly nalezeny žádné uložené uzávěrky.</p>`;
+            return;
+        }
+
+        archivy.forEach(arch => {
+            const monthId = arch.id;
+            const data = arch.data;
+            const czName = mesiceNazvy[monthId] || monthId;
+
+            let vozyHtml = "";
+            for (const [evc, km] of Object.entries(data.statsVozidla || {})) {
+                vozyHtml += `<li>• Vůz <strong>Ev.č. ${evc}</strong>: najeto celkem <strong>${km} km</strong></li>`;
+            }
+
+            const row = document.createElement("div");
+            row.className = "month-row";
+            row.innerHTML = `
+                <div class="month-header">
+                    <span>📁 ${czName}</span>
+                    <span style="color: #ffd84d; font-size: 14px; font-weight: 700;">Celkem: ${data.totalMonthKm || 0} km ▾</span>
+                </div>
+                <div class="month-body" style="position: relative;">
+                    
+                    <button class="btn-bonus-směna" id="copyLater-${monthId}" style="position: absolute; top: 75px; right: 15px; background: #00ff66; color: #000; display: none;">📋 Zkopírovat vyhodnocení</button>
+
+                    <div class="archive-block" style="background: rgba(0,184,79,0.1); border-color: #00b84f; padding: 15px; margin-bottom: 15px; padding-right: 180px;">
+                        <span style="font-size: 15px;">📈 Celkový výkon firmy: <strong>${data.totalMonthKm || 0} km</strong></span><br>
+                        <span style="font-size: 13px; color:#ffd84d;">👑 Nejaktivnější řidič: <strong>${data.topDriverName || "Neznámý"} (OČ ${data.topDriverOc || "-"})</strong> s výkonem <strong>${data.topDriverKm || 0} km</strong></span>
+                    </div>
+                    <div class="archive-block">
+                        <h4>🚍 Výkony jednotlivých vozidel:</h4>
+                        <ul class="archive-list">${vozyHtml || "<li>Žádná data o vozech.</li>"}</ul>
+                    </div>
+                    <div style="text-align: right; font-size: 10px; opacity: 0.3; margin-top: 10px;">
+                        Zpracoval: ${data.closedBy} dne ${new Date(data.closedAt).toLocaleDateString("cs-CZ")}
+                    </div>
+                </div>
+            `;
+
+            // Otevírání detailu archivu a zobrazení kopírovacího tlačítka
+            row.addEventListener("click", (e) => {
+                // Pojistka, aby kliknutí na kopírovací tlačítko nezavřelo celou řádku
+                if (e.target.id && e.target.id.startsWith("copyLater")) return;
+
+                const isOpen = row.classList.contains("open");
+                document.querySelectorAll(".month-row").forEach(r => {
+                    r.classList.remove("open");
+                    const btnLater = r.querySelector("[id^='copyLater-']");
+                    if (btnLater) btnLater.style.display = "none";
+                });
+
+                if (!isOpen) {
+                    row.classList.add("open");
+                    const currentBtnLater = row.querySelector(`#copyLater-${monthId}`);
+                    if (currentBtnLater && data.discordSoutezeText) currentBtnLater.style.display = "block";
+                }
+            });
+
+            // Přidělení akce zkopírování pro konkrétní historické tlačítko
+            const copyBtn = row.querySelector(`#copyLater-${monthId}`);
+            if (copyBtn) {
+                copyBtn.addEventListener("click", async () => {
+                    if (data.discordSoutezeText) {
+                        await navigator.clipboard.writeText(data.discordSoutezeText);
+                        alert(`🚀 Text se soutěžemi za měsíc ${czName} byl dodatečně zkopírován ze zálohy archivu!`);
+                    } else {
+                        alert("Pro tento starší měsíc nebyl text soutěží v databázi uložen.");
+                    }
+                });
+            }
+
+            container.appendChild(row);
+        });
+
+    } catch (err) {
+        console.error("Chyba loadu archivů:", err);
+    }
+}
+
+function najdiKategorickéhoViteze(statsObjekt) {
+    let maxHodnota = 0;
+    let vitezoveEmaily = [];
+
+    for (const [email, hodnota] of Object.entries(statsObjekt)) {
+        if (hodnota > maxHodnota) {
+            maxHodnota = hodnota;
+            vitezoveEmaily = [email];
+        } else if (hodnota === maxHodnota && maxHodnota > 0) {
+            vitezoveEmaily.push(email);
+        }
+    }
+
+    if (vitezoveEmaily.length === 0) {
+        return { textTagy: "*Žádaný řidič nesplnil podmínky*", hodnota: 0, emaily: [] };
+    }
+
+    const textTagy = vitezoveEmaily.map(email => {
+        const dId = cachedUserDiscordIds[email];
+        return dId ? `<@${dId}>` : `řidič s OČ ${cachedUserOsobniCisla[email] || '?'}`;
+    }).join(" a ");
+
+    return { textTagy, hodnota: maxHodnota, emaily: vitezoveEmaily };
+}
+
+// SPOUŠTĚNÍ OSTRÉ UZÁVĚRKY (ZAPOČÍTÁVÁ VŠECHNO A UKLÁDÁ TEXT PRO DISCORD DO ARCHIVU)
+document.getElementById("closureForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const selectedMonth = document.getElementById("archiveMonth").value;
+    const btn = document.getElementById("submitBtn");
+
+    const potvrdit = confirm(`Pozor:\n\nOpravdu chceš spustit uzávěrku pro měsíc ${selectedMonth}?`);
+    if (!potvrdit) return;
+
+    btn.innerText = "Zpracovávám a zálohuji...";
+    btn.disabled = true;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "dzva"));
+        
+        let statsVozidla = {};
+        let statsRidiciKm = {}; 
+        let statsRidiciJmena = {};
+        let statsRidiciOc = {};
+        
+        let statsPridelenky = {}; 
+        let statsVozidlaSet = {};  
+
+        let totalMonthKm = 0;
+        let docsToMoveAndWithdelete = [];
+
+        const [vybranyRok, vybranyMesicNum] = selectedMonth.split("-");
+        const hledanaKoncovkaData = `.${parseInt(vybranyMesicNum)}.${vybranyRok}`;
+
+        querySnapshot.forEach(d => {
+            const data = d.data();
+            const dateText = data.dateText || ""; 
+            const cisteDateText = dateText.replace(/\s+/g, ''); 
+
+            if (cisteDateText.endsWith(hledanaKoncovkaData)) {
+                docsToMoveAndWithdelete.push({ id: d.id, data: data });
+
+                const km = parseFloat(data.najetoKm || 0);
+                const bKm = parseFloat(data.bonusKm || 0);
+                const celkemZListku = km + bKm;
+
+                totalMonthKm += celkemZListku;
+
+                if (!statsVozidla[data.evc]) statsVozidla[data.evc] = 0;
+                statsVozidla[data.evc] += celkemZListku;
+
+                const rEmail = (data.userEmail || "neznamy").toLowerCase().trim();
+                if (!statsRidiciKm[rEmail]) statsRidiciKm[rEmail] = 0;
+                statsRidiciKm[rEmail] += celkemZListku;
+                
+                if (data.userName) statsRidiciJmena[rEmail] = data.userName;
+                
+                const zalozniOc = cachedUserOsobniCisla[rEmail] || "-";
+                statsRidiciOc[rEmail] = data.osobni_cislo || data.osobniCislo || data.oc || zalozniOc;
+
+                if (!statsPridelenky[rEmail]) statsPridelenky[rEmail] = 0;
+                if (data.jelSPridelenkou === true || data.isPridelenka === true) {
+                    statsPridelenky[rEmail] += 1;
+                }
+
+                if (!statsVozidlaSet[rEmail]) statsVozidlaSet[rEmail] = new Set();
+                if (data.evc || data.vozidlo) {
+                    statsVozidlaSet[rEmail].add(data.evc || data.vozidlo);
+                }
+            }
+        });
+
+        if (docsToMoveAndWithdelete.length === 0) {
+            alert(`Upozornění: Pro měsíc ${selectedMonth} nebyly nalezeny žádné denní výkazy.`);
+            btn.innerText = "🗜️ Spustit uzávěrku měsíce";
+            btn.disabled = false;
+            return;
+        }
+
+        let statsPocetVozidel = {};
+        for (const [email, vSet] of Object.entries(statsVozidlaSet)) {
+            statsPocetVozidel[email] = vSet.size;
+        }
+
+        const vitezPridelenka = najdiKategorickéhoViteze(statsPridelenky);
+        const vitezObjevitel = najdiKategorickéhoViteze(statsPocetVozidel);
+        const vitezKm = najdiKategorickéhoViteze(statsRidiciKm);
+
+        const vypoctenyKmBonus = Math.round(vitezKm.hodnota * 0.05);
+
+        let topDriverEmail = vitezKm.emaily[0] || "";
+        let topDriverName = statsRidiciJmena[topDriverEmail] || "Neznámý řidič";
+        let topDriverOc = statsRidiciOc[topDriverEmail] || "-";
+
+        // 👑 SESTAVENÍ FORMÁTOVANÉ ZPRÁVY
+        const vyslednaDiscordZprava = `**Nejvíce spojů s přidělenkou** - ${vitezPridelenka.textTagy} (+40km)\n\n**Objevitel vozového parku** - ${vitezObjevitel.textTagy}  (+30km)\n\n**Nejvíce najetých km za měsíc** - ${vitezKm.textTagy} (+${vypoctenyKmBonus}km)`;
+
+        // UKLÁDÁME VČETNĚ TEXTU PRO DISCORD DO ARCHIVU
+        const archiveRef = doc(db, "monthly_archives", selectedMonth);
+        await setDoc(archiveRef, {
+            month: selectedMonth,
+            closedBy: adminEmail,
+            closedAt: new Date().toISOString(),
+            totalMonthKm: totalMonthKm,
+            statsVozidla: statsVozidla,
+            topDriverEmail: topDriverEmail,
+            topDriverName: topDriverName,
+            topDriverOc: topDriverOc,
+            topDriverKm: vitezKm.hodnota,
+            discordSoutezeText: vyslednaDiscordZprava // 👈 Tady se text trvale uloží
+        });
+
+        for (const docObj of docsToMoveAndWithdelete) {
+            await setDoc(doc(db, "ridici_archivy", docObj.id), {
+                ...docObj.data,
+                archivedAt: new Date().toISOString(),
+                archiveMonth: selectedMonth
+            });
+            await deleteDoc(doc(db, "dzva", docObj.id));
+        }
+
+        // Zobrazení modalu s výsledky ihned po dokončení
+        const modalTextPreview = document.getElementById("modalTextPreview");
+        if (modalTextPreview) {
+            modalTextPreview.innerText = vyslednaDiscordZprava;
+            document.getElementById("bonusModal").style.display = "flex";
+
+            document.getElementById("copyDiscordTextBtn").onclick = function() {
+                navigator.clipboard.writeText(vyslednaDiscordZprava).then(() => {
+                    alert("🚀 Text se soutěžemi byl úspěšně zkopírován!");
+                }).catch(err => alert("Chyba: " + err));
+            };
+
+            document.getElementById("closeBonusModalBtn").onclick = function() {
+                document.getElementById("bonusModal").style.display = "none";
+            };
+        }
+
+        alert(`Měsíční uzávěrka úspěšně uložena!`);
+        await loadActiveSmeny();
+        await loadAllArchives();
+        await vygenerujNeuzavreneMesice();
+
+    } catch (err) {
+        alert("Chyba při uzávěrce: " + err.message);
+    } finally {
+        btn.innerText = "🗜️ Spustit uzávěrku měsíce";
+        btn.disabled = false;
+    }
+});
+
+// 🧪 SIMULAČNÍ TLAČÍTKO - PROJDE DATA A ROVNOU TI ZKOPÍRUJE TEXT DO SCHRÁNKY BEZ JAKÉHOKOLIV ODESÍLÁNÍ
+document.getElementById("testWebhookBtn").addEventListener("click", async () => {
+    const selectedMonth = document.getElementById("archiveMonth").value;
+    const tlacitko = document.getElementById("testWebhookBtn");
+    tlacitko.innerText = "Analyzuji realná data...";
+    tlacitko.disabled = true;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "dzva"));
+        
+        let statsRidiciKm = {}; 
+        let statsPridelenky = {};
+        let statsVozidlaSet = {};
+
+        const [vybranyRok, vybranyMesicNum] = selectedMonth.split("-");
+        const hledanaKoncovkaData = `.${parseInt(vybranyMesicNum)}.${vybranyRok}`;
+
+        querySnapshot.forEach(d => {
+            const data = d.data();
+            const dateText = data.dateText || ""; 
+            const cisteDateText = dateText.replace(/\s+/g, ''); 
+
+            if (cisteDateText.endsWith(hledanaKoncovkaData)) {
+                const km = parseFloat(data.najetoKm || 0);
+                const bKm = parseFloat(data.bonusKm || 0);
+                const celkemZListku = km + bKm;
+
+                const rEmail = (data.userEmail || "neznamy").toLowerCase().trim();
+                if (!statsRidiciKm[rEmail]) statsRidiciKm[rEmail] = 0;
+                statsRidiciKm[rEmail] += celkemZListku;
+
+                if (!statsPridelenky[rEmail]) statsPridelenky[rEmail] = 0;
+                if (data.jelSPridelenkou === true || data.isPridelenka === true) {
+                    statsPridelenky[rEmail] += 1;
+                }
+
+                if (!statsVozidlaSet[rEmail]) statsVozidlaSet[rEmail] = new Set();
+                if (data.evc || data.vozidlo) {
+                    statsVozidlaSet[rEmail].add(data.evc || data.vozidlo);
+                }
+            }
+        });
+
+        // Kontrola, zda vůbec existují nějaká data pro tento měsíc
+        if (Object.keys(statsRidiciKm).length === 0) {
+            alert(`⚠️ V databázi nebyly nalezeny ŽÁDNÉ odeslané směny pro měsíc ${selectedMonth}. Vyber v seznamu měsíc, kde jsou reálně naježděné kilometry (třeba ten minulý), aby se mohlo vyhodnocení správně spočítat!`);
+            return;
+        }
+
+        let statsPocetVozidel = {};
+        for (const [email, vSet] of Object.entries(statsVozidlaSet)) {
+            statsPocetVozidel[email] = vSet.size;
+        }
+
+        // Vyhodnocení skutečných vítězů kategorií (tady už není žádné testovací 12345678)
+        const vitezPridelenka = najdiKategorickéhoViteze(statsPridelenky);
+        const vitezObjevitel = najdiKategorickéhoViteze(statsPocetVozidel);
+        const vitezKm = najdiKategorickéhoViteze(statsRidiciKm);
+
+        const vypoctenyKmBonus = Math.round(vitezKm.hodnota * 0.05);
+        const simulovanyText = `**Nejvíce spojů s přidělenkou** - ${vitezPridelenka.textTagy} (+40km)\n\n**Objevitel vozového parku** - ${vitezObjevitel.textTagy}  (+30km)\n\n**Nejvíce najetých km za měsíc** - ${vitezKm.textTagy} (+${vypoctenyKmBonus}km)`;
+
+        // Automatické zkopírování do schránky
+        await navigator.clipboard.writeText(simulovanyText);
+        alert(`🚀 Simulace dokončena! Výsledný text pro Discord byl vygenerován z REÁLNÝCH dat za měsíc ${selectedMonth} a automaticky zkopírován do tvé schránky (Ctrl+V).`);
+
+    } catch (err) {
+        alert("❌ Chyba při simulaci: " + err.message);
+    } finally {
+        tlacitko.innerText = "🧪 Odeslat testovací webhook (Původní)";
+        tlacitko.disabled = false;
+    }
+});
+</script>
+</body>
+</html>

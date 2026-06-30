@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Správa absencí | alces, a. s.</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -20,14 +20,19 @@
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-radius: 24px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
         }
-        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        
+        /* Centrování textových odkazů vpravo */
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
-
-        /* Hlavní kontejner s obsahem */
-        .content { margin: 120px 40px 40px 40px; display: none; }
+        .content { margin: 120px 40px 40px 40px; }
         #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
         
         h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
@@ -199,7 +204,7 @@ async function loadAllAbsences() {
             row.innerHTML = `
                 <td><strong>${reqData.userName || "Neznámý řidič"}</strong><br><span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span></td>
                 <td style="font-weight: 600;">${reqData.type}</td>
-                <td>${reqData.type === "Omluvenka" ? mFrom : `${mFrom} — ${mTo}`}</td>
+                <td>${reqData.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
                 <td style="opacity: 0.9; max-width: 250px; word-wrap: break-word;">${reqData.reason || "-"}</td>
                 <td>${statusBadge}</td>
                 <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
@@ -237,6 +242,23 @@ async function updateRequestStatus(docId, newStatus, note) {
         alert("Chyba při aktualizaci stavu: " + err.message);
     }
 }
+
+function upravFaviconuPodleRezimu() {
+    const favicon = document.getElementById('favicon');
+    if (!favicon) return;
+
+    const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (jeTemnyRezim) {
+        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+    } else {
+        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+    }
+}
+
+upravFaviconuPodleRezimu();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </script>
 </body>
