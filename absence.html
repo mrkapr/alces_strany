@@ -295,14 +295,14 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     if (submitBtn.disabled) return;
 
     const type = document.getElementById("absenceType").value;
-    const from = document.getElementById("absenceFrom").value; 
-    let to = document.getElementById("absenceTo").value; 
+    const fromValue = document.getElementById("absenceFrom").value; // Změna názvu proměnné na fromValue (obsahuje čisté např. "2026-07")
+    let toValue = document.getElementById("absenceTo").value;     // Změna názvu proměnné na toValue (obsahuje čisté např. "2026-09")
     const reason = document.getElementById("absenceReason").value.trim();
     const userName = localStorage.getItem("username") || "Řidič";
 
     if (type === "Pauza") {
-        const [yearFrom, monthFrom] = from.split("-").map(Number);
-        const [yearTo, monthTo] = to.split("-").map(Number);
+        const [yearFrom, monthFrom] = fromValue.split("-").map(Number);
+        const [yearTo, monthTo] = toValue.split("-").map(Number);
 
         const totalMonthsDiff = (yearTo - yearFrom) * 12 + (monthTo - monthFrom) + 1;
 
@@ -316,19 +316,20 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             return;
         }
     } else {
-        to = ""; 
+        toValue = ""; 
     }
 
     // Jakmile projdou základní kontroly, tlačítko ihned uzamkneme
     submitBtn.disabled = true;
     submitBtn.innerText = "Odesílám...";
 
+    // 🚀 OPRAVA: Do databáze ukládáme čisté "2026-07", nikoliv český název textem
     const newRequest = {
         userEmail: userEmail,
         userName: userName,
         type: type,
-        from: from,
-        to: to,
+        from: fromValue,
+        to: toValue,
         reason: reason,
         status: "ceka",
         createdAt: new Date()
@@ -339,8 +340,9 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
 
         const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
         
-        const mFrom = formatMonthHTML(from);
-        const mTo = formatMonthHTML(to);
+        // Formátování měsíců do češtiny provádíme až TEĎ a výhradně jen pro Discord zprávu
+        const mFrom = formatMonthHTML(fromValue);
+        const mTo = formatMonthHTML(toValue);
 
         const discordMessage = {
             embeds: [{
@@ -363,7 +365,7 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             body: JSON.stringify(discordMessage)
         }).catch(err => console.error(err));
 
-        alert("Žádošt byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
+        alert("Žádost byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
         document.getElementById("absenceForm").reset();
         handleTypeChange(); 
         await loadMyAbsences();
