@@ -177,6 +177,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// 🌐 KONFIGURACE EXTERNÍCH INTEGRACÍ
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R";
+const GOOGLE_SCRIPT_URL = "SEM_VLOZ_NASAZENY_URL_Z_GOOGLE_APPS_SCRIPT";
+
 let currentUserEmail = "";
 let currentUserName = "";
 let currentUserOc = "";
@@ -208,7 +212,6 @@ async function refreshUserLockStatus() {
 
             if (uData.lastVehicleAssignmentAt) {
                 userLastAssignmentTime = new Date(uData.lastVehicleAssignmentAt);
-                
                 const diffTime = Math.abs(new Date() - userLastAssignmentTime);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays < 90) {
@@ -264,10 +267,9 @@ async function loadVehiclesAllocation() {
             const jsemZdeRidic = assignData.drivers.some(d => d.email === currentUserEmail);
             if (jsemZdeRidic && assignData.waitingForCoDriver) {
                 const wReq = assignData.waitingForCoDriver;
-                
                 const banner = document.getElementById("coApproveBanner");
                 banner.style.display = "flex";
-                document.getElementById("coApproveText").innerHTML = `Ev.č. ${evc} | Řidič <strong>${wReq.name}</strong> tě žádá o spolupřidělení vozidla.`;
+                document.getElementById("coApproveText").innerHTML = `Ev.č. ${evc} | Žádost o spolupřidělení od řidiče <strong>${wReq.name}</strong>.`;
                 
                 const btnZone = document.getElementById("coApproveActionBtnZone");
                 btnZone.innerHTML = `
@@ -279,30 +281,25 @@ async function loadVehiclesAllocation() {
 
         document.getElementById("panelAssignedVehicle").innerText = myCurrentCarEvc;
         applyFiltersAndRender();
-
     } catch (e) { console.error(e); }
 }
 
 function applyFiltersAndRender() {
     const searchQuery = document.getElementById("vehicleSearch").value.trim().toLowerCase();
     const filterType = document.getElementById("vehicleFilter").value;
-
     let processedData = [...allVehiclesData];
 
     if (searchQuery) {
         processedData = processedData.filter(v => v.evc.toLowerCase().includes(searchQuery));
     }
-
     if (filterType === "pouze-nepridelene") {
         processedData = processedData.filter(v => v.assignData.drivers.length === 0);
     }
-
     if (filterType === "vse-sestupne") {
         processedData.sort((a, b) => b.evc.localeCompare(a.evc, undefined, { numeric: true }));
     } else {
         processedData.sort((a, b) => a.evc.localeCompare(b.evc, undefined, { numeric: true }));
     }
-
     renderVehicles(processedData);
 }
 
@@ -401,15 +398,47 @@ function renderVehicles(vehiclesArray) {
     });
 }
 
-document.getElementById("vehicleSearch").addEventListener("input", applyFiltersAndRender);
-document.getElementById("vehicleFilter").addEventListener("change", applyFiltersAndRender);
+// Funkce zajišťující odesílání embed zpráv a zápis do externích platforem
+async function sendSystemNotification(evc, requestObj) {
+    const localizedDate = new Date(requestObj.requestedAt).toLocaleDateString("cs-CZ") + " v " + new Date(requestObj.requestedAt).toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
+    
+    // 1. Embed struktura pro Discord
+    const discordMessage = {
+        embeds: [{
+            title: "Nová žádost o přidělení vozu",
+            color: 16766029, // Zlatá barva
+            fields: [
+                { name: "🚍 Vozidlo", value: `**Ev.č. ${evc}**`, inline: true },
+                { name: "👤 Žadatel", value: `**${requestObj.name}** (${requestObj.email})`, inline: true },
+                { name: "🪪 Osobní číslo", value: requestObj.oc || "-", inline: true },
+                { name: "📅 Odesláno", value: localizedDate, inline: false }
+            ],
+            footer: { text: "alces-as.fun" },
+            timestamp: new Date().toISOString()
+        }]
+    };
 
-// 🚀 OŠETŘENÉ FUNKCE S AKTIVNÍM ZÁMKEM TLAČÍTEK PROTI DUPLICITÁM:
+    // Odeslání na Discord Webhook
+    fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(discordMessage)
+    }).catch(err => console.error("Discord error:", err));
+
+    // 2. Synchronizace s Google Tabulkou (pokud je nakonfigurován URL)
+    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "SEM_VLOZ_NASAZENY_URL_Z_GOOGLE_APPS_SCRIPT") {
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ evc: evc, ...requestObj })
+        }).catch(err => console.error("Google Sheets Sync error:", err));
+    }
+}
 
 window.leaveVehicle = async function(evc) {
     const targetBtn = document.getElementById(`btnMain-${evc}`);
     if (targetBtn && targetBtn.disabled) return; 
-    
     if (!confirm(`Opravdu si chceš odpřidělit vozidlo ${evc}?`)) return;
     
     if (targetBtn) {
@@ -423,7 +452,6 @@ window.leaveVehicle = async function(evc) {
         if (assignSnap.exists()) {
             let currentDrivers = assignSnap.data().drivers || [];
             currentDrivers = currentDrivers.filter(d => d.email !== currentUserEmail);
-            
             await setDoc(assignRef, { drivers: currentDrivers }, { merge: true });
             
             alert("Vozidlo bylo odpřiděleno. Tvoje 90denní lhůta pro výběr nového vozu stále běží.");
@@ -458,24 +486,28 @@ window.requestVehicle = async function(evc, currentDriversCount) {
 
         if (currentDriversCount === 0) {
             if (targetBtn) { targetBtn.disabled = true; targetBtn.innerText = "Čekej..."; }
-            
             currentRequests.push(novaZadost);
             await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: null }, { merge: true });
             
             const userRef = doc(db, "users", currentUserEmail);
             await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
+            
+            // 🚀 AUTOMATICKÉ NOTIFIKACE: Vůz je volný, posíláme okamžitě na Discord a do Google tabulek
+            await sendSystemNotification(evc, novaZadost);
+            
             alert(`Žádost o přidělení vozidla byla odeslána k vedení.`);
         } else if (currentDriversCount === 1) {
             const potvrdit = confirm(`⚠️ Vozidlo již má přidělený jiný řidič. Potvrzuješ předchozí domluvu?`);
             if (!potvrdit) return;
 
             if (targetBtn) { targetBtn.disabled = true; targetBtn.innerText = "Čekej..."; }
-
             await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: novaZadost }, { merge: true });
             
             const userRef = doc(db, "users", currentUserEmail);
             await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
-            alert(`Žádost řidiči odeslána.`);
+            
+            // 🛑 Tady Discord schválně NEVOLÁME, čeká se na schválení druhým řidičem!
+            alert(`Žádost byla odeslána stávajícímu řidiči k odsouhlasení spolupřidělení.`);
         }
         await refreshUserLockStatus();
         await loadVehiclesAllocation();
@@ -491,7 +523,6 @@ window.requestVehicle = async function(evc, currentDriversCount) {
 window.resolveCoDriverAction = async function(evc, isApproved) {
     const btnYes = document.getElementById(`btnCoYes-${evc}`);
     const btnNo = document.getElementById(`btnCoNo-${evc}`);
-    
     if ((btnYes && btnYes.disabled) || (btnNo && btnNo.disabled)) return;
 
     if (btnYes && btnNo) {
@@ -513,6 +544,10 @@ window.resolveCoDriverAction = async function(evc, isApproved) {
             if (isApproved) {
                 pending.push(waiting);
                 await setDoc(assignRef, { drivers: data.drivers || [], pendingRequests: pending, waitingForCoDriver: null });
+                
+                // 🚀 AUTOMATICKÉ NOTIFIKACE: Druhý řidič žádost schválil, přesouvá se k vedení a letí zpráva!
+                await sendSystemNotification(evc, waiting);
+                
                 alert("Žádost byla potvrzena a přesunuta k vedení firmy.");
             } else {
                 if (confirm(`Opravdu chceš tuto žádost zamítnout?`)) {
