@@ -1694,6 +1694,14 @@ async function loadAnnouncements() {
                         alert("Chyba: Systém tě nerozpoznal. Zkus se přihlásit znovu.");
                         return;
                     }
+                    
+                    // Pokud už se zpracovává, nepustíme akci dál
+                    if (btn.disabled) return;
+                    
+                    // Okamžitě uzamkneme tlačítko a změníme text
+                    btn.disabled = true;
+                    btn.innerText = "Zpracovávám...";
+
                     try {
                         await updateDoc(doc(db, "announcements", annId), {
                             confirmedBy: arrayUnion(userEmail)
@@ -1702,6 +1710,10 @@ async function loadAnnouncements() {
                     } catch (err) {
                         console.error(err);
                         alert("Nepodařilo se potvrdit: " + err.message);
+                        
+                        // V případě chyby tlačítko vrátíme zpět
+                        btn.disabled = false;
+                        btn.innerText = "Potvrdit přečtení";
                     }
                 });
                 footer.appendChild(btn);

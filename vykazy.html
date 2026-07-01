@@ -607,6 +607,10 @@ async function loadMyDzvaHistory() {
 document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // 🚀 INICIALIZACE ZÁMKU TLAČÍTKA PROTI VÍCENÁSOBNÉMU KLIKÁNÍ
+    const submitBtn = e.target.querySelector(".btn-submit");
+    if (submitBtn && submitBtn.disabled) return;
+
     if(zvoleneLinky.length === 0) {
         alert("Chyba: Musíš vybrat aspoň jednu linku turnusu!");
         return;
@@ -616,6 +620,21 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
     if (!existujiciVozidla.includes(zadaneEvc)) {
         alert(`Chyba: Vozidlo s ev.č. ${zadaneEvc} neexistuje v evidenci firmy!`);
         return;
+    }
+
+    const startKm = parseFloat(document.getElementById("tachStart").value) || 0;
+    const konecKm = parseFloat(document.getElementById("tachKonec").value) || 0;
+    const najetoKm = konecKm - startKm;
+
+    if(najetoKm < 0) {
+        alert("Chyba: Stav tachometru na konci nemůže být nižší než na začátku!");
+        return;
+    }
+
+    // Jakmile projdou základní validace, tlačítko okamžitě natvrdo zamkneme
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Odesílám...";
     }
 
     const option = document.querySelector('input[name="datumSmeny"]:checked').value;
@@ -633,31 +652,18 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         });
     });
 
-    const startKm = parseFloat(document.getElementById("tachStart").value) || 0;
-    const konecKm = parseFloat(document.getElementById("tachKonec").value) || 0;
-    const najetoKm = konecKm - startKm;
-
-    if(najetoKm < 0) {
-        alert("Chyba: Stav tachometru na konci nemůže být nižší než na začátku!");
-        return;
-    }
-
     // 🕵️ KONTROLA PŘIDĚLENÉHO VOZIDLA PRO AUTOMATICKÝ BONUS 20%
     let automatickyBonusKm = 0;
     let automatickyBonusDuvod = "";
 
     try {
-        // Podíváme se na kartu přidělení pro toto konkrétní vozidlo
         const assignSnap = await getDoc(doc(db, "assignments", zadaneEvc));
         if (assignSnap.exists()) {
             const assignData = assignSnap.data();
             const schvaleniDriveri = assignData.drivers || [];
-            
-            // Zkontrolujeme, zda přihlášený řidič figuruje mezi schválenými řidiči tohoto auta
             const jeToMojePrideleneAuto = schvaleniDriveri.some(d => d.email.toLowerCase().trim() === userEmail.toLowerCase().trim());
             
             if (jeToMojePrideleneAuto) {
-                // Výpočet 20% ze základu, zaokrouhleno na 1 desetinné místo
                 automatickyBonusKm = Math.round(((najetoKm * 20) / 100) * 10) / 10;
                 automatickyBonusDuvod = "Automatický bonus +20% za jízdu s přiděleným vozidlem";
             }
@@ -666,8 +672,6 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         console.error("Nepodařilo se ověřit přidělenku vozu pro bonus:", errAssign);
     }
 
-    // Příprava dat dokumentu
-    // Příprava dat dokumentu
     const docData = {
         userEmail: userEmail,
         evc: zadaneEvc,
@@ -683,7 +687,7 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         tankProcenta: document.getElementById("tankProcenta").value || "N/A",
         tankMisto: document.getElementById("tankMisto").value.trim() || "",
         najetoKm: najetoKm,
-        bonusKm: automatickyBonusKm, // 🚀 OPRAVENO: Už bez překlepu
+        bonusKm: automatickyBonusKm,
         bonusDuvod: automatickyBonusDuvod,
         createdAt: new Date()
     };
@@ -692,10 +696,8 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         await addDoc(collection(db, "dzva"), docData);
         
         const msg = document.getElementById("statusMsg");
-        
-        // Změna textu potvrzení, pokud řidič získal věrnostní bonus
         if (automatickyBonusKm > 0) {
-            msg.innerHTML = `Směna zapsána s přiděleným vozzidlem (Bonus +${automatickyBonusKm} km) ✓`;
+            msg.innerHTML = `Směna zapsána s přiděleným vozidlem (Bonus +${automatickyBonusKm} km) ✓`;
         } else {
             msg.innerHTML = `Směna zapsána ✓`;
         }
@@ -715,6 +717,12 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         await loadMyDzvaHistory();
     } catch (err) {
         alert("Chyba při odesílání výkazu: " + err.message);
+    } finally {
+        // Na úplný konec vrátíme tlačítko do funkčního stavu pro další směnu
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Podepsat a odeslat";
+        }
     }
 });
 

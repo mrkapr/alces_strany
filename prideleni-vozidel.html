@@ -28,7 +28,6 @@
         .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
         .content-header h1 { font-size: 28px; font-weight: 700; margin: 0; color: #ffd84d; }
         
-        /* 🚀 STRUKTURA PRO VYHLEDÁVAČ A FILTR */
         .controls-container { display: flex; gap: 10px; width: auto; min-width: 300px; }
         .search-input {
             background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
@@ -256,7 +255,7 @@ async function loadVehiclesAllocation() {
                 myCurrentCarEvc = `Ev.č. ${evc}`;
             } else if (assignData.pendingRequests.some(r => r.email === currentUserEmail)) {
                 uzMaNecoPridelenoNeboZazadano = true;
-                myCurrentCarEvc = `Ev.č. ${evc} (čeká na schálení vedením)`;
+                myCurrentCarEvc = `Ev.č. ${evc} (čeká na schválení vedením)`;
             } else if (assignData.waitingForCoDriver && assignData.waitingForCoDriver.email === currentUserEmail) {
                 uzMaNecoPridelenoNeboZazadano = true;
                 myCurrentCarEvc = `Ev.č. ${evc} (v procesu)`;
@@ -272,42 +271,35 @@ async function loadVehiclesAllocation() {
                 
                 const btnZone = document.getElementById("coApproveActionBtnZone");
                 btnZone.innerHTML = `
-                    <button class="btn-action btn-co-yes" onclick="resolveCoDriverAction('${evc}', true)">Schválit</button>
-                    <button class="btn-action btn-co-no" onclick="resolveCoDriverAction('${evc}', false)">Zamítnout</button>
+                    <button class="btn-action btn-co-yes" id="btnCoYes-${evc}" onclick="resolveCoDriverAction('${evc}', true)">Schválit</button>
+                    <button class="btn-action btn-co-no" id="btnCoNo-${evc}" onclick="resolveCoDriverAction('${evc}', false)">Zamítnout</button>
                 `;
             }
         });
 
         document.getElementById("panelAssignedVehicle").innerText = myCurrentCarEvc;
-        
-        // Spustíme filtr a seřazení dat
         applyFiltersAndRender();
 
     } catch (e) { console.error(e); }
 }
 
-// 🚀 POMOCNÁ FUNKCE PRO FILTROVÁNÍ, ŘAZENÍ A VYKRESLENÍ ZÁROVEŇ
 function applyFiltersAndRender() {
     const searchQuery = document.getElementById("vehicleSearch").value.trim().toLowerCase();
     const filterType = document.getElementById("vehicleFilter").value;
 
     let processedData = [...allVehiclesData];
 
-    // 1. Krok: Vyhledávání textu
     if (searchQuery) {
         processedData = processedData.filter(v => v.evc.toLowerCase().includes(searchQuery));
     }
 
-    // 2. Krok: Filtr "Pouze nepřidělené"
     if (filterType === "pouze-nepridelene") {
         processedData = processedData.filter(v => v.assignData.drivers.length === 0);
     }
 
-    // 3. Krok: Seřazení vzestupně / sestupně
     if (filterType === "vse-sestupne") {
         processedData.sort((a, b) => b.evc.localeCompare(a.evc, undefined, { numeric: true }));
     } else {
-        // Výchozí vzestupně (pro vse-vzestupne i pouze-nepridelene)
         processedData.sort((a, b) => a.evc.localeCompare(b.evc, undefined, { numeric: true }));
     }
 
@@ -336,7 +328,6 @@ function renderVehicles(vehiclesArray) {
         const assignData = item.assignData;
         const assignedDrivers = assignData.drivers || [];
         const waitingReq = assignData.waitingForCoDriver || null;
-        const pendingReqs = assignData.pendingRequests || [];
         
         let statusText = "Volný";
         let statusClass = "status-free";
@@ -386,12 +377,12 @@ function renderVehicles(vehiclesArray) {
 
         let mainButtonHtml = "";
         if (showLeaveBtn) {
-            mainButtonHtml = `<button class="btn-action btn-leave" onclick="leaveVehicle('${evc}')">Odpřidělit</button>`;
+            mainButtonHtml = `<button class="btn-action btn-leave" id="btnMain-${evc}" onclick="leaveVehicle('${evc}')">Odpřidělit</button>`;
         } else {
             let btnTitle = "Zažádat o vůz";
             if (lockByTime) btnTitle = "Nelze přidělit";
             else if (uzMaNecoPridelenoNeboZazadano) btnTitle = "Máš aktivní žádost";
-            mainButtonHtml = `<button class="btn-action" ${disableBtn ? "disabled" : ""} onclick="requestVehicle('${evc}', ${assignedDrivers.length})">${btnTitle}</button>`;
+            mainButtonHtml = `<button class="btn-action" id="btnMain-${evc}" ${disableBtn ? "disabled" : ""} onclick="requestVehicle('${evc}', ${assignedDrivers.length})">${btnTitle}</button>`;
         }
 
         const row = document.createElement("div");
@@ -410,12 +401,22 @@ function renderVehicles(vehiclesArray) {
     });
 }
 
-// Navázání posluchačů změn na searchbar a select menu
 document.getElementById("vehicleSearch").addEventListener("input", applyFiltersAndRender);
 document.getElementById("vehicleFilter").addEventListener("change", applyFiltersAndRender);
 
+// 🚀 OŠETŘENÉ FUNKCE S AKTIVNÍM ZÁMKEM TLAČÍTEK PROTI DUPLICITÁM:
+
 window.leaveVehicle = async function(evc) {
-    if (!confirm(`Odpravdu si chceš odpřidělit vozidlo ${evc}?`)) return;
+    const targetBtn = document.getElementById(`btnMain-${evc}`);
+    if (targetBtn && targetBtn.disabled) return; 
+    
+    if (!confirm(`Opravdu si chceš odpřidělit vozidlo ${evc}?`)) return;
+    
+    if (targetBtn) {
+        targetBtn.disabled = true;
+        targetBtn.innerText = "Načítám...";
+    }
+
     try {
         const assignRef = doc(db, "assignments", evc);
         const assignSnap = await getDoc(assignRef);
@@ -423,17 +424,25 @@ window.leaveVehicle = async function(evc) {
             let currentDrivers = assignSnap.data().drivers || [];
             currentDrivers = currentDrivers.filter(d => d.email !== currentUserEmail);
             
-            // 🔒 Bezpečný zápis, který nevyhodí chybu, ani když je pole řidičů prázdné
             await setDoc(assignRef, { drivers: currentDrivers }, { merge: true });
             
             alert("Vozidlo bylo odpřiděleno. Tvoje 90denní lhůta pro výběr nového vozu stále běží.");
             await refreshUserLockStatus();
             await loadVehiclesAllocation();
         }
-    } catch (e) { alert("Chyba: " + e.message); }
+    } catch (e) { 
+        alert("Chyba: " + e.message); 
+        if (targetBtn) {
+            targetBtn.disabled = false;
+            targetBtn.innerText = "Odpřidělit";
+        }
+    }
 };
 
 window.requestVehicle = async function(evc, currentDriversCount) {
+    const targetBtn = document.getElementById(`btnMain-${evc}`);
+    if (targetBtn && targetBtn.disabled) return;
+
     try {
         const assignRef = doc(db, "assignments", evc);
         const assignSnap = await getDoc(assignRef);
@@ -448,6 +457,8 @@ window.requestVehicle = async function(evc, currentDriversCount) {
         const novaZadost = { email: currentUserEmail, name: currentUserName, oc: currentUserOc, requestedAt: timestampNow };
 
         if (currentDriversCount === 0) {
+            if (targetBtn) { targetBtn.disabled = true; targetBtn.innerText = "Čekej..."; }
+            
             currentRequests.push(novaZadost);
             await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: null }, { merge: true });
             
@@ -458,6 +469,8 @@ window.requestVehicle = async function(evc, currentDriversCount) {
             const potvrdit = confirm(`⚠️ Vozidlo již má přidělený jiný řidič. Potvrzuješ předchozí domluvu?`);
             if (!potvrdit) return;
 
+            if (targetBtn) { targetBtn.disabled = true; targetBtn.innerText = "Čekej..."; }
+
             await setDoc(assignRef, { drivers: currentDrivers, pendingRequests: currentRequests, waitingForCoDriver: novaZadost }, { merge: true });
             
             const userRef = doc(db, "users", currentUserEmail);
@@ -466,10 +479,27 @@ window.requestVehicle = async function(evc, currentDriversCount) {
         }
         await refreshUserLockStatus();
         await loadVehiclesAllocation();
-    } catch (e) { alert("Chyba: " + e.message); }
+    } catch (e) { 
+        alert("Chyba: " + e.message); 
+        if (targetBtn) {
+            targetBtn.disabled = false;
+            targetBtn.innerText = "Zažádat o vůz";
+        }
+    }
 };
 
 window.resolveCoDriverAction = async function(evc, isApproved) {
+    const btnYes = document.getElementById(`btnCoYes-${evc}`);
+    const btnNo = document.getElementById(`btnCoNo-${evc}`);
+    
+    if ((btnYes && btnYes.disabled) || (btnNo && btnNo.disabled)) return;
+
+    if (btnYes && btnNo) {
+        btnYes.disabled = true;
+        btnNo.disabled = true;
+        if (isApproved) btnYes.innerText = "Čekej..."; else btnNo.innerText = "Čekej...";
+    }
+
     try {
         const assignRef = doc(db, "assignments", evc);
         const assignSnap = await getDoc(assignRef);
@@ -490,12 +520,28 @@ window.resolveCoDriverAction = async function(evc, isApproved) {
                     const userRef = doc(db, "users", waiting.email);
                     await updateDoc(userRef, { lastVehicleAssignmentAt: null });
                     alert("Žádost byla zamítnuta.");
-                } else { return; }
+                } else { 
+                    if (btnYes && btnNo) {
+                        btnYes.disabled = false;
+                        btnNo.disabled = false;
+                        btnYes.innerText = "Schválit";
+                        btnNo.innerText = "Zamítnout";
+                    }
+                    return; 
+                }
             }
             await refreshUserLockStatus();
             await loadVehiclesAllocation();
         }
-    } catch (e) { alert("Chyba: " + e.message); }
+    } catch (e) { 
+        alert("Chyba: " + e.message); 
+        if (btnYes && btnNo) {
+            btnYes.disabled = false;
+            btnNo.disabled = false;
+            btnYes.innerText = "Schválit";
+            btnNo.innerText = "Zamítnout";
+        }
+    }
 };
 </script>
 </body>

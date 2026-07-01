@@ -7,7 +7,7 @@
     <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2=family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
@@ -25,7 +25,6 @@
         .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
         .topbar .logo img { height: 34px; width: auto; display: block; }
         
-        /* Centrování textových odkazů vpravo */
         .topbar div:last-child { display: flex; align-items: center; height: 100%; }
         .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
@@ -52,7 +51,9 @@
             border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px;
         }
         .btn-add { background: #00b84f; color: white; width: 100%; margin-top: 10px; }
-        .btn-add:hover { background: #00963f; transform: scale(1.01); }
+        .btn-add:hover:not(:disabled) { background: #00963f; transform: scale(1.01); }
+        .btn-add:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed; border: 1px solid rgba(255,255,255,0.05); }
+        
         .absence-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         .absence-table th { padding: 12px 8px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         .absence-table td { padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -65,59 +66,34 @@
         .sidebar-right.open { right: 0; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99998; }
         .sidebar-overlay.open { display: block; }
-            .logo {
-    display: flex;
-    align-items: center;
-    }
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 34px; width: auto; display: block; }
 
-.logo img {
-    height: 34px;
-    width: auto;
-    display: block;
-}
-
-/* ─── 📱 MOBILNÍ RESPONSIVNÍ DESIGN (Max 768px) ─── */
         @media (max-width: 768px) {
-            /* Sjednocený mobilní topbar - dokonalé centrování prvků */
             .topbar {
                 top: 8px; left: 12px; right: 12px; height: 50px;
                 padding: 0 14px; border-radius: 16px;
             }
             .topbar .logo img { height: 26px; }
             .topbar a { font-size: 13px; margin-left: 12px; }
-
-            /* Odsazení obsahu a zmenšení nadpisů */
             .content { margin: 85px 16px 20px 16px; }
             h1 { font-size: 24px; margin-bottom: 15px; line-height: 1.2; }
-
-            /* Zmenšení vnitřních rozestupů panelů */
             .panel { padding: 16px; border-radius: 16px; margin-bottom: 15px; }
             .panel h2 { font-size: 18px; margin-bottom: 15px; }
-
-            /* Úprava formulářových prvků na celou šířku */
             .form-group { margin-bottom: 12px; }
             label { font-size: 13px; }
             input, select, textarea { padding: 10px; font-size: 13px; }
             button.btn-add { padding: 12px; font-size: 14px; }
-
-            /* 🚀 MOBILNÍ TUNING PRO TABULKU ŽÁDOSTÍ */
             .absence-table { font-size: 12px; display: block; width: 100%; }
-            
-            /* Povolíme tabulce plynulé posouvání do stran, pokud by byl důvod moc dlouhý */
             .panel:has(.absence-table) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            
             .absence-table th { padding: 8px 4px; font-size: 11px; }
             .absence-table td { padding: 10px 4px; }
-            
-            /* Zamezení roztažení sloupce s poznámkou */
             .absence-table td[style*="max-width"] {
                 max-width: 130px !important;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-
-            /* Responzivní pravé menu (Sidebar) */
             .sidebar-right { width: 100vw; right: -100vw; }
         }
     </style>
@@ -149,25 +125,25 @@
             <h2>Nová žádost</h2>
             <form id="absenceForm">
                 <div class="form-group">
-    <label>Typ žádosti</label>
-    <select id="absenceType" required onchange="handleTypeChange()">
-        <option value="Omluvenka">Omluvenka (pouze aktuální měsíc)</option>
-        <option value="Pauza">Pauza (dlouhodobá, max 6 měsíců)</option>
-    </select>
-</div>
-<div class="form-group">
-    <label id="labelFrom">Od měsíce</label>
-    <input type="month" id="absenceFrom" required>
-</div>
-<div class="form-group" id="groupTo">
-    <label>Do měsíce (včetně)</label>
-    <input type="month" id="absenceTo" required>
-</div>
+                    <label>Typ žádosti</label>
+                    <select id="absenceType" required onchange="handleTypeChange()">
+                        <option value="Omluvenka">Omluvenka (pouze aktuální měsíc)</option>
+                        <option value="Pauza">Pauza (dlouhodobá, max 6 měsíců)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label id="labelFrom">Od měsíce</label>
+                    <input type="month" id="absenceFrom" required>
+                </div>
+                <div class="form-group" id="groupTo">
+                    <label>Do měsíce (včetně)</label>
+                    <input type="month" id="absenceTo" required>
+                </div>
                 <div class="form-group">
                     <label>Důvod / Poznámka</label>
                     <textarea id="absenceReason" placeholder="Zde rozepiš podrobnosti..." required></textarea>
                 </div>
-                <button type="submit" class="btn-add">Odeslat žádost</button>
+                <button type="submit" id="absenceSubmitBtn" class="btn-add">Odeslat žádost</button>
             </form>
         </div>
 
@@ -193,7 +169,6 @@
 </div>
 
 <script>
-// 🚀 DYNAMICKÉ UZAMČENÍ MĚSÍCŮ
 function handleTypeChange() {
     const type = document.getElementById("absenceType").value;
     const inputFrom = document.getElementById("absenceFrom");
@@ -201,24 +176,20 @@ function handleTypeChange() {
     const groupTo = document.getElementById("groupTo");
     const labelFrom = document.getElementById("labelFrom");
 
-    // Zjistíme aktuální rok a měsíc (např. 2026-06)
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
     const currentMonthString = `${currentYear}-${currentMonth}`;
 
     if (type === "Omluvenka") {
-        // Skryjeme políčko "Do měsíce"
         groupTo.style.display = "none";
         inputTo.removeAttribute("required");
         labelFrom.innerText = "Měsíc k omluvení";
         
-        // Vynutíme POUZE aktuální měsíc – min i max nastavíme na stejnou hodnotu
         inputFrom.value = currentMonthString;
         inputFrom.min = currentMonthString;
         inputFrom.max = currentMonthString;
     } else {
-        // Pro Pauzu ukážeme obě pole a uvolníme limity pro budoucnost
         groupTo.style.display = "flex";
         inputTo.setAttribute("required", "true");
         labelFrom.innerText = "Od měsíce";
@@ -268,13 +239,12 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Pomocná funkce na převedení formátu "2026-06" na "Červen 2026"
 function formatMonthHTML(monthString) {
     if (!monthString) return "";
     const [year, month] = monthString.split("-");
     const date = new Date(year, parseInt(month) - 1, 1);
     const text = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
-    return text.charAt(0).toUpperCase() + text.slice(1); // První písmeno velké
+    return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 async function loadMyAbsences() {
@@ -320,18 +290,20 @@ async function loadMyAbsences() {
 document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // 🚀 INICIALIZACE ZÁMKU TLAČÍTKA PROTI VÍCENÁSOBNÉMU KLIKÁNÍ
+    const submitBtn = document.getElementById("absenceSubmitBtn");
+    if (submitBtn.disabled) return;
+
     const type = document.getElementById("absenceType").value;
-    const from = document.getElementById("absenceFrom").value; // vrátí např. "2026-06"
-    let to = document.getElementById("absenceTo").value; // vrátí např. "2026-11"
+    const from = document.getElementById("absenceFrom").value; 
+    let to = document.getElementById("absenceTo").value; 
     const reason = document.getElementById("absenceReason").value.trim();
     const userName = localStorage.getItem("username") || "Řidič";
 
-    // 🚀 STRIKTNÍ KONTROLA MAXIMÁLNĚ 6 MĚSÍCŮ PRO PAUZU
     if (type === "Pauza") {
         const [yearFrom, monthFrom] = from.split("-").map(Number);
         const [yearTo, monthTo] = to.split("-").map(Number);
 
-        // Celkový počet zvolených měsíců
         const totalMonthsDiff = (yearTo - yearFrom) * 12 + (monthTo - monthFrom) + 1;
 
         if (totalMonthsDiff <= 0) {
@@ -344,8 +316,12 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             return;
         }
     } else {
-        to = ""; // u omluvenky konec prázdný
+        to = ""; 
     }
+
+    // Jakmile projdou základní kontroly, tlačítko ihned uzamkneme
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Odesílám...";
 
     const newRequest = {
         userEmail: userEmail,
@@ -361,7 +337,6 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     try {
         await addDoc(collection(db, "absences"), newRequest);
 
-        // 🚀 DISCORD WEBHOOK INTEGRACE
         const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
         
         const mFrom = formatMonthHTML(from);
@@ -388,30 +363,31 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             body: JSON.stringify(discordMessage)
         }).catch(err => console.error(err));
 
-        alert("Žádost byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
+        alert("Žádošt byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
         document.getElementById("absenceForm").reset();
         handleTypeChange(); 
         await loadMyAbsences();
     } catch (err) {
         alert("Chyba při odesílání: " + err.message);
+    } finally {
+        // Po dokončení operace vrátíme tlačítko do původního stavu
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Odeslat žádost";
     }
 });
 
 function upravFaviconuPodleRezimu() {
     const favicon = document.getElementById('favicon');
     if (!favicon) return;
-
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
     if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+        favicon.href = 'fotky/univ/favicon.png';  
     } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+        favicon.href = 'fotky/univ/favicon-cerna.png'; 
     }
 }
 
 upravFaviconuPodleRezimu();
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>

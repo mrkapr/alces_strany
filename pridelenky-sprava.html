@@ -29,6 +29,7 @@
         .request-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .btn-approve { background: #00b84f; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: 5px; font-family: 'Poppins', sans-serif; }
         .btn-reject { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .btn-approve:disabled, .btn-reject:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed; }
         #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
     </style>
 </head>
@@ -112,6 +113,8 @@ async function loadPendingRequests() {
 
             pending.forEach((req) => {
                 hasAnyRequest = true;
+                // Vyčištění e-mailu od teček a znaků pro vytvoření bezpečného ID prvku
+                const safeEmailId = req.email.replace(/[^a-zA-Z0-9]/g, "");
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>🚍 Ev.č. ${evc}</strong></td>
@@ -120,8 +123,8 @@ async function loadPendingRequests() {
                     <td>${req.email}</td>
                     <td>${new Date(req.requestedAt).toLocaleDateString("cs-CZ")}</td>
                     <td>
-                        <button class="btn-approve" onclick="resolveRequest('${evc}', '${req.email}', true)">Schválit ✓</button>
-                        <button class="btn-reject" onclick="resolveRequest('${evc}', '${req.email}', false)">Zamítnout ✕</button>
+                        <button class="btn-approve" id="btnApprove-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', true)">Schválit ✓</button>
+                        <button class="btn-reject" id="btnReject-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', false)">Zamítnout ✕</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -135,6 +138,20 @@ async function loadPendingRequests() {
 }
 
 window.resolveRequest = async function(evc, driverEmail, isApproved) {
+    const safeEmailId = driverEmail.replace(/[^a-zA-Z0-9]/g, "");
+    const btnApprove = document.getElementById(`btnApprove-${evc}-${safeEmailId}`);
+    const btnReject = document.getElementById(`btnReject-${evc}-${safeEmailId}`);
+
+    // 🚀 OCHRANA: Pokud jsou tlačítka již uzamčená, nepustíme kód dál
+    if ((btnApprove && btnApprove.disabled) || (btnReject && btnReject.disabled)) return;
+
+    // Okamžitá deaktivace obou tlačítek na daném řádku
+    if (btnApprove && btnReject) {
+        btnApprove.disabled = true;
+        btnReject.disabled = true;
+        if (isApproved) btnApprove.innerText = "Nahrávám..."; else btnReject.innerText = "Nahrávám...";
+    }
+
     try {
         const assignRef = doc(db, "assignments", evc);
         const assignSnap = await getDoc(assignRef);
@@ -160,7 +177,6 @@ window.resolveRequest = async function(evc, driverEmail, isApproved) {
                 await updateDoc(userRef, { lastVehicleAssignmentAt: timestampNow });
             } 
             else if (!isApproved && foundRequest) {
-                // 🚀 POJISTKA PRO VEDENÍ: Vedení neschválilo žádost -> Vymažeme řidiči časový zámek v users profilu
                 try {
                     const userRef = doc(db, "users", foundRequest.email);
                     await updateDoc(userRef, { lastVehicleAssignmentAt: null });
@@ -172,10 +188,19 @@ window.resolveRequest = async function(evc, driverEmail, isApproved) {
                 pendingRequests: currentRequests
             });
 
-            alert(isApproved ? "Přidělení vozidla bylo úspešně schváleno." : "Žádost byla zamítnuta.");
+            alert(isApproved ? "Přidělení vozidla bylo úspěšně schváleno." : "Žádost byla zamítnuta.");
             await loadPendingRequests();
         }
-    } catch (e) { alert("Chyba při zpracování: " + e.message); }
+    } catch (e) { 
+        alert("Chyba při zpracování: " + e.message); 
+        // V případě chyby tlačítka opět odemkneme
+        if (btnApprove && btnReject) {
+            btnApprove.disabled = false;
+            btnReject.disabled = false;
+            btnApprove.innerText = "Schválit ✓";
+            btnReject.innerText = "Zamítnout ✕";
+        }
+    }
 };
 </script>
 </body>
