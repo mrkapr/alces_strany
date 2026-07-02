@@ -130,9 +130,9 @@
             </div>
 
             <div class="panel">
-                <h2>Mimořádný bonus pro řidiče</h2>
+                <h2>Samostatný bonus</h2>
                 <p style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">
-                    Zde můžeš ručně připsat kilometry konkrétnímu řidiči, i když v tomto měsíci ještě neodjel žádnou směnu.
+                    Zde můžeš ručně připsat kilometry konkrétnímu řidiči jako bonus, který se nevztahuje k žádné směně.
                 </p>
                 <form id="independentBonusForm">
                     <div class="form-group">
@@ -176,7 +176,7 @@
 <div id="bonusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
     <div style="background-color:#1e1e1e; color:#fff; padding:25px; border-radius:8px; width:90%; max-width:500px; box-shadow:0 4px 15px rgba(0,0,0,0.5); border: 2px solid #ffd84d;">
         <h3 style="margin-top:0; color:#ffd84d; text-align:center;">🏆 Výsledky měsíčních bonusů 🏆</h3>
-        <p style="font-size:14px; color:#ccc; text-align:center; margin-bottom:20px;">Níže jsou zobrazeni výherci kategorií. Data byla uložena a veškeré bonusové kilometry byly automaticky připsány jako startovní náskok do dalšího měsíce.</p>
+        <p style="font-size:14px; color:#ccc; text-align:center; margin-bottom:20px;">Níže jsou zobrazeni výherci kategorií. Data byla uložena a veškeré bonusové kilometry byly automaticky připsán do dalšího měsíce.</p>
         
         <div id="modalTextPreview" style="background:#2a2a2a; padding:15px; border-radius:5px; font-family:monospace; font-size:13px; white-space:pre-wrap; margin-bottom:20px; border:1px solid #444;"></div>
         
@@ -537,7 +537,7 @@ async function loadAllArchives() {
                 copyBtn.addEventListener("click", async () => {
                     if (data.discordSoutezeText) {
                         await navigator.clipboard.writeText(data.discordSoutezeText);
-                        alert(`🚀 Text se soutěžemi za měsíc ${czName} byl úspěšně zkopírován!`);
+                        alert(`Text se soutěžemi za měsíc ${czName} byl úspěšně zkopírován!`);
                     }
                 });
             }
@@ -597,7 +597,7 @@ async function pripisBonusDoDalsihoMesice(email, km, duvod, targetMonthKey) {
         provozovna: "Vedení firmy",
         tachStart: 0,
         tachKonec: 0,
-        turnus: "Náskok",
+        turnus: "Bonus",
         linky: "Bonus",
         delays: [],
         tankTach: "N/A",
@@ -734,7 +734,7 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
 
         // 🚀 2. AUTOMATICKÝ PŘESUN VŠECH INDIVIDUÁLNÍCH / MIMOŘÁDNÝCH BONUSŮ DO DALŠÍHO MĚSÍCE
         for (const [email, celkovyBonusZaMesic] of Object.entries(statsCelkoveIndividualniBonusy)) {
-            await pripisBonusDoDalsihoMesice(email, celkovyBonusZaMesic, `Náskok: Přenesené bonusové kilometry nasbírané v měsíci ${selectedMonth}`, nasledujiciMesicKlic);
+            await pripisBonusDoDalsihoMesice(email, celkovyBonusZaMesic, `Bonu: Přenesené bonusové kilometry nasbírané v měsíci ${selectedMonth}`, nasledujiciMesicKlic);
         }
 
         // Uložení uzávěrky
@@ -778,7 +778,7 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
             };
         }
 
-        alert(`Měsíční uzávěrka úspěšně uložena! Veškeré soutěžní i mimořádné bonusy z tohoto měsíce byly automaticky přesunuty jako náskok do měsíce ${nasledujiciMesicKlic}.`);
+        alert(`Měsíční uzávěrka úspěšně uložena! Veškeré soutěžní bonusy z tohoto měsíce byly automaticky přesunuty do měsíce ${nasledujiciMesicKlic}.`);
         await loadActiveSmeny();
         await loadAllArchives();
         await vygenerujNeuzavreneMesice();
