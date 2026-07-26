@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
+        
+        button { font-family: 'Poppins', Arial, sans-serif; }
+
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
@@ -21,16 +24,78 @@
         .topbar .logo img { height: 34px; width: auto; display: block; margin: auto 0; }
         .topbar div:last-child { display: flex; align-items: center; height: 100%; }
         .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+        
         .content { margin: 120px 40px 40px 40px; }
         h1 { font-size: 32px; font-weight: 700; margin-bottom: 20px; color: #ffd84d; }
-        .panel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); padding: 24px; border-radius: 24px; margin-bottom: 25px; }
+        .panel { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); padding: 24px; border-radius: 24px; margin-bottom: 25px; backdrop-filter: blur(15px); }
+        
+        /* Tabulka pro PC */
         .request-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        .request-table th { color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.1); padding: 10px; }
-        .request-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .btn-approve { background: #00b84f; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: 5px; font-family: 'Poppins', sans-serif; }
-        .btn-reject { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .request-table th { color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.1); padding: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .request-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        
+        .btn-group { display: flex; gap: 8px; }
+        .btn-approve { background: #00b84f; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 13px; }
+        .btn-approve:hover:not(:disabled) { background: #00963f; transform: scale(1.02); }
+        .btn-reject { background: #ff4d4d; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 13px; }
+        .btn-reject:hover:not(:disabled) { background: #cc0000; transform: scale(1.02); }
         .btn-approve:disabled, .btn-reject:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed; }
+        
         #error-screen { display: none; text-align: center; margin-top: 150px; font-size: 20px; color: #ff4d4d; font-weight: 600; }
+
+        /* ================= MOBILNÍ ZOBRAZENÍ ================= */
+        @media (max-width: 768px) {
+            .topbar { top: 8px; left: 12px; right: 12px; height: 50px; padding: 0 14px; border-radius: 16px; }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 12px; margin-left: 10px; }
+
+            .content { margin: 85px 14px 20px 14px; }
+            h1 { font-size: 22px; margin-bottom: 15px; }
+            .panel { padding: 14px; border-radius: 18px; }
+
+            /* Transformace tabulky na karty */
+            .request-table, .request-table thead, .request-table tbody, .request-table th, .request-table td, .request-table tr {
+                display: block; width: 100%; box-sizing: border-box;
+            }
+            .request-table thead { display: none; } /* Skryjeme hlavičku tabulky */
+
+            .request-table tr {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 14px;
+                padding: 14px;
+                margin-bottom: 12px;
+            }
+
+            .request-table td {
+                padding: 5px 0;
+                border: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 13px;
+            }
+
+            .request-table td::before {
+                content: attr(data-label);
+                font-size: 11px;
+                text-transform: uppercase;
+                color: #ffd84d;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+
+            .request-table td[data-label="Akce"] {
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                display: block;
+            }
+
+            .btn-group { display: flex; gap: 8px; width: 100%; }
+            .btn-group button { flex: 1; padding: 10px; font-size: 13px; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -113,18 +178,19 @@ async function loadPendingRequests() {
 
             pending.forEach((req) => {
                 hasAnyRequest = true;
-                // Vyčištění e-mailu od teček a znaků pro vytvoření bezpečného ID prvku
                 const safeEmailId = req.email.replace(/[^a-zA-Z0-9]/g, "");
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td><strong>🚍 Ev.č. ${evc}</strong></td>
-                    <td>${req.name}</td>
-                    <td><strong>${req.oc || "-"}</strong></td>
-                    <td>${req.email}</td>
-                    <td>${new Date(req.requestedAt).toLocaleDateString("cs-CZ")}</td>
-                    <td>
-                        <button class="btn-approve" id="btnApprove-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', true)">Schválit ✓</button>
-                        <button class="btn-reject" id="btnReject-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', false)">Zamítnout ✕</button>
+                    <td data-label="Ev.č. vozu"><strong>ev.č. ${evc}</strong></td>
+                    <td data-label="Řidič">${req.name}</td>
+                    <td data-label="Osobní číslo"><strong>${req.oc || "-"}</strong></td>
+                    <td data-label="E-mail">${req.email}</td>
+                    <td data-label="Datum žádosti">${new Date(req.requestedAt).toLocaleDateString("cs-CZ")}</td>
+                    <td data-label="Akce">
+                        <div class="btn-group">
+                            <button class="btn-approve" id="btnApprove-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', true)">Schválit ✓</button>
+                            <button class="btn-reject" id="btnReject-${evc}-${safeEmailId}" onclick="resolveRequest('${evc}', '${req.email}', false)">Zamítnout ✕</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -142,10 +208,8 @@ window.resolveRequest = async function(evc, driverEmail, isApproved) {
     const btnApprove = document.getElementById(`btnApprove-${evc}-${safeEmailId}`);
     const btnReject = document.getElementById(`btnReject-${evc}-${safeEmailId}`);
 
-    // 🚀 OCHRANA: Pokud jsou tlačítka již uzamčená, nepustíme kód dál
     if ((btnApprove && btnApprove.disabled) || (btnReject && btnReject.disabled)) return;
 
-    // Okamžitá deaktivace obou tlačítek na daném řádku
     if (btnApprove && btnReject) {
         btnApprove.disabled = true;
         btnReject.disabled = true;
@@ -193,7 +257,6 @@ window.resolveRequest = async function(evc, driverEmail, isApproved) {
         }
     } catch (e) { 
         alert("Chyba při zpracování: " + e.message); 
-        // V případě chyby tlačítka opět odemkneme
         if (btnApprove && btnReject) {
             btnApprove.disabled = false;
             btnReject.disabled = false;
