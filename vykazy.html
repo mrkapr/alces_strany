@@ -36,7 +36,11 @@
         .panel {
             background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
             padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px; transition: border-color 0.3s ease;
+        }
+        .panel.edit-mode {
+            border: 2px solid #00a2ff;
+            box-shadow: 0 0 25px rgba(0, 162, 255, 0.3);
         }
         .panel h2 { margin-top: 0; font-size: 24px; color: #fff; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px; }
         
@@ -84,6 +88,15 @@
 
         .btn-submit { background: #00b84f; color: white; border: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif; }
         .btn-submit:hover { background: #00963f; transform: scale(1.02); }
+        button {
+    font-family: 'Poppins', Arial, sans-serif;
+}
+        
+        .btn-submit.btn-edit-mode { background: #0088ff; }
+        .btn-submit.btn-edit-mode:hover { background: #0066cc; }
+
+        .btn-cancel-edit { background: #ff4d4d; color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif; margin-left: 10px; display: none; }
+        .btn-cancel-edit:hover { background: #cc0000; }
 
         .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 15px; }
         .omluvenka-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 10px; font-size: 12px; text-align: center; }
@@ -94,6 +107,20 @@
         .history-item:hover { background: rgba(255,255,255,0.06); }
         .history-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
         .history-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; opacity: 0.85; line-height: 1.5; }
+
+        .btn-edit-dzva {
+            background: rgba(0, 162, 255, 0.2); border: 1px solid #00a2ff; color: #66c2ff;
+            padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            cursor: pointer; margin-top: 10px; margin-right: 8px; display: inline-block; transition: all 0.2s;
+        }
+        .btn-edit-dzva:hover { background: #00a2ff; color: #fff; }
+
+        .btn-delete-dzva {
+            background: rgba(255, 77, 77, 0.2); border: 1px solid #ff4d4d; color: #ff4d4d;
+            padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            cursor: pointer; margin-top: 10px; display: inline-block; transition: all 0.2s;
+        }
+        .btn-delete-dzva:hover { background: #ff4d4d; color: #fff; }
 
         .bottom-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
         .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 16px; }
@@ -131,6 +158,7 @@
             .km-flex-row { margin-top: 10px; width: 100%; justify-content: center; }
             .km-summary-box { font-size: 18px; padding: 8px 16px; }
             .btn-submit { width: 100%; padding: 12px; font-size: 14px; margin-top: 5px; }
+            .btn-cancel-edit { width: 100%; margin-left: 0; margin-top: 5px; }
             .bottom-stats-grid { grid-template-columns: 1fr; gap: 12px; }
             .stat-card { padding: 12px 16px; }
             .stat-card .val { font-size: 20px; padding: 8px; min-width: 100%; }
@@ -154,9 +182,11 @@
     <div class="layout-grid">
         
         <div>
-            <div class="panel">
-                <h2>Denní záznam o výkonu autobusu</h2>
+            <div class="panel" id="formPanel">
+                <h2 id="formTitle">Denní záznam o výkonu autobusu</h2>
                 <form id="dzvaForm" autocomplete="off">
+                    <input type="hidden" id="editingDocId" value="">
+                    
                     <div class="form-row">
                         <div class="form-group" style="flex: 0.5;">
                             <label>Ev. č. vozu</label>
@@ -249,7 +279,10 @@
                             </div>
                             <span class="km-summary-text">bylo najeto za nahlášenou směnu.</span>
                         </div>
-                        <button type="submit" class="btn-submit">Podepsat a odeslat</button>
+                        <div>
+                            <button type="submit" class="btn-submit" id="submitBtn">Podepsat a odeslat</button>
+                            <button type="button" class="btn-cancel-edit" id="cancelEditBtn">Zrušit</button>
+                        </div>
                     </div>
                     <div id="statusMsg" class="status-msg" style="text-align: right; margin-top: 10px;">Směna zapsána ✓</div>
                 </form>
@@ -310,7 +343,7 @@ function aktualizujNabidkuLinek() {
         
         opt.querySelector("input").addEventListener("change", (e) => {
             if(e.target.checked) {
-                zvoleneLinky.push(linka);
+                if(!zvoleneLinky.includes(linka)) zvoleneLinky.push(linka);
             } else {
                 const idx = zvoleneLinky.indexOf(linka);
                 if(idx > -1) zvoleneLinky.splice(idx, 1);
@@ -345,22 +378,23 @@ function calculateKm() {
     document.getElementById("calculatedKm").innerText = rozdil > 0 ? rozdil : 0;
 }
 
-function addDelayRow() {
+function addDelayRow(valMin = "", valStop = "", valReason = "", valTime = "") {
     const container = document.getElementById("delaysContainer");
     const div = document.createElement("div");
     div.className = "delay-row";
     div.innerHTML = `
         <span style="font-size:14px; opacity:0.7;">+</span>
-        <input type="number" class="delay-min" placeholder="min" style="width: 70px;" required>
-        <input type="text" class="delay-stop" placeholder="Zastávka..." style="flex:2;" required>
-        <input type="text" class="delay-reason" placeholder="Důvod..." style="flex:2;" required>
-        <input type="text" class="delay-time" placeholder="hh:mm" style="width: 80px;" required>
+        <input type="number" class="delay-min" placeholder="min" style="width: 70px;" value="${valMin}" required>
+        <input type="text" class="delay-stop" placeholder="Zastávka..." style="flex:2;" value="${valStop}" required>
+        <input type="text" class="delay-reason" placeholder="Důvod..." style="flex:2;" value="${valReason}" required>
+        <input type="text" class="delay-time" placeholder="hh:mm" style="width: 80px;" value="${valTime}" required>
         <button type="button" class="btn-small" style="background:#ff4d4d; border:none;" onclick="this.parentElement.remove()">✕</button>
     `;
     container.appendChild(div);
 }
 
-function toggleHistoryDetails(element) {
+function toggleHistoryDetails(element, event) {
+    if (event && event.target && (event.target.classList.contains("btn-edit-dzva") || event.target.classList.contains("btn-delete-dzva"))) return;
     const details = element.querySelector(".history-details");
     if(details) details.style.display = details.style.display === "block" ? "none" : "block";
 }
@@ -368,7 +402,7 @@ function toggleHistoryDetails(element) {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -386,6 +420,7 @@ const auth = getAuth(app);
 
 let userEmail = "";
 let existujiciVozidla = [];
+let loadedDzvaDocs = {}; 
 const now = new Date();
 const formattedLabel = `${now.getMonth() + 1}/${String(now.getFullYear()).slice(-2)}`;
 document.getElementById("currentMonthLabel").innerText = formattedLabel;
@@ -467,6 +502,7 @@ async function loadMyDzvaHistory() {
     const container = document.getElementById("historyContainer");
     if(!container) return;
     container.innerHTML = "";
+    loadedDzvaDocs = {};
 
     try {
         const q = query(collection(db, "dzva"), where("userEmail", "==", userEmail));
@@ -480,7 +516,9 @@ async function loadMyDzvaHistory() {
 
         snap.forEach(d => {
             const data = d.data();
-            list.push(data);
+            const docId = d.id;
+            loadedDzvaDocs[docId] = data;
+            list.push({ id: docId, ...data });
             
             const km = parseFloat(data.najetoKm) || 0;
             const bKm = parseFloat(data.bonusKm) || 0;
@@ -510,7 +548,7 @@ async function loadMyDzvaHistory() {
         document.getElementById("globalTotalKm").innerText = globalTotal;
         document.getElementById("monthTotalKm").innerText = monthTotal;
 
-        list.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds);
+        list.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         if(list.length === 0) {
             container.innerHTML = `<p style="opacity:0.5; font-size:12px;">Za tento měsíc nebyla najeta žádná směna.</p>`;
@@ -518,26 +556,30 @@ async function loadMyDzvaHistory() {
         }
 
         list.forEach(data => {
-            // 🚀 INTERPRETACE LIP PRO ČISTÉ / MIMOŘÁDNÉ BONUSY (evc == "BONUS")
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "history-item";
+            itemDiv.onclick = (e) => toggleHistoryDetails(itemDiv, e);
+
             if (data.evc === "BONUS") {
-                container.innerHTML += `
-                    <div class="history-item" style="border-left: 4px solid #00ff66; background: rgba(0,255,102,0.02);">
-                        <div class="history-top" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap; opacity: 0.9; color: #00ff66; font-weight: 600;">
-                                <span>${data.dateText}</span>
-                                <span>• Bonus</span>
-                            </div>
-                            <div style="color: #00ff66; font-weight: 700; white-space: nowrap; font-size: 15px;">
-                                + ${data.bonusKm} km
-                            </div>
+                itemDiv.style.borderLeft = "4px solid #00ff66";
+                itemDiv.style.background = "rgba(0,255,102,0.02)";
+                
+                itemDiv.innerHTML = `
+                    <div class="history-top" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; opacity: 0.9; color: #00ff66; font-weight: 600;">
+                            <span>${data.dateText}</span>
+                            <span>• Bonus</span>
                         </div>
-                        <div style="margin-top: 8px; font-size: 12px; opacity: 0.85; line-height: 1.4; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
-                            <strong>Důvod:</strong> ${data.bonusDuvod || "Připsání bonusových kilometrů"}
+                        <div style="color: #00ff66; font-weight: 700; white-space: nowrap; font-size: 15px;">
+                            + ${data.bonusKm} km &nbsp;▾
                         </div>
+                    </div>
+                    
+                    <div class="history-details">
+                        <strong>Důvod:</strong> ${data.bonusDuvod || "Bonusové kilometry přiděleny vedením"}<br>
                     </div>
                 `;
             } else {
-                // Klasické zobrazení pro standardní odjetou směnu autobusu
                 let delayHtml = "Žádné";
                 if(data.delays && data.delays.length > 0) {
                     delayHtml = data.delays.map(d => `+${d.min} min, ${d.stop} (${d.reason}) v ${d.time}`).join("<br>");
@@ -548,39 +590,149 @@ async function loadMyDzvaHistory() {
                     bonusSpan = ` <span style="color:#00ff66; font-size:11px; font-weight:600;">(+${data.bonusKm} bonus)</span>`;
                 }
 
-                container.innerHTML += `
-                    <div class="history-item" onclick="toggleHistoryDetails(this)">
-                        <div class="history-top" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap; opacity: 0.9;">
-                                <span>${data.dateText}</span>
-                                <span>  |  &nbsp;${data.provozovna}</span>
-                                <span>  |  &nbsp;${data.rz}</span>
-                                <span>  |  &nbsp;ev.č. ${data.evc}</span>
-                                <span>  |  &nbsp;Turnus ${data.turnus}</span>
-                            </div>
-                            <div style="color: #ffd84d; font-weight: 700; white-space: nowrap;">
-                                najeto ${parseFloat(data.najetoKm) + parseFloat(data.bonusKm || 0)} km${bonusSpan} &nbsp;▾
-                            </div>
+                itemDiv.innerHTML = `
+                    <div class="history-top" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; opacity: 0.9;">
+                            <span>${data.dateText}</span>
+                            <span>  |  &nbsp;${data.provozovna}</span>
+                            <span>  |  &nbsp;${data.rz}</span>
+                            <span>  |  &nbsp;ev.č. ${data.evc}</span>
+                            <span>  |  &nbsp;Turnus ${data.turnus}</span>
                         </div>
-                        
-                        <div class="history-details">
-                            <strong>Linky turnusu:</strong> ${data.linky}<br>
-                            <strong>Tachometr:</strong> před ${data.tachStart} km, po ${data.tachKonec} km<br>
-                            <strong>Tankování:</strong> ${data.tankMisto ? `+${data.tankProcenta}%, ${data.tankMisto} (Tach: ${data.tankTach} km)` : "N/A"}<br>
-                            <strong>Zpoždění:</strong><br>${delayHtml}
-                            ${data.bonusDuvod ? `<br><strong style="color:#00ff66;">Důvod bonusu:</strong> <i>"${data.bonusDuvod}"</i>` : ""}
+                        <div style="color: #ffd84d; font-weight: 700; white-space: nowrap;">
+                            najeto ${parseFloat(data.najetoKm) + parseFloat(data.bonusKm || 0)} km${bonusSpan} &nbsp;▾
                         </div>
                     </div>
+                    
+                    <div class="history-details">
+                        <strong>Linky turnusu:</strong> ${data.linky}<br>
+                        <strong>Tachometr:</strong> před ${data.tachStart} km, po ${data.tachKonec} km<br>
+                        <strong>Tankování:</strong> ${data.tankMisto ? `+${data.tankProcenta}%, ${data.tankMisto} (Tach: ${data.tankTach} km)` : "N/A"}<br>
+                        <strong>Zpoždění:</strong><br>${delayHtml}
+                        ${data.bonusDuvod ? `<br><strong style="color:#00ff66;">Důvod bonusu:</strong> <i>"${data.bonusDuvod}"</i>` : ""}
+                        <br>
+                        <button type="button" class="btn-edit-dzva" data-id="${data.id}">Upravit</button>
+                        <button type="button" class="btn-delete-dzva" data-id="${data.id}">Smazat</button>
+                    </div>
                 `;
+
+                const editBtn = itemDiv.querySelector(".btn-edit-dzva");
+                if (editBtn) {
+                    editBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        startEditingDzva(data.id);
+                    });
+                }
+
+                const deleteBtn = itemDiv.querySelector(".btn-delete-dzva");
+                if (deleteBtn) {
+                    deleteBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        deleteDzva(data.id);
+                    });
+                }
             }
+
+            container.appendChild(itemDiv);
         });
     } catch (err) { console.error(err); }
 }
 
+// 🚀 FUNKCE PRO SMAZÁNÍ VÝKAZU
+async function deleteDzva(docId) {
+    const potvrdit = confirm("Opravdu si přeješ smazat tento DZVA? Tato akce je nevratná.");
+    if (!potvrdit) return;
+
+    try {
+        await deleteDoc(doc(db, "dzva", docId));
+        
+        // Pokud byl smazán zrovna editovaný výkaz, zrušíme režim úprav
+        if (document.getElementById("editingDocId").value === docId) {
+            cancelEditMode();
+        }
+
+        const msg = document.getElementById("statusMsg");
+        msg.innerHTML = `Záznam byl smazán ✓`;
+        msg.style.display = "block";
+        setTimeout(() => { msg.style.display = "none"; }, 3000);
+
+        await loadMyDzvaHistory();
+    } catch (err) {
+        alert("Chyba při mazání záznamu: " + err.message);
+    }
+}
+
+function startEditingDzva(docId) {
+    const data = loadedDzvaDocs[docId];
+    if (!data) return;
+
+    document.getElementById("editingDocId").value = docId;
+
+    document.getElementById("evc").value = data.evc || "";
+    document.getElementById("rz").value = data.rz || "";
+    document.getElementById("provozovna").value = data.provozovna || "Severní Čechy";
+    document.getElementById("tachStart").value = data.tachStart || 0;
+    document.getElementById("tachKonec").value = data.tachKonec || 0;
+    document.getElementById("turnus").value = data.turnus || "";
+
+    aktualizujNabidkuLinek();
+    const storedLinky = (data.linky || "").split(",").map(l => l.trim());
+    storedLinky.forEach(linka => {
+        if(linka) {
+            zvoleneLinky.push(linka);
+            const cb = document.querySelector(`.multiselect-option input[value="${linka}"]`);
+            if (cb) cb.checked = true;
+        }
+    });
+    document.getElementById("multiselectTrigger").innerText = zvoleneLinky.length > 0 ? zvoleneLinky.join(", ") : "Vyber linky...";
+
+    document.getElementById("tankTach").value = data.tankTach !== "N/A" ? data.tankTach : "";
+    document.getElementById("tankProcenta").value = data.tankProcenta !== "N/A" ? data.tankProcenta : "";
+    document.getElementById("tankMisto").value = data.tankMisto || "";
+
+    const delaysContainer = document.getElementById("delaysContainer");
+    delaysContainer.innerHTML = "";
+    if (data.delays && data.delays.length > 0) {
+        data.delays.forEach(d => {
+            addDelayRow(d.min, d.stop, d.reason, d.time);
+        });
+    }
+
+    calculateKm();
+
+    document.getElementById("formPanel").classList.add("edit-mode");
+    document.getElementById("formTitle").innerText = "Úprava uloženého záznamu";
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.innerText = "Uložit změny";
+    submitBtn.classList.add("btn-edit-mode");
+    document.getElementById("cancelEditBtn").style.display = "inline-block";
+}
+
+function cancelEditMode() {
+    document.getElementById("editingDocId").value = "";
+    document.getElementById("dzvaForm").reset();
+    document.getElementById("delaysContainer").innerHTML = "";
+    zvoleneLinky.length = 0;
+    document.getElementById("multiselectTrigger").innerText = "Vyber linky...";
+    document.querySelectorAll(".multiselect-option input").forEach(cb => cb.checked = false);
+
+    document.getElementById("formPanel").classList.remove("edit-mode");
+    document.getElementById("formTitle").innerText = "Denní záznam o výkonu autobusu";
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.innerText = "Podepsat a odeslat";
+    submitBtn.classList.remove("btn-edit-mode");
+    document.getElementById("cancelEditBtn").style.display = "none";
+
+    calculateKm();
+    updateDateSelection();
+}
+
+document.getElementById("cancelEditBtn").addEventListener("click", cancelEditMode);
+
 document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const submitBtn = e.target.querySelector(".btn-submit");
+    const submitBtn = document.getElementById("submitBtn");
     if (submitBtn && submitBtn.disabled) return;
 
     if(zvoleneLinky.length === 0) {
@@ -603,15 +755,23 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         return;
     }
 
+    const editingDocId = document.getElementById("editingDocId").value;
+    const isEditMode = !!editingDocId;
+
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = "Odesílám...";
+        submitBtn.innerText = isEditMode ? "Ukládám změny..." : "Odesílám...";
     }
 
-    const option = document.querySelector('input[name="datumSmeny"]:checked').value;
-    const targetDate = new Date();
-    if(option === "vcera") targetDate.setDate(targetDate.getDate() - 1);
-    const dateText = targetDate.toLocaleDateString("cs-CZ");
+    let dateText = "";
+    if (isEditMode && loadedDzvaDocs[editingDocId]) {
+        dateText = loadedDzvaDocs[editingDocId].dateText;
+    } else {
+        const option = document.querySelector('input[name="datumSmeny"]:checked').value;
+        const targetDate = new Date();
+        if(option === "vcera") targetDate.setDate(targetDate.getDate() - 1);
+        dateText = targetDate.toLocaleDateString("cs-CZ");
+    }
 
     const delays = [];
     document.querySelectorAll(".delay-row").forEach(row => {
@@ -656,39 +816,30 @@ document.getElementById("dzvaForm").addEventListener("submit", async (e) => {
         tankMisto: document.getElementById("tankMisto").value.trim() || "",
         najetoKm: najetoKm,
         bonusKm: automatickyBonusKm,
-        bonusDuvod: automatickyBonusDuvod,
-        createdAt: new Date()
+        bonusDuvod: automatickyBonusDuvod
     };
 
     try {
-        await addDoc(collection(db, "dzva"), docData);
-        
-        const msg = document.getElementById("statusMsg");
-        if (automatickyBonusKm > 0) {
-            msg.innerHTML = `Směna zapsána s přiděleným vozidlem (Bonus +${automatickyBonusKm} km) ✓`;
+        if (isEditMode) {
+            await updateDoc(doc(db, "dzva", editingDocId), docData);
         } else {
-            msg.innerHTML = `Směna zapsána ✓`;
+            docData.createdAt = new Date();
+            await addDoc(collection(db, "dzva"), docData);
         }
         
+        const msg = document.getElementById("statusMsg");
+        msg.innerHTML = isEditMode ? `Změny byly úspěšně uloženy ✓` : (automatickyBonusKm > 0 ? `Směna zapsána s přiděleným vozidlem (Bonus +${automatickyBonusKm} km) ✓` : `Směna zapsána ✓`);
         msg.style.display = "block";
         
-        document.getElementById("dzvaForm").reset();
-        document.getElementById("delaysContainer").innerHTML = "";
-        zvoleneLinky.length = 0;
-        document.getElementById("multiselectTrigger").innerText = "Vyber linky...";
-        document.querySelectorAll(".multiselect-option input").forEach(cb => cb.checked = false);
-        
-        calculateKm();
-        updateDateSelection();
+        cancelEditMode();
 
         setTimeout(() => { msg.style.display = "none"; }, 4000);
         await loadMyDzvaHistory();
     } catch (err) {
-        alert("Chyba při odesílání výkazu: " + err.message);
+        alert("Chyba při zápisu: " + err.message);
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerText = "Podepsat a odeslat";
         }
     }
 });

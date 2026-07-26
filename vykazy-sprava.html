@@ -110,7 +110,7 @@
 <div id="error-screen">Ověřuji oprávnění...</div>
 
 <div class="content" id="mainContent" style="display: none;">
-    <h1>Administrace a správa výkazů řidičů</h1>
+    <h1>Správa výkazů</h1>
     
     <div class="layout-grid">
         <div>
@@ -345,15 +345,15 @@ async function loadActiveSmeny() {
             let ocRidice = sd.osobni_cislo || sd.osobniCislo || sd.oc || cachedUserOsobniCisla[emailKlic] || "-";
 
             let bonusHtml = bonus > 0 ? ` <span class="bonus-span">+ ${bonus} km</span>` : "";
-            let duvodHtml = duvod ? `<span class="bonus-note">💬 "${duvod}"</span>` : "";
+            let duvodHtml = duvod ? `<span class="bonus-note">"${duvod}"</span>` : "";
 
             const div = document.createElement("div");
             div.className = "smena-item";
             div.innerHTML = `
                 <div class="smena-top">
                     <div class="smena-info">
-                        📅 <strong>${sd.dateText || "Neznámé datum"}</strong> | 👤 <strong>${jmenoRidice}</strong> (OČ: ${ocRidice})<br>
-                        <span>🚍 Vůz: Ev.č. ${sd.evc || "-"} (${sd.rz || "-"}) | 📋 Turnus: ${sd.turnus || "-"}</span>
+                        <strong>${sd.dateText || "Neznámé datum"}</strong> | <strong>${jmenoRidice}</strong> (OČ: ${ocRidice})<br>
+                        <span>Vůz: Ev.č. ${sd.evc || "-"} (${sd.rz || "-"}) | Turnus: ${sd.turnus || "-"}</span>
                         ${duvodHtml}
                     </div>
                     <div style="text-align: right;">
@@ -381,7 +381,7 @@ window.pridatBonusDoDzva = async function(docId) {
         const jmenoRidice = aktData.userName || aktData.userEmail || "Neznámý řidič";
         const zakladniKm = parseFloat(aktData.najetoKm || 0);
 
-        const vstup = prompt(`Přidáváš bonus pro řidiče: ${jmenoRidice}\nZáklad směny: ${zakladniKm} km\n\nZadej bonus jako číslo (např. 4) NEBO s procentem (např. 10%):`);
+        const vstup = prompt(`Přidáváš bonus pro řidiče: ${jmenoRidice}\nZáklad směny: ${zakladniKm} km\n\nZadej bonus jako číslo (např. 4) nebo s procentem (např. 10%):`);
         if (vstup === null) return;
 
         let km = 0;
@@ -504,11 +504,11 @@ async function loadAllArchives() {
                 <div class="month-body" style="position: relative;">
                     <button class="btn-bonus-směna" id="copyLater-${monthId}" style="position: absolute; top: 75px; right: 15px; background: #00ff66; color: #000; display: none;">📋 Zkopírovat vyhodnocení</button>
                     <div class="archive-block" style="background: rgba(0,184,79,0.1); border-color: #00b84f; padding: 15px; margin-bottom: 15px; padding-right: 180px;">
-                        <span style="font-size: 15px;">📈 Celkový výkon firmy: <strong>${data.totalMonthKm || 0} km</strong></span><br>
+                        <span style="font-size: 15px;">Celkový výkon firmy: <strong>${data.totalMonthKm || 0} km</strong></span><br>
                         <span style="font-size: 13px; color:#ffd84d;">Nejaktivnější řidič: <strong>${data.topDriverName || "Neznámý"} (OČ ${data.topDriverOc || "-"})</strong> s výkonem <strong>${data.topDriverKm || 0} km</strong></span>
                     </div>
                     <div class="archive-block">
-                        <h4>🚍 Výkony jednotlivých vozidel:</h4>
+                        <h4>Výkony jednotlivých vozidel:</h4>
                         <ul class="archive-list">${vozyHtml || "<li>Žádná data o vozech.</li>"}</ul>
                     </div>
                     <div style="text-align: right; font-size: 10px; opacity: 0.3; margin-top: 10px;">

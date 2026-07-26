@@ -126,7 +126,7 @@
     
     <div class="user-status-panel">
         <div class="status-meta">
-            👤 Řidič: <strong id="panelDriverName">Načítám...</strong> (OČ: <span id="panelDriverOc">-</span>) | 
+            Řidič: <strong id="panelDriverName">Načítám...</strong> (OČ: <span id="panelDriverOc">-</span>) | 
             Přidělený vůz: <strong id="panelAssignedVehicle">-</strong>
         </div>
         <div id="panelLockZone" style="display: none;">
@@ -360,12 +360,12 @@ function renderVehicles(vehiclesArray) {
             driversHtml = `<span style="opacity: 0.4;">Vozidlo není dosud přiděleno.</span>`;
         } else {
             assignedDrivers.forEach(d => { 
-                driversHtml += `<span class="driver-tag">👤 <strong>${d.name}</strong> (OČ: ${d.oc || "-"})</span>`; 
+                driversHtml += `<span class="driver-tag"><strong>${d.name}</strong> (OČ: ${d.oc || "-"})</span>`; 
             });
         }
 
         if (waitingReq) {
-            driversHtml += `<span class="waiting-tag">⏳ Žádá: <strong>${waitingReq.name}</strong></span>`;
+            driversHtml += `<span class="waiting-tag">Žádá: <strong>${waitingReq.name}</strong></span>`;
         }
 
         if (waitingReq && !assignedDrivers.some(d => d.email === currentUserEmail)) {
@@ -386,7 +386,7 @@ function renderVehicles(vehiclesArray) {
         row.className = "vehicle-row";
         row.innerHTML = `
             <div class="col-main">
-                <div class="col-evc">🚍 ev.č. ${evc}</div>
+                <div class="col-evc">ev.č. ${evc}</div>
                 <div class="col-drivers">${driversHtml}</div>
             </div>
             <div class="col-actions">
@@ -408,10 +408,10 @@ async function sendSystemNotification(evc, requestObj) {
             title: "Nová žádost o přidělení vozu",
             color: 16766029, // Zlatá barva
             fields: [
-                { name: "🚍 Vozidlo", value: `**Ev.č. ${evc}**`, inline: true },
-                { name: "👤 Žadatel", value: `**${requestObj.name}** (${requestObj.email})`, inline: true },
-                { name: "🪪 Osobní číslo", value: requestObj.oc || "-", inline: true },
-                { name: "📅 Odesláno", value: localizedDate, inline: false }
+                { name: "Vozidlo", value: `**Ev.č. ${evc}**`, inline: true },
+                { name: "Žadatel", value: `**${requestObj.name}** (${requestObj.email})`, inline: true },
+                { name: "Osobní číslo", value: requestObj.oc || "-", inline: true },
+                { name: "Odesláno", value: localizedDate, inline: false }
             ],
             footer: { text: "alces-as.fun" },
             timestamp: new Date().toISOString()

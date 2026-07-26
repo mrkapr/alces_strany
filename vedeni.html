@@ -332,7 +332,7 @@ async function loadAllBiographies() {
                 // Moje vlastní vizitka -> Editor
                 bioSection.innerHTML = `
                     <div class="bio-editor">
-                        <label style="font-weight:600; color:#ffd84d; font-size:11px;">📝 Upravit svůj profil (vidí všichni):</label>
+                        <label style="font-weight:600; color:#ffd84d; font-size:11px;">Upravit svůj profil (vidí všichni):</label>
                         <textarea class="bio-textarea" rows="4">${docSnap.exists() ? docSnap.data().text : ""}</textarea>
                         <button class="bio-save-btn">Uložit profil</button>
                     </div>

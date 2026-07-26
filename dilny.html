@@ -145,7 +145,7 @@
 
         <div class="panel" style="position: sticky; top: 100px;">
             <h2>Stav vozového parku (ev.č.)</h2>
-            <input type="text" id="vehicleSearch" class="search-box" placeholder="🔍 Hledat evidenční číslo..." oninput="filterVehicles()">
+            <input type="text" id="vehicleSearch" class="search-box" placeholder="Hledat evidenční číslo..." oninput="filterVehicles()">
             <div class="vehicle-list" id="vehiclesContainer">
                 <p style="opacity:0.5;">Načítám evidenci vozů...</p>
             </div>
@@ -227,7 +227,7 @@ async function loadWorkshopLogs() {
             container.innerHTML += `
                 <div class="log-item">
                     <div class="log-title">${log.title}</div>
-                    <div class="log-meta">📅 ${date} | Vytvořil: ${log.author}</div>
+                    <div class="log-meta">${date} | Vytvořil: ${log.author}</div>
                     <div style="font-size:14px; opacity:0.9; white-space:pre-wrap;">${log.text}</div>
                 </div>
             `;

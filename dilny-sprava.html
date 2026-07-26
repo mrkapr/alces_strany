@@ -109,7 +109,7 @@
 <div id="error-screen">Ověřuji oprávnění...</div>
 
 <div class="content" id="mainContent" style="display: none;">
-    <h1>Administrace a správa technického zázemí</h1>
+    <h1>Správa dílen</h1>
     
     <div class="layout-grid">
         <div class="panel">
@@ -152,7 +152,7 @@
                     <label>Evidenční číslo nového vozu</label>
                     <input type="text" id="newVehicleEvc" placeholder="např. 7015" required>
                 </div>
-                <button type="submit" class="btn-blue">➕ Zaregistrovat vozidlo</button>
+                <button type="submit" class="btn-blue">Zaregistrovat vozidlo</button>
             </form>
 
             <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; opacity:0.9;">Aktuálně registrovaná vozidla:</label>
@@ -276,7 +276,7 @@ async function loadActiveVehiclesList() {
             const li = document.createElement("li");
             li.className = "admin-vehicle-item";
             li.innerHTML = `
-                <span>🚍 <strong>Ev.č. ${evc}</strong></span>
+                <span><strong>ev.č. ${evc}</strong></span>
                 <button class="btn-delete-vehicle btn-delete" data-evc="${evc}">Smazat ✕</button>
             `;
 

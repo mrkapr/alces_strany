@@ -346,13 +346,13 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
 
         const discordMessage = {
             embeds: [{
-                title: type === "Omluvenka" ? "📝 Nová omluvenka ke schválení" : "⏸️ Nová žádost o pauzu",
+                title: type === "Omluvenka" ? "Nová omluvenka ke schválení" : "Nová žádost o pauzu",
                 color: type === "Omluvenka" ? 16738657 : 16766029,
                 fields: [
-                    { name: "👤 Řidič", value: `**${userName}** (${userEmail})`, inline: true },
-                    { name: "📝 Typ", value: type, inline: true },
-                    { name: "📅 Termín", value: type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`, inline: false },
-                    { name: "💬 Důvod / Poznámka", value: reason, inline: false }
+                    { name: "Řidič", value: `**${userName}** (${userEmail})`, inline: true },
+                    { name: "Typ", value: type, inline: true },
+                    { name: "Termín", value: type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`, inline: false },
+                    { name: "Důvod / poznámka", value: reason, inline: false }
                 ],
                 footer: { text: "alces-as.fun" },
                 timestamp: new Date().toISOString()

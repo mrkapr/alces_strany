@@ -28,7 +28,6 @@
         .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
         .topbar .logo img { height: 34px; width: auto; display: block; }
         
-        /* Centrování textových odkazů vpravo */
         .topbar div:last-child { display: flex; align-items: center; height: 100%; }
         .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
@@ -45,32 +44,99 @@
         }
         .panel h2 { margin-top: 0; font-size: 20px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 20px; }
 
-        /* Stylování admin tabulky */
-        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        .admin-table th { padding: 12px 8px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-        .admin-table td { padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+        /* Stylování admin tabulky pro PC */
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; table-layout: fixed; }
+        .admin-table th { padding: 12px 10px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        .admin-table td { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; line-height: 1.5; }
         .admin-table tr:last-child td { border-bottom: none; }
 
-        /* Tlačítka akcí */
+        /* Šířky sloupců v tabulce za účelem vyváženého layoutu */
+        .col-driver { width: 18%; }
+        .col-type { width: 12%; }
+        .col-date { width: 16%; }
+        .col-reason { width: 28%; word-break: break-word; }
+        .col-status { width: 11%; }
+        .col-actions { width: 15%; text-align: right; }
+
+        /* Vzkaz od vedení */
+        .admin-note-box {
+            margin-top: 8px;
+            background: rgba(255, 216, 77, 0.1);
+            border-left: 3px solid #ffd84d;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #ffd84d;
+            word-break: break-word;
+        }
+
+        /* Tlačítka a vstupy */
+        .admin-note-input {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px; color: white; padding: 8px; font-size: 12px;
+            margin-bottom: 8px; display: block; width: 100%; box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        .admin-note-input:focus { outline: none; border-color: #ffd84d; }
+
+        .btn-group { display: flex; gap: 6px; justify-content: flex-end; }
+
         button {
-            font-family: 'Poppins', sans-serif; font-weight: 600; padding: 6px 12px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; padding: 8px 14px;
             border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; font-size: 12px;
         }
-        .btn-approve { background: #00b84f; color: white; margin-right: 5px; }
-        .btn-approve:hover { background: #00963f; transform: scale(1.03); }
+        .btn-approve { background: #00b84f; color: white; }
+        .btn-approve:hover { background: #00963f; transform: scale(1.02); }
         
         .btn-reject { background: #d40000; color: white; }
-        .btn-reject:hover { background: #a80000; transform: scale(1.03); }
-            .logo {
-    display: flex;
-    align-items: center;
-    }
+        .btn-reject:hover { background: #a80000; transform: scale(1.02); }
 
-.logo img {
-    height: 34px;
-    width: auto;
-    display: block;
-}
+        /* ================= MOBILNÍ RESPONSIVITA ================= */
+        @media (max-width: 768px) {
+            .topbar { top: 8px; left: 12px; right: 12px; height: 50px; padding: 0 14px; border-radius: 16px; }
+            .topbar .logo img { height: 26px; }
+            .topbar a { font-size: 13px; margin-left: 10px; }
+
+            .content { margin: 80px 14px 20px 14px; }
+            h1 { font-size: 24px; margin-bottom: 15px; }
+            .panel { padding: 16px; border-radius: 18px; }
+
+            /* Převod tabulky na responzivní karty na mobilním zařízení */
+            .admin-table, .admin-table thead, .admin-table tbody, .admin-table th, .admin-table td, .admin-table tr {
+                display: block; width: 100%; box-sizing: border-box;
+            }
+            .admin-table thead { display: none; } /* Skryjeme hlavičku tabulky */
+            
+            .admin-table tr {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 14px;
+                padding: 14px;
+                margin-bottom: 14px;
+            }
+            
+            .admin-table td {
+                padding: 6px 0;
+                border: none;
+                display: flex;
+                flex-direction: column;
+                text-align: left !important;
+            }
+            
+            .admin-table td::before {
+                content: attr(data-label);
+                font-size: 11px;
+                text-transform: uppercase;
+                color: #ffd84d;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                margin-bottom: 2px;
+            }
+
+            .admin-note-input { font-size: 13px; padding: 10px; margin-top: 4px; }
+            .btn-group { justify-content: stretch; width: 100%; margin-top: 6px; }
+            .btn-group button { flex: 1; padding: 10px; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
@@ -90,19 +156,19 @@
 <div id="error-screen">Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy.</div>
 
 <div class="content" id="mainContent">
-    <h1>Přehled a schvalování žádostí o volno</h1>
+    <h1>Správa absencí</h1>
     
     <div class="panel">
         <h2>Čekající a vyřízené žádosti zaměstnanců</h2>
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Jméno řidiče</th>
-                    <th>Typ</th>
-                    <th>Termín absence</th>
-                    <th>Důvod / Poznámka</th>
-                    <th>Stav žádosti</th>
-                    <th style="text-align: right;">Akce</th>
+                    <th class="col-driver">Jméno řidiče</th>
+                    <th class="col-type">Typ</th>
+                    <th class="col-date">Termín absence</th>
+                    <th class="col-reason">Důvod / Poznámka</th>
+                    <th class="col-status">Stav žádosti</th>
+                    <th class="col-actions">Akce</th>
                 </tr>
             </thead>
             <tbody id="adminAbsenceList">
@@ -148,7 +214,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// 🚀 POMOCNÁ FUNKCE: Převede text "2026-06" na "Červen 2026" pro přehlednost v tabulce
 function formatMonthHTML(monthString) {
     if (!monthString) return "";
     const [year, month] = monthString.split("-");
@@ -188,26 +253,39 @@ async function loadAllAbsences() {
             let actionButtons = "";
             if (reqData.status === "ceka") {
                 actionButtons = `
-                    <input type="text" id="note-${reqId}" placeholder="Vzkaz řidiči (nepovinné)..." style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; padding: 5px; font-size: 11px; margin-bottom: 5px; display: block; width: 150px; font-family: sans-serif;">
-                    <button class="btn-approve" data-id="${reqId}">Schválit ✓</button>
-                    <button class="btn-reject" data-id="${reqId}">Zamítnout ✕</button>
+                    <input type="text" id="note-${reqId}" class="admin-note-input" placeholder="Vzkaz řidiči (nepovinné)...">
+                    <div class="btn-group">
+                        <button class="btn-approve" data-id="${reqId}">Schválit ✓</button>
+                        <button class="btn-reject" data-id="${reqId}">Zamítnout ✕</button>
+                    </div>
                 `;
             } else {
-                actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>${reqData.adminNote ? `<br><span style="font-size:11px; color:#ffd84d;">Vzkaz: ${reqData.adminNote}</span>` : ""}`;
+                actionButtons = `<span style="opacity:0.4; font-size:12px;">Vyřízeno</span>`;
             }
 
-            // 🚀 OPRAVA ČTENÍ MĚSÍCŮ: Voláme naši novou funkci místo padajícího "new Date()"
             const mFrom = formatMonthHTML(reqData.from);
             const mTo = formatMonthHTML(reqData.to);
+            const reasonText = reqData.reason || "-";
+
+            // Pokud existuje vzkaz od vedení, přiložíme ho přímo pod důvod
+            const adminNoteHtml = reqData.adminNote 
+                ? `<div class="admin-note-box"><strong>Vzkaz:</strong> ${reqData.adminNote}</div>` 
+                : "";
 
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td><strong>${reqData.userName || "Neznámý řidič"}</strong><br><span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span></td>
-                <td style="font-weight: 600;">${reqData.type}</td>
-                <td>${reqData.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
-                <td style="opacity: 0.9; max-width: 250px; word-wrap: break-word;">${reqData.reason || "-"}</td>
-                <td>${statusBadge}</td>
-                <td style="text-align: right; white-space: nowrap;">${actionButtons}</td>
+                <td data-label="Jméno řidiče" class="col-driver">
+                    <strong>${reqData.userName || "Neznámý řidič"}</strong><br>
+                    <span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span>
+                </td>
+                <td data-label="Typ" class="col-type" style="font-weight: 600;">${reqData.type}</td>
+                <td data-label="Termín" class="col-date">${reqData.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
+                <td data-label="Důvod / Poznámka" class="col-reason">
+                    ${reasonText}
+                    ${adminNoteHtml}
+                </td>
+                <td data-label="Stav" class="col-status">${statusBadge}</td>
+                <td data-label="Akce" class="col-actions">${actionButtons}</td>
             `;
 
             if (reqData.status === "ceka") {
@@ -250,16 +328,14 @@ function upravFaviconuPodleRezimu() {
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+        favicon.href = 'fotky/univ/favicon.png';
     } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+        favicon.href = 'fotky/univ/favicon-cerna.png';
     }
 }
 
 upravFaviconuPodleRezimu();
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
-</script>
 </script>
 </body>
 </html>

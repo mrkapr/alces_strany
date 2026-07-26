@@ -1357,7 +1357,7 @@ Načítám...
     </div>
 
     <div class="announcements-box" style="flex: 0.6; min-width: 240px; margin-top: 0;">
-        <div class="announcements-title" style="color: #ffd84d;">🔗 Odkazy</div>
+        <div class="announcements-title" style="color: #ffd84d;">Odkazy</div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 15px;">
             
@@ -1433,8 +1433,8 @@ if (!username || !rank || !rankName) {
     const nameZk = document.getElementById("name-zk");
     const rankZk = document.getElementById("rank-zk");
 
-if(nameZk) nameZk.innerText = username;
-if(rankZk) rankZk.innerText = rankName;
+    if(nameZk) nameZk.innerText = username;
+    if(rankZk) rankZk.innerText = rankName;
 
     showRankContent(rank);
     showRankMenu(rank);
@@ -1442,18 +1442,18 @@ if(rankZk) rankZk.innerText = rankName;
 
 function showRankContent(rank) {
     const allRankElements = document.querySelectorAll(
-    ".rank-zkusebni-ridic, .rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management, .rank-majitel"
-);
+        ".rank-zkusebni-ridic, .rank-ridic, .rank-zaslouzily-ridic, .rank-team-manager, .rank-dispecer, .rank-provozni-reditel, .rank-management, .rank-majitel"
+    );
 
     allRankElements.forEach(element => {
         element.style.display = "none";
     });
 
-if (rank === "zkusebni-ridic") {
-    document.querySelectorAll(".rank-zkusebni-ridic").forEach(element => {
-        element.style.display = "inline-block";
-    });
-}
+    if (rank === "zkusebni-ridic") {
+        document.querySelectorAll(".rank-zkusebni-ridic").forEach(element => {
+            element.style.display = "inline-block";
+        });
+    }
 
     if (rank === "ridic") {
         document.querySelectorAll(".rank-ridic").forEach(element => {
@@ -1499,16 +1499,16 @@ if (rank === "zkusebni-ridic") {
 }
 
 function showRankMenu(rank) {
-const rankLevels = {
-    "zkusebni-ridic": 1,
-    "ridic": 2,
-    "zasloužily-ridic": 3,
-    "team-manager": 4,
-    "dispecer": 5,
-    "provozni-reditel": 6,
-    "management": 7,
-    "majitel": 8
-};
+    const rankLevels = {
+        "zkusebni-ridic": 1,
+        "ridic": 2,
+        "zasloužily-ridic": 3,
+        "team-manager": 4,
+        "dispecer": 5,
+        "provozni-reditel": 6,
+        "management": 7,
+        "majitel": 8
+    };
 
     document.querySelectorAll("[data-min-rank]").forEach(element => {
         const minRank = element.dataset.minRank;
@@ -1521,22 +1521,12 @@ const rankLevels = {
     });
 }
 
-function logout() {
-    localStorage.removeItem("username");
-    localStorage.removeItem("rank");
-    localStorage.removeItem("rankName");
-    window.location.href = "index.html";
-}
-
 const topbar = document.querySelector(".topbar");
 
 topbar.addEventListener("mousemove", (e) => {
-
     const rect = topbar.getBoundingClientRect();
-
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     topbar.style.setProperty("--mouse-x", `${x}px`);
     topbar.style.setProperty("--mouse-y", `${y}px`);
 });
@@ -1556,10 +1546,12 @@ function toggleSidebar() {
 }
 </script>
 
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+// 🚀 OPRAVA: Přidán import signOut pro správné ukončení relace
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
@@ -1583,17 +1575,12 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         userEmail = user.email; 
         
-        // Načteme obsah pro řidiče
         await loadMentor();
         await loadAnnouncements();
-        // 🚀 NOVÉ: Načteme nepotvrzená hlášení z dílen
         await loadUnconfirmedWorkshopLogs(user.email);
 
-        // Zviditelníme plovoucí tlačítko správy pouze pro vedení firmy
         const userRank = localStorage.getItem("rank") || "";
-        // 🚀 KONTROLA PRO ZKUŠEBNÍ ŘIDIČE:
         if (userRank === "zkusebni-ridic") {
-            // Najdeme všechna 4 tlačítka se společnou třídou a kompletně je vymažeme z toku stránky
             const tlacitkaKeSchovani = document.querySelectorAll(".ridici");
             tlacitkaKeSchovani.forEach(btn => {
                 btn.style.display = "none";
@@ -1607,6 +1594,29 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
+
+// 🚀 OPRAVENÁ FUNKCE PRO ODHLÁŠENÍ: Navázána na globální okno (window.logout), aby fungovala z HTML tlačítek
+window.logout = async function() {
+    try {
+        // 1. Odhlásíme uživatele natvrdo z Firebase
+        await signOut(auth);
+        
+        // 2. Kompletně vyčistíme interní paměť prohlížeče
+        localStorage.removeItem("username");
+        localStorage.removeItem("rank");
+        localStorage.removeItem("rankName");
+        localStorage.removeItem("email");
+        localStorage.removeItem("uid");
+        localStorage.removeItem("mentorId");
+
+        // 3. Přesměrujeme na úvodní index.html
+        window.location.href = "index.html";
+    } catch (err) {
+        console.error("Chyba při odhlašování z Firebase:", err);
+        alert("Odhlášení se nezdařilo: " + err.message);
+    }
+};
+
 async function loadMentor() {
     if (mentorId) {
         try {
@@ -1630,7 +1640,6 @@ async function loadMentor() {
     }
 }
 
-// 🚀 KLÍČOVÁ OPRAVA: Klasické načítání oznámení pro uživatele (nahrazeno za nefunkční admin verzi)
 async function loadAnnouncements() {
     const listContainer = document.getElementById("announcementsList");
     if (!listContainer) return;
@@ -1673,8 +1682,8 @@ async function loadAnnouncements() {
             div.innerHTML = `
                 <h3>${annData.title || "Bez nadpisu"}</h3>
                 <div class="announcement-meta" style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">
-                    ${dateString ? `<span>📅 ${dateString}</span>` : ""}
-                    ${annData.author ? `<span style="margin-left: 12px;">👤 Publikoval: <strong>${annData.author}</strong></span>` : ""}
+                    ${dateString ? `<span>${dateString}</span>` : ""}
+                    ${annData.author ? `<span style="margin-left: 12px;">Publikoval: <strong>${annData.author}</strong></span>` : ""}
                 </div>
                 <p>${annData.text || ""}</p>
                 <div class="announcement-footer"></div>
@@ -1695,10 +1704,8 @@ async function loadAnnouncements() {
                         return;
                     }
                     
-                    // Pokud už se zpracovává, nepustíme akci dál
                     if (btn.disabled) return;
                     
-                    // Okamžitě uzamkneme tlačítko a změníme text
                     btn.disabled = true;
                     btn.innerText = "Zpracovávám...";
 
@@ -1710,8 +1717,6 @@ async function loadAnnouncements() {
                     } catch (err) {
                         console.error(err);
                         alert("Nepodařilo se potvrdit: " + err.message);
-                        
-                        // V případě chyby tlačítko vrátíme zpět
                         btn.disabled = false;
                         btn.innerText = "Potvrdit přečtení";
                     }
@@ -1732,7 +1737,6 @@ async function loadAnnouncements() {
     }
 }
 
-// 🛠️ NAČTENÍ NEPOTVRZENÝCH HLÁŠENÍ Z DÍLEN (ZPRAVA OD OZNÁMENÍ)
 async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
     const container = document.getElementById("workshopAlertsContainer");
     const wholeBox = document.getElementById("workshopAlertsBox");
@@ -1751,7 +1755,6 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
             const logId = item.id;
             const logData = item.data;
 
-            // Kontrola, zda řidič již nepotvrdil
             const alreadyConfirmed = logData.confirmedBy && logData.confirmedBy.includes(currentUserEmail);
 
             if (!alreadyConfirmed) {
@@ -1763,7 +1766,6 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
                     dateString = d.toLocaleDateString("cs-CZ") + " v " + d.toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
                 }
 
-                // Vytvoříme prvek se třídou "announcement", aby vizuál 1:1 seděl
                 const div = document.createElement("div");
                 div.className = "announcement";
                 div.innerHTML = `
@@ -1778,7 +1780,6 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
                     </div>
                 `;
 
-                // Reakce na kliknutí
                 div.querySelector(".btn-confirm-workshop").addEventListener("click", async (e) => {
                     e.target.innerText = "Zpracovávám...";
                     await confirmWorkshopLog(logId, currentUserEmail);
@@ -1788,7 +1789,6 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
             }
         });
 
-        // 🚀 VYCHYTÁVKA: Pokud nemá žádnou nepřečtenou zprávu z dílen, celý pravý box se schová a levý box se roztáhne na celou šířku!
         if (unconfirmedCount > 0) {
             wholeBox.style.display = "block";
         } else {
@@ -1800,7 +1800,6 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
     }
 }
 
-// 🚀 ZÁPIS POTVRZENÍ
 async function confirmWorkshopLog(logId, userEmail) {
     try {
         const logRef = doc(db, "workshop_logs", logId);
@@ -1820,14 +1819,13 @@ function upravFaviconuPodleRezimu() {
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+        favicon.href = 'fotky/univ/favicon.png';
     } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+        favicon.href = 'fotky/univ/favicon-cerna.png';
     }
 }
 
 upravFaviconuPodleRezimu();
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 
