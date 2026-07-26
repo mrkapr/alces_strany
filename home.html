@@ -1352,7 +1352,7 @@ Načítám...
     </div>
 
     <div id="workshopAlertsBox" class="announcements-box" style="flex: 1.2; min-width: 300px; margin-top: 0; display: none;">
-        <div class="announcements-title" style="color: #ffd84d;">📢 Aktuální úpravy z dílen</div>
+        <div class="announcements-title" style="color: #ffd84d;">Dílny</div>
         <div id="workshopAlertsContainer"></div>
     </div>
 
@@ -1771,8 +1771,8 @@ async function loadUnconfirmedWorkshopLogs(currentUserEmail) {
                 div.innerHTML = `
                     <h3>${logData.title}</h3>
                     <div class="announcement-meta" style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">
-                        <span>📅 ${dateString}</span>
-                        <span style="margin-left: 12px;">🛠️ Zadal: <strong>${logData.author}</strong></span>
+                        <span>${dateString}</span>
+                        <span style="margin-left: 12px;">Zadal: <strong>${logData.author}</strong></span>
                     </div>
                     <p>${logData.text}</p>
                     <div class="announcement-footer" style="display: flex; justify-content: flex-end; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
