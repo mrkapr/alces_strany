@@ -62,14 +62,12 @@
             letter-spacing: -0.2px; 
         }     
         
-        /* 🚀 STICKY PRVNÍ SLOUPEC S NEPRŮHLEDNÝM POZADÍM (ČÍSLA NEPROSVÍTAJÍ) */
         th:first-child, td:first-child {
             position: sticky; left: 0; z-index: 10; 
             font-weight: 700; text-align: left; padding-left: 15px; min-width: 80px;
             font-family: 'Poppins', Arial, sans-serif !important;
         }
 
-        /* Barevná neprůhledná pozadí pro 1. sloupec OČ */
         .oc-majitel { background-color: #2e1214 !important; color: #ff4d4d !important; border-left: 4px solid #ff4d4d; }
         .oc-majitel-polovicni-uvazek { background-color: #2b1819 !important; color: #ff7676 !important; border-left: 4px solid #ff7676; }
         .oc-provozni { background-color: #2b2812 !important; color: #fdec00 !important; border-left: 4px solid #fdec00; }
@@ -90,11 +88,7 @@
         .total-row td { background: rgba(0,0,0,0.6) !important; color: #ffd84d; font-weight: 700; border-top: 2px solid rgba(255,255,255,0.15); }
         .cell-total-column { background: rgba(255,255,255,0.05); font-weight: 700; color: #ffd84d; }
 
-        /* 🚀 ANIMOVANÉ ZVÝRAZNĚNÍ S PŘECHODEM (FADE) BEZ ZMĚNY BARVY KM */
-        tr {
-            transition: all 0.25s ease-in-out;
-        }
-
+        tr { transition: all 0.25s ease-in-out; }
         tr.my-profile-highlight {
             outline: 2px solid #ffd84d;
             outline-offset: -2px;
@@ -293,6 +287,31 @@ function smartSortOc(a, b) {
     return parseInt(cleanA || 999999) - parseInt(cleanB || 999999);
 }
 
+// Bezpečné zjištění klíče měsíce (přečte text i Timestamp bez pádů)
+function ziskejMesicKlic(data) {
+    if (data.dateText && typeof data.dateText === "string") {
+        const clean = data.dateText.replace(/\s+/g, '');
+        const parts = clean.split('.');
+        if (parts.length >= 3) {
+            const mon = parseInt(parts[1], 10);
+            const yr = parseInt(parts[2], 10);
+            if (!isNaN(mon) && !isNaN(yr) && yr > 2000) {
+                return `${yr}-${String(mon).padStart(2, '0')}`;
+            }
+        }
+    }
+    if (data.archiveMonth) return data.archiveMonth;
+    if (data.createdAt) {
+        try {
+            let cd = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+            if (!isNaN(cd.getTime())) {
+                return `${cd.getFullYear()}-${String(cd.getMonth() + 1).padStart(2, '0')}`;
+            }
+        } catch(e) {}
+    }
+    return "";
+}
+
 async function buildOverallDashboard() {
     try {
         const indexAktualnihoMesice = sledovaneMesice.indexOf(aktualniMesicKlic);
@@ -465,45 +484,71 @@ async function buildOverallDashboard() {
             }
         });
 
+        // 🚀 1. NAČTENÍ Z ARCHIVU (Pro minulé / archivované měsíce)
         const archiveSnapshot = await getDocs(collection(db, "ridici_archivy"));
         archiveSnapshot.forEach(docSnap => {
+            const docId = docSnap.id;
             const data = docSnap.data();
-            const email = String(data.userEmail || "").toLowerCase().trim();
-            const mStr = data.archiveMonth;
-            
-            const rInfo = ridiciMap[email];
-            
-            if (rInfo && mStr) {
-                const oc = rInfo.oc; 
-                if (matrix[oc] && matrix[oc][mStr]) {
-                    const status = data.statusText || "";
-                    if (status === "/" || status === "X" || status === "!" || status === "?") {
-                        matrix[oc][mStr] = { type: "status", val: status };
-                    } else if (data.najetoKm !== undefined) {
-                        if (matrix[oc][mStr].type !== "km") matrix[oc][mStr] = { type: "km", val: 0 };
-                        matrix[oc][mStr].val += parseFloat(data.najetoKm || 0);
+
+            let oc = "";
+            let mStr = "";
+
+            if (docId.includes("_")) {
+                const parts = docId.split("_");
+                oc = parts[0].toUpperCase().trim();
+                mStr = parts[1].trim();
+            }
+
+            if (!oc) {
+                oc = String(data.oc || data.osobniCislo || data.osobni_cislo || "").toUpperCase().trim();
+            }
+            if (!oc && data.userEmail) {
+                const email = String(data.userEmail).toLowerCase().trim();
+                if (ridiciMap[email]) oc = ridiciMap[email].oc;
+            }
+
+            if (!mStr) {
+                mStr = ziskejMesicKlic(data);
+            }
+
+            if (oc && mStr && matrix[oc] && matrix[oc][mStr]) {
+                const status = String(data.statusText || "").trim();
+                if (status === "/" || status === "X" || status === "!" || status === "?") {
+                    matrix[oc][mStr] = { type: "status", val: status };
+                } else if (data.najetoKm !== undefined && data.najetoKm !== null) {
+                    let cisteKm = 0;
+                    if (typeof data.najetoKm === "object") {
+                        cisteKm = parseFloat(data.najetoKm.najetoKm || data.najetoKm.celkem || 0);
+                    } else {
+                        cisteKm = parseFloat(data.najetoKm || 0);
                     }
+                    if (matrix[oc][mStr].type !== "km") matrix[oc][mStr] = { type: "km", val: 0 };
+                    matrix[oc][mStr].val += cisteKm;
                 }
             }
         });
 
+        // 🚀 2. NAČTENÍ AKTIVNÍCH VÝKAZŮ (DZVA)
         const dzvaSnapshot = await getDocs(collection(db, "dzva"));
         dzvaSnapshot.forEach(docSnap => {
             const data = docSnap.data();
-            const email = (data.userEmail || "").toLowerCase();
-            const rInfo = ridiciMap[email];
+            const email = (data.userEmail || "").toLowerCase().trim();
             
-            if (rInfo && data.createdAt) {
-                const cDate = data.createdAt.toDate();
-                const mStr = `${cDate.getFullYear()}-${String(cDate.getMonth() + 1).padStart(2, '0')}`;
-                
-                if (matrix[rInfo.oc] && matrix[rInfo.oc][mStr]) {
-                    if (matrix[rInfo.oc][mStr].type !== "km") {
-                        matrix[rInfo.oc][mStr] = { type: "km", val: 0 };
+            // Hledání OČ (primárně podle účtu, sekundárně z dat)
+            let oc = ridiciMap[email] ? ridiciMap[email].oc : String(data.oc || data.osobniCislo || "").toUpperCase().trim();
+            
+            // Zjištění měsíce
+            let mStr = ziskejMesicKlic(data);
+
+            if (oc && mStr && matrix[oc] && matrix[oc][mStr]) {
+                // Přičteme do příslušného měsíce
+                if (matrix[oc][mStr].type !== "status") {
+                    if (matrix[oc][mStr].type !== "km") {
+                        matrix[oc][mStr] = { type: "km", val: 0 };
                     }
                     const zaklad = parseFloat(data.najetoKm || 0);
                     const bonus = parseFloat(data.bonusKm || 0);
-                    matrix[rInfo.oc][mStr].val += (zaklad + bonus);
+                    matrix[oc][mStr].val += (zaklad + bonus);
                 }
             }
         });

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivace & Promazání výkazů | alces, a. s.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        h1 { color: #ffd84d; font-size: 22px; margin-bottom: 10px; }
+        p { font-size: 13px; opacity: 0.8; line-height: 1.6; margin-bottom: 20px; }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label { font-size: 12px; opacity: 0.7; display: block; margin-bottom: 5px; }
+        input {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: #1a1a1a; color: white; box-sizing: border-box; font-family: inherit;
+        }
+
+        .btn-group { display: flex; gap: 10px; flex-direction: column; }
+
+        .btn {
+            background: #ffd84d; color: #121212; border: none; padding: 12px 20px;
+            border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;
+            transition: all 0.2s; width: 100%;
+        }
+        .btn:hover { background: #ffe280; }
+        .btn-danger { background: #ff4d4d; color: white; }
+        .btn-danger:hover { background: #ff6666; }
+        .btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+        #log { margin-top: 20px; font-size: 12px; font-family: monospace; color: #00ff66; text-align: left; max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>📦 Uzávěrka a Úklid Výkazů</h1>
+    <p>Spočítá kilometry z denních výkazů (DZVA), uloží čistý součet do archivu a následně smaže denní výkazy z databáze.</p>
+
+    <div class="form-group">
+        <label for="targetMonth">Měsíc k archivaci (RRRR-MM):</label>
+        <input type="text" id="targetMonth" value="2025-04" placeholder="např. 2025-04">
+    </div>
+
+    <div class="btn-group">
+        <button class="btn" id="archiveBtn" onclick="archivovatKm()">1. Spočítat a Uložit do Archívu</button>
+        <button class="btn btn-danger" id="deleteBtn" onclick="smazatVykazyDzva()">2. Smazat Denní Výkazy (DZVA)</button>
+    </div>
+
+    <div id="log"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        document.getElementById("log").innerText = "⚠️ Musíš být přihlášený v prohlížeči!";
+        document.querySelectorAll("button").forEach(b => b.disabled = true);
+    }
+});
+
+// 1. KROK: Spočítá km z DZVA a uloží je jako čisté číslo do ridici_archivy
+window.archivovatKm = async function() {
+    const log = document.getElementById("log");
+    const month = document.getElementById("targetMonth").value.trim();
+    if (!month) return alert("Zadej měsíc!");
+
+    log.innerText = `🔄 Spočítávám výkazy pro měsíc ${month}...\n`;
+
+    try {
+        // Načteme uživatele (abychom znali jejich OČ)
+        const usersSnap = await getDocs(collection(db, "users"));
+        let userOcMap = {};
+        usersSnap.forEach(u => {
+            const data = u.data();
+            const email = u.id.toLowerCase();
+            const oc = String(data.oc || data.osobniCislo || "").toUpperCase().trim();
+            if (oc) userOcMap[email] = oc;
+        });
+
+        // Načteme všechny DZVA výkazy
+        const dzvaSnap = await getDocs(collection(db, "dzva"));
+        let souctyKm = {}; // { email: km }
+
+        dzvaSnap.forEach(dDoc => {
+            const data = dDoc.data();
+            const email = (data.userEmail || "").toLowerCase().trim();
+            if (!email) return;
+
+            // Zkontrolujeme datum vytvoření
+            let docMonth = "";
+            if (data.createdAt) {
+                const date = data.createdAt.toDate();
+                docMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            }
+
+            // Pokud výkaz patří do cílového měsíce
+            if (docMonth === month) {
+                const najeto = parseFloat(data.najetoKm || 0) + parseFloat(data.bonusKm || 0);
+                souctyKm[email] = (souctyKm[email] || 0) + najeto;
+            }
+        });
+
+        // Uložíme součty do ridici_archivy
+        let zapisPocet = 0;
+        for (const [email, totalKm] of Object.entries(souctyKm)) {
+            const oc = userOcMap[email] || email;
+            const docId = `${oc}_${month}`;
+            
+            await setDoc(doc(db, "ridici_archivy", docId), {
+                userEmail: email,
+                oc: oc,
+                archiveMonth: month,
+                najetoKm: Math.round(totalKm),
+                updatedAt: new Date()
+            }, { merge: true });
+
+            log.innerText += `✓ Uloženo: ${oc} -> ${Math.round(totalKm)} km\n`;
+            zapisPocet++;
+        }
+
+        log.innerText += `\n✅ Archivace dokončena! Uloženo ${zapisPocet} řidičů.\nNyní můžeš bezpečně smazat denní výkazy tlačítkem níže.`;
+    } catch (err) {
+        log.innerText += `\n❌ Chyba: ${err.message}`;
+    }
+};
+
+// 2. KROK: Vymaže denní výkazy DZVA z databáze
+window.smazatVykazyDzva = async function() {
+    const month = document.getElementById("targetMonth").value.trim();
+    if (!confirm(`Opravdu chceš SMAZAT všechny denní výkazy (DZVA) pro měsíc ${month}? Ujisti se, že jsi je nejdříve archivoval!`)) return;
+
+    const log = document.getElementById("log");
+    log.innerText += `\n🗑️ Mažu denní výkazy pro ${month}...\n`;
+
+    try {
+        const dzvaSnap = await getDocs(collection(db, "dzva"));
+        let smazanoPocet = 0;
+
+        for (const dDoc of dzvaSnap.docs) {
+            const data = dDoc.data();
+            let docMonth = "";
+            
+            if (data.createdAt) {
+                const date = data.createdAt.toDate();
+                docMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            }
+
+            // Smažeme výkazy odpovídající danému měsíci
+            if (docMonth === month || !docMonth) {
+                await deleteDoc(doc(db, "dzva", dDoc.id));
+                smazanoPocet++;
+            }
+        }
+
+        log.innerText += `\n🔥 HOTOVO! Smazáno ${smazanoPocet} denních výkazů. Databáze je čistá!`;
+    } catch (err) {
+        log.innerText += `\n❌ Chyba při mazání: ${err.message}`;
+    }
+};
+</script>
+</body>
+</html>

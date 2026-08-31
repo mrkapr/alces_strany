@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centrální Správa | alces, a. s.</title>
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js pro vykreslení křivky -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+            background: #121212;
+            min-height: 100vh;
+            color: white;
+        }
+
+        button { font-family: 'Poppins', Arial, sans-serif; }
+
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            box-sizing: border-box;
+        }
+        .topbar .logo { display: flex; align-items: center; height: 100%; }
+        .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        .topbar div:last-child { display: flex; align-items: center; height: 100%; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
+        .topbar a:hover { color: #ffd84d; }
+
+        .content { margin: 120px 40px 40px 40px; }
+
+        .header-title { margin-bottom: 25px; }
+        .header-title h1 { font-size: 32px; font-weight: 700; margin: 0 0 6px 0; color: #ffd84d; }
+        .header-title p { margin: 0; font-size: 14px; opacity: 0.6; }
+
+        /* 📊 KARTY STATISTIK */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 18px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-card .label { font-size: 12px; opacity: 0.7; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .stat-card .val { font-size: 28px; font-weight: 700; font-family: 'Inter', sans-serif; margin-top: 8px; color: #fff; }
+        .stat-card.alert { border-color: rgba(255, 77, 77, 0.4); background: rgba(255, 77, 77, 0.08); }
+        .stat-card.alert .val { color: #ff6666; }
+        .stat-card.alert .label { color: #ff9999; }
+        .stat-card.success .val { color: #00ff66; }
+
+        /* 📈 KARTA S GRAFEM */
+        .chart-panel {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 35px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .chart-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffd84d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-toggle-group {
+            display: flex;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px;
+            border-radius: 12px;
+            gap: 6px;
+        }
+
+        .btn-toggle {
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle.active {
+            background: #ffd84d;
+            color: #121212;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* 🧭 ROZCESTNÍK SPRÁVY */
+        .section-heading {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .nav-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(15px);
+            position: relative;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-4px);
+            border-color: #ffd84d;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 15px 35px rgba(255, 216, 77, 0.15);
+        }
+
+        .nav-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .nav-card-icon { font-size: 32px; }
+        .nav-card-badge {
+            background: rgba(255, 77, 77, 0.2);
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .nav-card-badge.ok {
+            background: rgba(0, 255, 102, 0.15);
+            color: #00ff66;
+            border-color: #00ff66;
+        }
+
+        .nav-card h3 { margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #fff; }
+        .nav-card p { margin: 0; font-size: 13px; opacity: 0.7; line-height: 1.5; }
+        
+        .nav-card-action {
+            margin-top: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffd84d;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #auth-guard {
+            display: none;
+            text-align: center;
+            margin-top: 150px;
+            font-size: 18px;
+            color: #ff4d4d;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .topbar { top: 8px; left: 12px; right: 12px; height: 50px; padding: 0 14px; border-radius: 16px; }
+            .topbar .logo img { height: 26px; }
+            .content { margin: 85px 16px 25px 16px; }
+            .header-title h1 { font-size: 24px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card { padding: 14px; border-radius: 16px; }
+            .stat-card .val { font-size: 20px; }
+            .chart-panel { padding: 16px; border-radius: 18px; }
+            .chart-wrapper { height: 220px; }
+            .nav-grid { grid-template-columns: 1fr; gap: 14px; }
+            .nav-card { padding: 18px; border-radius: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">
+        <a href="home.html">
+            <img src="fotky/univ/logo.png" alt="alces">
+        </a>
+    </div>
+    <div>
+        <a href="home.html">Domů</a>
+    </div>
+</div>
+
+<div id="auth-guard">Ověřuji autorizaci vlastníka firmy...</div>
+
+<div class="content" id="dashboardContent" style="display: none;">
+    <div class="header-title">
+        <h1>Centrála Správy & Řízení</h1>
+        <p>Kompletní přehled, živé statistiky a rychlý přístup ke všem modulům alces, a. s.</p>
+    </div>
+
+    <!-- 📊 RYCHLÝ PŘEHLED STATISTIK -->
+    <div class="stats-grid">
+        <div class="stat-card" id="cardPendingAssignments">
+            <div class="label">Žádosti o přidělení</div>
+            <div class="val" id="statPendingAssignments">...</div>
+        </div>
+        <div class="stat-card" id="cardPendingAbsences">
+            <div class="label">Čekající omluvenky</div>
+            <div class="val" id="statPendingAbsences">...</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Aktivní uživatelé</div>
+            <div class="val" id="statTotalDrivers">...</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">Výkazy tento měsíc</div>
+            <div class="val" id="statMonthDzva">...</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Km tento měsíc</div>
+            <div class="val" id="statMonthKm">...</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Vozový park</div>
+            <div class="val" id="statTotalVehicles">...</div>
+        </div>
+    </div>
+
+    <!-- 📈 KŘIVKA VÝVOJE KILOMETRŮ -->
+    <div class="chart-panel">
+        <div class="chart-header">
+            <h2>Statistiky</h2>
+            <div class="chart-toggle-group">
+                <button class="btn-toggle active" id="btnModeDays" onclick="switchChartMode('days')">Tento měsíc (dny)</button>
+                <button class="btn-toggle" id="btnModeMonths" onclick="switchChartMode('months')">Trend (měsíce)</button>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="kmChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 🧭 CENTRÁLNÍ ROZCESTNÍK SPRÁVY -->
+    <div class="section-heading">Moduly</div>
+    <div class="nav-grid">
+        
+        <!-- 📢 SPRÁVA OZNÁMENÍ -->
+        <a href="announcements.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">📢</div>
+                <div class="nav-card-badge ok" id="badgeAnnouncements">Aktivní</div>
+            </div>
+            <h3>Správa oznámení</h3>
+            <p>Vytváření, úprava a mazání hlavních provozních a interních oznámení pro zaměstnance.</p>
+            <div class="nav-card-action">Spravovat oznámení →</div>
+        </a>
+
+        <!-- ⏸️ SPRÁVA ABSENCÍ -->
+        <a href="absence.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">⏸️</div>
+                <div class="nav-card-badge" id="badgeAbsences">0 čeká</div>
+            </div>
+            <h3>Správa absencí</h3>
+            <p>Přehled nahlášených omluvenek, schvalování dovolených, nemocenských a provozních pauz.</p>
+            <div class="nav-card-action">Spravovat absence →</div>
+        </a>
+
+        <!-- 🛠️ SPRÁVA DÍLEN -->
+        <a href="dilna.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">🛠️</div>
+                <div class="nav-card-badge ok">Provoz</div>
+            </div>
+            <h3>Správa dílen</h3>
+            <p>Servisní kniha, hlášení technických závad, záznamy oprav a údržba vozového parku.</p>
+            <div class="nav-card-action">Otevřít dílnu →</div>
+        </a>
+
+        <!-- 📝 SPRÁVA VÝKAZŮ -->
+        <a href="vykazy.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">📝</div>
+                <div class="nav-card-badge ok" id="badgeDzva">Evidence</div>
+            </div>
+            <h3>Správa výkazů</h3>
+            <p>Denní záznamy o výkonu autobusů (DZVA), historie odjetých směn a kilometrická data.</p>
+            <div class="nav-card-action">Přejít na výkazy →</div>
+        </a>
+
+        <!-- 🚍 SPRÁVA PŘIDĚLENEK -->
+        <a href="schvalovani-pridelenek.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">🚍</div>
+                <div class="nav-card-badge" id="badgeAssignments">0 čeká</div>
+            </div>
+            <h3>Správa přidělenek</h3>
+            <p>Schvalování žádostí řidičů o stálé vozy a správa obsazení vozového parku.</p>
+            <div class="nav-card-action">Schvalovat přidělení →</div>
+        </a>
+
+        <!-- 👥 SPRÁVA UŽIVATELŮ -->
+        <a href="users.html" class="nav-card">
+            <div class="nav-card-top">
+                <div class="nav-card-icon">👥</div>
+                <div class="nav-card-badge ok" id="badgeUsers">Databáze</div>
+            </div>
+            <h3>Správa uživatelů</h3>
+            <p>Evidence řidičů a vedení, nastavování hodností, osobních čísel a přístupových práv.</p>
+            <div class="nav-card-action">Spravovat uživatele →</div>
+        </a>
+
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 🔒 Omezení přístupu pouze pro tebe
+const OWNER_EMAIL = "ytkapr@gmail.com";
+
+let kmChartInstance = null;
+let chartDataDays = { labels: [], values: [] };
+let chartDataMonths = { labels: [], values: [] };
+
+onAuthStateChanged(auth, async (user) => {
+    if (user && user.email.toLowerCase() === OWNER_EMAIL) {
+        document.getElementById("dashboardContent").style.display = "block";
+        document.getElementById("auth-guard").style.display = "none";
+        await loadLiveStatsAndChart();
+    } else {
+        const guard = document.getElementById("auth-guard");
+        guard.innerText = "⛔ Přístup odepřen. Tato sekce je určena výhradně pro majitele.";
+        guard.style.display = "block";
+    }
+});
+
+async function loadLiveStatsAndChart() {
+    const now = new Date();
+    const currentMonthIdx = now.getMonth();
+    const currentYearIdx = now.getFullYear();
+
+    try {
+        // 1. Žádosti o přidělení aut
+        const assignSnap = await getDocs(collection(db, "assignments"));
+        let pendingAssignCount = 0;
+        assignSnap.forEach(doc => {
+            const data = doc.data();
+            const requests = data.pendingRequests || [];
+            pendingAssignCount += requests.length;
+        });
+
+        const statAssignEl = document.getElementById("statPendingAssignments");
+        const badgeAssignEl = document.getElementById("badgeAssignments");
+        const cardAssignEl = document.getElementById("cardPendingAssignments");
+        
+        statAssignEl.innerText = pendingAssignCount;
+        badgeAssignEl.innerText = `${pendingAssignCount} žádostí`;
+        if (pendingAssignCount > 0) {
+            cardAssignEl.classList.add("alert");
+            badgeAssignEl.classList.remove("ok");
+        } else {
+            badgeAssignEl.classList.add("ok");
+        }
+
+        // 2. Omluvenky čekající na schválení
+        let pendingAbsenceCount = 0;
+        try {
+            const absSnap = await getDocs(collection(db, "absences"));
+            absSnap.forEach(d => {
+                const status = (d.data().status || "").toLowerCase();
+                if (status === "cekajici" || status === "pending" || !status) {
+                    pendingAbsenceCount++;
+                }
+            });
+        } catch (e) {}
+
+        const statAbsEl = document.getElementById("statPendingAbsences");
+        const badgeAbsEl = document.getElementById("badgeAbsences");
+        const cardAbsEl = document.getElementById("cardPendingAbsences");
+        
+        statAbsEl.innerText = pendingAbsenceCount;
+        badgeAbsEl.innerText = `${pendingAbsenceCount} čeká`;
+        if (pendingAbsenceCount > 0) {
+            cardAbsEl.classList.add("alert");
+            badgeAbsEl.classList.remove("ok");
+        } else {
+            badgeAbsEl.classList.add("ok");
+        }
+
+        // 3. Počet řidičů a členů týmu
+        const usersSnap = await getDocs(collection(db, "users"));
+        document.getElementById("statTotalDrivers").innerText = usersSnap.size;
+        const badgeUsersEl = document.getElementById("badgeUsers");
+        if (badgeUsersEl) badgeUsersEl.innerText = `${usersSnap.size} účtů`;
+
+        // 4. Výkazy DZVA a denní data pro graf
+        const dzvaSnap = await getDocs(collection(db, "dzva"));
+        let monthDzvaCount = 0;
+        let monthKmTotal = 0;
+
+        const daysInMonth = new Date(currentYearIdx, currentMonthIdx + 1, 0).getDate();
+        const dailySums = new Array(daysInMonth).fill(0);
+
+        dzvaSnap.forEach(d => {
+            const data = d.data();
+            if (data.createdAt) {
+                const date = data.createdAt.toDate();
+                if (date.getMonth() === currentMonthIdx && date.getFullYear() === currentYearIdx) {
+                    monthDzvaCount++;
+                    const km = parseFloat(data.najetoKm || 0) + parseFloat(data.bonusKm || 0);
+                    monthKmTotal += km;
+
+                    const dayIndex = date.getDate() - 1;
+                    if (dayIndex >= 0 && dayIndex < daysInMonth) {
+                        dailySums[dayIndex] += km;
+                    }
+                }
+            }
+        });
+
+        document.getElementById("statMonthDzva").innerText = monthDzvaCount;
+        document.getElementById("statMonthKm").innerText = `${Math.round(monthKmTotal)} km`;
+        const badgeDzvaEl = document.getElementById("badgeDzva");
+        if (badgeDzvaEl) badgeDzvaEl.innerText = `${monthDzvaCount} tento měsíc`;
+
+        // Nastavení dat pro denní graf
+        chartDataDays.labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}.`);
+        chartDataDays.values = dailySums.map(v => Math.round(v));
+
+        // 5. Načtení dat pro měsíční graf (Archiv + aktuální měsíc)
+        const archiveSnap = await getDocs(collection(db, "ridici_archivy"));
+        let monthlySums = {};
+
+        archiveSnap.forEach(d => {
+            const data = d.data();
+            const m = data.archiveMonth;
+            if (m) {
+                const km = parseFloat(data.najetoKm || 0);
+                monthlySums[m] = (monthlySums[m] || 0) + km;
+            }
+        });
+
+        const currentMonthKey = `${currentYearIdx}-${String(currentMonthIdx + 1).padStart(2, '0')}`;
+        monthlySums[currentMonthKey] = monthKmTotal;
+
+        const sortedMonths = Object.keys(monthlySums).sort().slice(-6);
+        chartDataMonths.labels = sortedMonths.map(m => {
+            const [y, mon] = m.split("-");
+            return `${parseInt(mon)}/${y.slice(-2)}`;
+        });
+        chartDataMonths.values = sortedMonths.map(m => Math.round(monthlySums[m]));
+
+        // 6. Celkem vozidel
+        const vehSnap = await getDocs(collection(db, "vehicles"));
+        document.getElementById("statTotalVehicles").innerText = vehSnap.size;
+
+        // 7. Vykreslení grafu
+        renderKmChart(chartDataDays.labels, chartDataDays.values, "Denní nájezd (km)");
+
+    } catch (err) {
+        console.error("Chyba při načítání statistik:", err);
+    }
+}
+
+function renderKmChart(labels, data, datasetLabel) {
+    const ctx = document.getElementById('kmChart').getContext('2d');
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, 'rgba(255, 216, 77, 0.35)');
+    gradient.addColorStop(1, 'rgba(255, 216, 77, 0.0)');
+
+    if (kmChartInstance) {
+        kmChartInstance.destroy();
+    }
+
+    kmChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: datasetLabel,
+                data: data,
+                borderColor: '#ffd84d',
+                backgroundColor: gradient,
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#ffd84d',
+                pointBorderColor: '#121212',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1f1f23',
+                    titleColor: '#ffd84d',
+                    bodyColor: '#ffffff',
+                    borderColor: 'rgba(255,255,255,0.15)',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: (context) => `Najeto: ${context.parsed.y} km`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'Poppins', size: 11 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'Inter', size: 11 } }
+                }
+            }
+        }
+    });
+}
+
+window.switchChartMode = function(mode) {
+    const btnDays = document.getElementById("btnModeDays");
+    const btnMonths = document.getElementById("btnModeMonths");
+
+    if (mode === "days") {
+        btnDays.classList.add("active");
+        btnMonths.classList.remove("active");
+        renderKmChart(chartDataDays.labels, chartDataDays.values, "Denní nájezd (km)");
+    } else {
+        btnMonths.classList.add("active");
+        btnDays.classList.remove("active");
+        renderKmChart(chartDataMonths.labels, chartDataMonths.values, "Měsíční nájezd (km)");
+    }
+};
+</script>
+</body>
+</html>

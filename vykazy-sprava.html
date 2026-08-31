@@ -51,6 +51,8 @@
         
         .btn-submit-bonus { background: #00b84f; color: white; width: 100%; }
         .btn-submit-bonus:hover { background: #00963f; transform: scale(1.01); }
+        .btn-submit-penalty { background: #d40000 !important; }
+        .btn-submit-penalty:hover { background: #a80000 !important; }
         
         .btn-bonus-směna { background: #ffd84d; color: #121212; padding: 5px 10px; font-size: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .btn-bonus-směna:hover { background: #ffe280; }
@@ -64,6 +66,7 @@
         .smena-km { font-size: 15px; font-weight: 700; color: #ffd84d; text-align: right; }
 
         .bonus-span { color: #00ff66; font-weight: 700; }
+        .bonus-span.negative { color: #ff4d4d; font-weight: 700; }
         .bonus-note { display: block; font-size: 12px; color: rgba(255,255,255,0.5); font-style: italic; margin-top: 2px; }
 
         .month-row {
@@ -130,9 +133,9 @@
             </div>
 
             <div class="panel">
-                <h2>Samostatný bonus</h2>
+                <h2>Samostatný bonus / penalizace</h2>
                 <p style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">
-                    Zde můžeš ručně připsat kilometry konkrétnímu řidiči jako bonus, který se nevztahuje k žádné směně.
+                    Zde můžeš ručně připsat (kladné) nebo odečíst (záporné) kilometry konkrétnímu řidiči jako mimořádný bonus či penalizaci.
                 </p>
                 <form id="independentBonusForm">
                     <div class="form-group">
@@ -142,21 +145,21 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Počet bonusových kilometrů (km)</label>
-                        <input type="number" id="independentBonusKm" placeholder="např. 15" min="1" required>
+                        <label>Počet kilometrů (pro odečtení zadej se znaménkem mínus, např. -15)</label>
+                        <input type="number" id="independentBonusKm" placeholder="např. 15 nebo -15" step="any" required>
                     </div>
                     <div class="form-group">
-                        <label>Důvod udělení bonusu</label>
-                        <input type="text" id="independentBonusReason" placeholder="např. Bonus za reprezentaci podniku." required>
+                        <label>Důvod udělení bonusu / penalizace</label>
+                        <input type="text" id="independentBonusReason" placeholder="např. Penalizace za pozdní příjezd nebo bonus za soutěž" required>
                     </div>
-                    <button type="submit" class="btn-submit-bonus" id="independentBonusSubmitBtn">Připsat samostatný bonus</button>
+                    <button type="submit" class="btn-submit-bonus" id="independentBonusSubmitBtn">Udělit bonus / penalizaci</button>
                 </form>
             </div>
 
             <div class="panel">
                 <h2>Přidělení bonusů ke směnám</h2>
                 <p style="font-size: 13px; opacity: 0.7; margin-bottom: 15px;">
-                    Zde vidíš aktivní DZVA z probíhajícího měsíce. Můžeš k nim přidat libovolný bonus, který se ihned započítá řidiči do celkového nájezdu.
+                    Zde vidíš aktivní DZVA z probíhajícího měsíce. Můžeš k nim přidat bonus nebo penalizaci (i záporné km či záporná %), které se ihned promítnou do směny.
                 </p>
                 <div id="activeSmenyContainer" class="active-smeny-list">
                     <p style="opacity: 0.5; margin: 0;">Načítám směny...</p>
@@ -176,7 +179,7 @@
 <div id="bonusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
     <div style="background-color:#1e1e1e; color:#fff; padding:25px; border-radius:8px; width:90%; max-width:500px; box-shadow:0 4px 15px rgba(0,0,0,0.5); border: 2px solid #ffd84d;">
         <h3 style="margin-top:0; color:#ffd84d; text-align:center;">🏆 Výsledky měsíčních bonusů 🏆</h3>
-        <p style="font-size:14px; color:#ccc; text-align:center; margin-bottom:20px;">Níže jsou zobrazeni výherci kategorií. Data byla uložena a veškeré bonusové kilometry byly automaticky připsán do dalšího měsíce.</p>
+        <p style="font-size:14px; color:#ccc; text-align:center; margin-bottom:20px;">Níže jsou zobrazeni výherci kategorií pro Discord. Data byla úspěšně archivována.</p>
         
         <div id="modalTextPreview" style="background:#2a2a2a; padding:15px; border-radius:5px; font-family:monospace; font-size:13px; white-space:pre-wrap; margin-bottom:20px; border:1px solid #444;"></div>
         
@@ -205,7 +208,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R";
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
 let adminEmail = "";
 
@@ -222,6 +224,22 @@ const mesiceNazvy = {
     "2026-12": "Prosinec 2026", "2027-01": "Leden 2027"
 };
 
+// Dynamická změna vzhledu tlačítka při záporném číslu
+const bonusInput = document.getElementById("independentBonusKm");
+const bonusBtn = document.getElementById("independentBonusSubmitBtn");
+if (bonusInput && bonusBtn) {
+    bonusInput.addEventListener("input", () => {
+        const val = parseFloat(bonusInput.value);
+        if (!isNaN(val) && val < 0) {
+            bonusBtn.classList.add("btn-submit-penalty");
+            bonusBtn.innerText = `Odečíst penalizaci (${val} km)`;
+        } else {
+            bonusBtn.classList.remove("btn-submit-penalty");
+            bonusBtn.innerText = "Připsat samostatný bonus";
+        }
+    });
+}
+
 onAuthStateChanged(auth, async (user) => {
     const userRank = localStorage.getItem("rank") || "";
     if (user && allowedRanks.includes(userRank)) {
@@ -230,7 +248,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("error-screen").style.display = "none";
         
         await precacheUserProfiles();
-        populateBonusDriversDropdown(); // 🚀 Naplníme rolovací seznam řidičů pro volný bonus
+        populateBonusDriversDropdown();
         await loadActiveSmeny();
         await loadAllArchives();
         await vygenerujNeuzavreneMesice();
@@ -301,12 +319,10 @@ async function precacheUserProfiles() {
     } catch (e) { console.error("Nepodařilo se přednačíst profily uživatelů:", e); }
 }
 
-// Funkce naplňující rolovací seznam pro samostatné bonusy
 function populateBonusDriversDropdown() {
     const select = document.getElementById("bonusDriverSelect");
     if (!select) return;
     
-    // Seřadíme řidiče podle osobního čísla
     const sortedEmails = Object.keys(cachedUserOsobniCisla).sort((a, b) => {
         return parseInt(cachedUserOsobniCisla[a] || 9999) - parseInt(cachedUserOsobniCisla[b] || 9999);
     });
@@ -344,7 +360,13 @@ async function loadActiveSmeny() {
             const emailKlic = (sd.userEmail || "").toLowerCase().trim();
             let ocRidice = sd.osobni_cislo || sd.osobniCislo || sd.oc || cachedUserOsobniCisla[emailKlic] || "-";
 
-            let bonusHtml = bonus > 0 ? ` <span class="bonus-span">+ ${bonus} km</span>` : "";
+            let bonusHtml = "";
+            if (bonus > 0) {
+                bonusHtml = ` <span class="bonus-span">+ ${bonus} km</span>`;
+            } else if (bonus < 0) {
+                bonusHtml = ` <span class="bonus-span negative">${bonus} km</span>`;
+            }
+            
             let duvodHtml = duvod ? `<span class="bonus-note">"${duvod}"</span>` : "";
 
             const div = document.createElement("div");
@@ -359,7 +381,7 @@ async function loadActiveSmeny() {
                     <div style="text-align: right;">
                         <div class="smena-km">Celkem: ${zaklad + bonus} km</div>
                         <div style="font-size:11px; opacity:0.6; margin-bottom: 5px;">(${zaklad}${bonusHtml})</div>
-                        <button class="btn-bonus-směna" onclick="pridatBonusDoDzva('${s.id}')">Přidat bonus ke směně</button>
+                        <button class="btn-bonus-směna" onclick="pridatBonusDoDzva('${s.id}')">Přidat bonus / penalizaci</button>
                     </div>
                 </div>
             `;
@@ -381,7 +403,7 @@ window.pridatBonusDoDzva = async function(docId) {
         const jmenoRidice = aktData.userName || aktData.userEmail || "Neznámý řidič";
         const zakladniKm = parseFloat(aktData.najetoKm || 0);
 
-        const vstup = prompt(`Přidáváš bonus pro řidiče: ${jmenoRidice}\nZáklad směny: ${zakladniKm} km\n\nZadej bonus jako číslo (např. 4) nebo s procentem (např. 10%):`);
+        const vstup = prompt(`Upravuješ bonus/penalizaci pro řidiče: ${jmenoRidice}\nZáklad směny: ${zakladniKm} km\n\nZadej hodnotu v km (např. 4 nebo -5) nebo procenta (např. 10% nebo -20%):`);
         if (vstup === null) return;
 
         let km = 0;
@@ -389,14 +411,14 @@ window.pridatBonusDoDzva = async function(docId) {
 
         if (cistyVstup.endsWith('%')) {
             const procento = parseFloat(cistyVstup.replace('%', ''));
-            if (isNaN(procento) || procento <= 0) return;
+            if (isNaN(procento) || procento === 0) return;
             km = Math.round(((zakladniKm * procento) / 100) * 10) / 10;
         } else {
             km = parseFloat(cistyVstup);
-            if (isNaN(km) || km <= 0) return;
+            if (isNaN(km) || km === 0) return;
         }
 
-        const duvod = prompt(`Zadaný bonus: ${km} km\n\nZadej text odůvodnění:`);
+        const duvod = prompt(`Zadaná hodnota: ${km > 0 ? '+' : ''}${km} km\n\nZadej text odůvodnění (bonus/penalizace):`);
         if (duvod === null) return;
 
         const soucasnyBonus = parseFloat(aktData.bonusKm || 0);
@@ -405,19 +427,18 @@ window.pridatBonusDoDzva = async function(docId) {
             bonusDuvod: duvod
         });
 
-        alert(`Bonus ${km} km úspěšně připsán!`);
+        alert(`Záznam (${km > 0 ? '+' : ''}${km} km) byl úspěšně uložen!`);
         await loadActiveSmeny();
     } catch (err) { alert(err.message); }
 };
 
-// 🚀 NOVÉ: Odeslání samostatného mimořádného lístku s čistým bonusem
 document.getElementById("independentBonusForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("independentBonusSubmitBtn");
     if (btn.disabled) return;
 
     const email = document.getElementById("bonusDriverSelect").value;
-    const km = parseFloat(document.getElementById("independentBonusKm").value) || 0;
+    const km = parseFloat(document.getElementById("independentBonusKm").value);
     const duvod = document.getElementById("independentBonusReason").value.trim();
 
     if (!email) {
@@ -425,8 +446,13 @@ document.getElementById("independentBonusForm").addEventListener("submit", async
         return;
     }
 
+    if (isNaN(km) || km === 0) {
+        alert("Zadejte platnou nenulovou hodnotu kilometrů (kladnou nebo zápornou)!");
+        return;
+    }
+
     btn.disabled = true;
-    btn.innerText = "Zapisuji bonus...";
+    btn.innerText = "Zapisuji záznam...";
 
     const dnes = new Date();
     const dateText = dnes.toLocaleDateString("cs-CZ");
@@ -435,14 +461,14 @@ document.getElementById("independentBonusForm").addEventListener("submit", async
         userEmail: email,
         userName: cachedUserNames[email] || "Řidič",
         evc: "BONUS",
-        rz: "MIMOŘÁDNÝ",
+        rz: km < 0 ? "PENALIZACE" : "MIMOŘÁDNÝ",
         dateText: dateText,
-        provisorium: true, // Příznak samostatného volného bonusu
+        provisorium: true,
         provozovna: "Vedení firmy",
         tachStart: 0,
         tachKonec: 0,
-        turnus: "Mimořádný",
-        linky: "Bonus",
+        turnus: km < 0 ? "Penalizace" : "Mimořádný",
+        linky: km < 0 ? "Penalizace" : "Bonus",
         delays: [],
         tankTach: "N/A",
         tankProcenta: "N/A",
@@ -455,14 +481,15 @@ document.getElementById("independentBonusForm").addEventListener("submit", async
 
     try {
         await addDoc(collection(db, "dzva"), bonusDoc);
-        alert(`Samostatný bonus ${km} km byl úspěšně připsán řidiči.`);
+        alert(`${km < 0 ? 'Penalizace' : 'Samostatný bonus'} (${km > 0 ? '+' : ''}${km} km) byl úspěšně zapsán.`);
         document.getElementById("independentBonusForm").reset();
+        btn.classList.remove("btn-submit-penalty");
+        btn.innerText = "Připsat samostatný bonus";
         await loadActiveSmeny();
     } catch (err) {
-        alert("Chyba při zápisu bonusu: " + err.message);
+        alert("Chyba při zápisu: " + err.message);
     } finally {
         btn.disabled = false;
-        btn.innerText = "Připsat samostatný bonus";
     }
 });
 
@@ -571,50 +598,7 @@ function najdiKategorickéhoViteze(statsObjekt) {
     return { textTagy, hodnota: maxHodnota, emaily: vitezoveEmaily };
 }
 
-function ziskejNasledujiciMesicKlic(currentMonthKey) {
-    const [year, month] = currentMonthKey.split("-").map(Number);
-    let nextMonth = month + 1;
-    let nextYear = year;
-    if (nextMonth > 12) {
-        nextMonth = 1;
-        nextYear += 1;
-    }
-    return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
-}
-
-// Pomocná funkce pro zápis startovních bonusových kilometrů na začátek dalšího měsíce
-async function pripisBonusDoDalsihoMesice(email, km, duvod, targetMonthKey) {
-    if (!email || km <= 0) return;
-    const [rok, mesic] = targetMonthKey.split("-");
-    const dateText = `1. ${parseInt(mesic)}. ${rok}`;
-    
-    const bonusDoc = {
-        userEmail: email.toLowerCase().trim(),
-        userName: cachedUserNames[email.toLowerCase().trim()] || "Řidič",
-        evc: "BONUS",
-        rz: "ALCES",
-        dateText: dateText,
-        provozovna: "Vedení firmy",
-        tachStart: 0,
-        tachKonec: 0,
-        turnus: "Bonus",
-        linky: "Bonus",
-        delays: [],
-        tankTach: "N/A",
-        tankProcenta: "N/A",
-        tankMisto: "",
-        najetoKm: 0, 
-        bonusKm: km,
-        bonusDuvod: duvod,
-        createdAt: new Date()
-    };
-
-    try {
-        await addDoc(collection(db, "dzva"), bonusDoc);
-    } catch (e) { console.error(e); }
-}
-
-// OSTRÁ UZÁVĚRKA MĚSÍCE
+// 🚀 OSTRÁ UZÁVĚRKA MĚSÍCE (BEZ PŘIPISOVÁNÍ AUTOMATICKÝCH BONUSŮ)
 document.getElementById("closureForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const selectedMonth = document.getElementById("archiveMonth").value;
@@ -628,8 +612,6 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
     btn.innerText = "Zpracovávám a zálohuji...";
     btn.disabled = true;
 
-    const nasledujiciMesicKlic = ziskejNasledujiciMesicKlic(selectedMonth);
-
     try {
         const querySnapshot = await getDocs(collection(db, "dzva"));
         
@@ -639,9 +621,6 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
         let statsRidiciOc = {};
         let statsPridelenky = {}; 
         let statsVozidlaSet = {};  
-
-        // 🚀 NOVÉ: Mapa pro sčítání všech individuálních bonusů řidičů za tento měsíc
-        let statsCelkoveIndividualniBonusy = {};
 
         let totalMonthKm = 0;
         let docsToMoveAndWithdelete = [];
@@ -671,12 +650,6 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
                 const rEmail = (data.userEmail || "neznamy").toLowerCase().trim();
                 if (!statsRidiciKm[rEmail]) statsRidiciKm[rEmail] = 0;
                 statsRidiciKm[rEmail] += celkemZListku;
-                
-                // Sčítáme individuální bonusy pro budoucí přesun náskoku
-                if (bKm > 0) {
-                    if (!statsCelkoveIndividualniBonusy[rEmail]) statsCelkoveIndividualniBonusy[rEmail] = 0;
-                    statsCelkoveIndividualniBonusy[rEmail] += bKm;
-                }
 
                 if (data.userName) statsRidiciJmena[rEmail] = data.userName;
                 
@@ -721,23 +694,8 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
 
         const vyslednaDiscordZprava = `**Nejvíce spojů s přidělenkou** - ${vitezPridelenka.textTagy} (+40km)\n\n**Objevitel vozového parku** - ${vitezObjevitel.textTagy}  (+30km)\n\n**Nejvíce najetých km za měsíc** - ${vitezKm.textTagy} (+${vypoctenyKmBonus}km)`;
 
-        // 🚀 1. AUTOMATICKÉ PŘEPSÁNÍ SOUTĚŽNÍCH BONUSŮ DO DALŠÍHO MĚSÍCE
-        for (const email of vitezPridelenka.emaily) {
-            await pripisBonusDoDalsihoMesice(email, 40, `1. Místo v soutěži: Nejvíce spojů s přidělenkou za měsíc ${selectedMonth}`, nasledujiciMesicKlic);
-        }
-        for (const email of vitezObjevitel.emaily) {
-            await pripisBonusDoDalsihoMesice(email, 30, `1. Místo v soutěži: Objevitel vozového parku za měsíc ${selectedMonth}`, nasledujiciMesicKlic);
-        }
-        for (const email of vitezKm.emaily) {
-            await pripisBonusDoDalsihoMesice(email, vypoctenyKmBonus, `1. Místo v soutěži: Nejvíce najetých km za měsíc ${selectedMonth}`, nasledujiciMesicKlic);
-        }
+        // ❌ AUTOMATICKÉ PRIDĚLOVÁNÍ BONUSŮ DO DALŠÍHO MĚSÍCE BYLO VYPNUTO.
 
-        // 🚀 2. AUTOMATICKÝ PŘESUN VŠECH INDIVIDUÁLNÍCH / MIMOŘÁDNÝCH BONUSŮ DO DALŠÍHO MĚSÍCE
-        for (const [email, celkovyBonusZaMesic] of Object.entries(statsCelkoveIndividualniBonusy)) {
-            await pripisBonusDoDalsihoMesice(email, celkovyBonusZaMesic, `Bonu: Přenesené bonusové kilometry nasbírané v měsíci ${selectedMonth}`, nasledujiciMesicKlic);
-        }
-
-        // Uložení uzávěrky
         const archiveRef = doc(db, "monthly_archives", selectedMonth);
         await setDoc(archiveRef, {
             month: selectedMonth,
@@ -752,7 +710,6 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
             discordSoutezeText: vyslednaDiscordZprava
         });
 
-        // Promazání aktivních dat
         for (const docObj of docsToMoveAndWithdelete) {
             await setDoc(doc(db, "ridici_archivy", docObj.id), {
                 ...docObj.data,
@@ -778,7 +735,7 @@ document.getElementById("closureForm").addEventListener("submit", async (e) => {
             };
         }
 
-        alert(`Měsíční uzávěrka úspěšně uložena! Veškeré soutěžní bonusy z tohoto měsíce byly automaticky přesunuty do měsíce ${nasledujiciMesicKlic}.`);
+        alert(`Měsíční uzávěrka pro měsíc ${selectedMonth} byla úspěšně uložena a archivována.`);
         await loadActiveSmeny();
         await loadAllArchives();
         await vygenerujNeuzavreneMesice();
@@ -797,7 +754,7 @@ document.getElementById("testWebhookBtn").addEventListener("click", async () => 
     
     if (!selectedMonth) return;
     
-    tlacitko.innerText = "Analyzuji realná data...";
+    tlacitko.innerText = "Analyzuji reálná data...";
     tlacitko.disabled = true;
 
     try {
