@@ -150,6 +150,7 @@
                     <select id="userRank" required>
                         <option value="zkusebni-ridic" selected>zkusebni-ridic</option>
                         <option value="ridic">ridic</option>
+                        <option value="repainter">repainter</option>
                         <option value="zasloužily-ridic">zasloužily-ridic</option>
                         <option value="team-manager">team-manager</option>
                         <option value="dispecer">dispecer</option>
@@ -218,6 +219,7 @@ const rankOrder = [
     "provozni-reditel",
     "dispecer",
     "team-manager",
+    "repainter",
     "zasloužily-ridic",
     "ridic",
     "zkusebni-ridic"
@@ -226,6 +228,7 @@ const rankOrder = [
 const rankNameMapping = {
     "zkusebni-ridic": "Řidič - zkušební doba",
     "ridic": "Řidič",
+    "repainter": "Repainter",
     "zasloužily-ridic": "Zasloužilý řidič",
     "team-manager": "Team Manager",
     "dispecer": "Dispečer",
@@ -307,7 +310,6 @@ function renderUsersList(usersArray) {
         totalCount += usersInRank.length;
 
         if (sortMethod === "oc") {
-            // 🚀 ROBUSTNÍ ŘAZENÍ: Odřízne případné písmeno "Z" a správně seřadí nováčky podle číselného stavu
             usersInRank.sort((a, b) => {
                 const strA = String(a.data.oc || a.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
                 const strB = String(b.data.oc || b.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
@@ -347,8 +349,8 @@ function renderUsersList(usersArray) {
 
         usersInRank.forEach((user) => {
             const uName = user.data.name || user.data.username || "Bez jména";
-        const uMentor = user.data.mentorId ? user.data.mentorId : "-";
-        const uOc = user.data.oc || user.data.osobniCislo || "-";
+            const uMentor = user.data.mentorId ? user.data.mentorId : "-";
+            const uOc = user.data.oc || user.data.osobniCislo || "-";
             const mentorTdHtml = (currentRank === "zkusebni-ridic") 
                 ? `<td style="color:#ffd84d; font-weight:600; font-size:13px;">${uMentor}</td>` 
                 : "";
@@ -494,9 +496,9 @@ function upravFaviconuPodleRezimu() {
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+        favicon.href = 'fotky/univ/favicon.png';
     } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+        favicon.href = 'fotky/univ/favicon-cerna.png';
     }
 }
 
