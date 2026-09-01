@@ -40,6 +40,59 @@ body {
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.28),
         inset 0 1px 0 rgba(255,255,255,0.14);
+    transition: transform 0.3s ease;
+}
+
+/* 🚀 NAČÍTACÍ EFEKT - ZAMAZÁNÍ OBSAHU */
+.login-content {
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.login.is-loading .login-content {
+    filter: blur(8px);
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* 🌀 NAČÍTACÍ SPINNER OVERLAY */
+.loader-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.login.is-loading .loader-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.spinner {
+    width: 42px;
+    height: 42px;
+    border: 3px solid rgba(255, 255, 255, 0.18);
+    border-top-color: #08ac26; /* Zelený akcent dle tlačítka */
+    border-radius: 50%;
+    animation: spin 0.8s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+}
+
+.loader-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .login::after {
@@ -323,33 +376,42 @@ button:active { transform: scale(0.94); }
 
 <a href="https://alces-as.fun" class="back-btn">← Zpět</a>
 
-<div class="login">
-    <img src="logo.png" alt="alces">
-    <p>Interní systém společnosti</p>
-
-    <input type="email" id="email" placeholder="E-mail">
-    <input type="password" id="password" placeholder="Heslo">
-
-    <label class="remember-me-container">
-        <input type="checkbox" id="rememberMe" checked>
-        <div class="custom-checkbox"></div>
-        <span>Zůstat přihlášen(a)</span>
-    </label>
-
-    <button id="loginBtn">Přihlásit se</button>
-    
-    <div class="login-divider">
-        <span></span>
-        <p>nebo</p>
-        <span></span>
+<div class="login is-loading" id="loginBox">
+    <!-- 🌀 SPINNER KDYŽ PROBÍHÁ NAČÍTÁNÍ -->
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="spinner"></div>
+        <div class="loader-text" id="loaderText">Načítám...</div>
     </div>
 
-    <button id="googleBtn" class="google-btn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Přihlásit se přes Google
-</button>
+    <!-- 🔒 HLAVNÍ OBSAH KTERÝ SE PŘI NAČÍTÁNÍ ROZMAŽE -->
+    <div class="login-content">
+        <img src="logo.png" alt="alces">
+        <p>Interní systém společnosti</p>
 
-    <div class="error" id="error"></div>
+        <input type="email" id="email" placeholder="E-mail">
+        <input type="password" id="password" placeholder="Heslo">
+
+        <label class="remember-me-container">
+            <input type="checkbox" id="rememberMe" checked>
+            <div class="custom-checkbox"></div>
+            <span>Zůstat přihlášen(a)</span>
+        </label>
+
+        <button id="loginBtn">Přihlásit se</button>
+        
+        <div class="login-divider">
+            <span></span>
+            <p>nebo</p>
+            <span></span>
+        </div>
+
+        <button id="googleBtn" class="google-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Přihlásit se přes Google
+        </button>
+
+        <div class="error" id="error"></div>
+    </div>
 </div>
 
 <script type="module">
@@ -365,7 +427,7 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
-    onAuthStateChanged // 🚀 NOVÉ: Přidán observer pro sledování stavu přihlášení
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 import {
@@ -396,15 +458,28 @@ const passwordInput = document.getElementById("password");
 const rememberMeInput = document.getElementById("rememberMe");
 const errorBox = document.getElementById("error");
 
+const loginBox = document.getElementById("loginBox");
+const loaderText = document.getElementById("loaderText");
+
+function startLoading(text = "Ověřuji...") {
+    loaderText.innerText = text;
+    loginBox.classList.add("is-loading");
+}
+
+function stopLoading() {
+    loginBox.classList.remove("is-loading");
+}
+
 document.getElementById("loginBtn").addEventListener("click", loginWithEmail);
 document.getElementById("googleBtn").addEventListener("click", loginWithGoogle);
 
-// 🚀 NOVÉ: Automatická kontrola při načtení login.html
-// Pokud už uživatel v prohlížeči přihlášený je, Firebase ho detekuje a skript ho rovnou přesměruje.
+// Sledování stavu přihlášení
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Uživatel je přihlášený, načteme data z Firestore a přesměrujeme ho na domovskou stránku
+        startLoading("Načítám profil...");
         await loadUserData(user);
+    } else {
+        stopLoading();
     }
 });
 
@@ -413,30 +488,32 @@ async function loginWithEmail() {
     const password = passwordInput.value;
 
     errorBox.innerText = "";
+    startLoading("Přihlašuji...");
 
     try {
         const persistenceType = rememberMeInput.checked ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistenceType);
 
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        // O přesměrování se teď postará onAuthStateChanged výše, jakmile zachytí úspěšné přihlášení
+        await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
         console.error(error);
+        stopLoading();
         errorBox.innerText = error.code + " | " + error.message;
     }
 }
 
 async function loginWithGoogle() {
     errorBox.innerText = "";
+    startLoading("Připojuji ke Google...");
 
     try {
         const persistenceType = rememberMeInput.checked ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistenceType);
 
-        const result = await signInWithPopup(auth, provider);
-        // O přesměrování se teď postará onAuthStateChanged výše, jakmile zachytí úspěšné přihlášení
+        await signInWithPopup(auth, provider);
     } catch (error) {
         console.error(error);
+        stopLoading();
         errorBox.innerText = error.code + " | " + error.message;
     }
 }
@@ -444,25 +521,32 @@ async function loginWithGoogle() {
 async function loadUserData(firebaseUser) {
     const email = firebaseUser.email.toLowerCase();
 
-    const userDocRef = doc(db, "users", email);
-    const userDoc = await getDoc(userDocRef);
+    try {
+        const userDocRef = doc(db, "users", email);
+        const userDoc = await getDoc(userDocRef);
 
-    if (!userDoc.exists()) {
-        await signOut(auth);
-        errorBox.innerText = "Tento účet postrádá potřebná oprávnění pro vstup do systému.";
-        return;
+        if (!userDoc.exists()) {
+            await signOut(auth);
+            stopLoading();
+            errorBox.innerText = "Tento účet postrádá potřebná oprávnění pro vstup do systému.";
+            return;
+        }
+
+        const data = userDoc.data();
+
+        localStorage.setItem("username", data.name);
+        localStorage.setItem("rank", data.rank);
+        localStorage.setItem("rankName", data.rankName);
+        localStorage.setItem("email", email);
+        localStorage.setItem("uid", firebaseUser.uid);
+        localStorage.setItem("mentorId", data.mentorId || "");
+
+        window.location.href = "home.html";
+    } catch (err) {
+        console.error(err);
+        stopLoading();
+        errorBox.innerText = "Chyba při načítání dat: " + err.message;
     }
-
-    const data = userDoc.data();
-
-    localStorage.setItem("username", data.name);
-    localStorage.setItem("rank", data.rank);
-    localStorage.setItem("rankName", data.rankName);
-    localStorage.setItem("email", email);
-    localStorage.setItem("uid", firebaseUser.uid);
-    localStorage.setItem("mentorId", data.mentorId || "");
-
-    window.location.href = "home.html";
 }
 
 const login = document.querySelector(".login");
