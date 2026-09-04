@@ -476,7 +476,7 @@ document.getElementById("googleBtn").addEventListener("click", loginWithGoogle);
 // Sledování stavu přihlášení
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        startLoading("Načítám profil...");
+        startLoading("Přesměrovávám...");
         await loadUserData(user);
     } else {
         stopLoading();
@@ -504,7 +504,7 @@ async function loginWithEmail() {
 
 async function loginWithGoogle() {
     errorBox.innerText = "";
-    startLoading("Připojuji ke Google...");
+    startLoading("Otevírám externí okno...");
 
     try {
         const persistenceType = rememberMeInput.checked ? browserLocalPersistence : browserSessionPersistence;
