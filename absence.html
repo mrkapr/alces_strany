@@ -128,7 +128,7 @@
                     <label>Typ žádosti</label>
                     <select id="absenceType" required onchange="handleTypeChange()">
                         <option value="Omluvenka">Omluvenka (pouze aktuální měsíc)</option>
-                        <option value="Pauza">Pauza (dlouhodobá, max 6 měsíců)</option>
+                        <option value="Pauza">Pauza (dlouhodobá, max 3 měsíce)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -311,8 +311,8 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             return;
         }
 
-        if (totalMonthsDiff > 6) {
-            alert(`Chyba: Délka pauzy může být maximálně 6 měsíců! Zvolil jsi ${totalMonthsDiff} měsíců.`);
+        if (totalMonthsDiff > 3) {
+            alert(`Chyba: Délka pauzy může být maximálně 3 měsíce! Zvolil jsi ${totalMonthsDiff} měsíců.`);
             return;
         }
     } else {
