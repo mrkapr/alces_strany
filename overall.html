@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+    <!-- Chart.js knihovna pro grafy -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; }
         .topbar {
@@ -64,8 +67,19 @@
         
         th:first-child, td:first-child {
             position: sticky; left: 0; z-index: 10; 
-            font-weight: 700; text-align: left; padding-left: 15px; min-width: 80px;
+            font-weight: 700; text-align: left; padding-left: 12px; padding-right: 8px;
+            width: 100px; min-width: 100px; max-width: 100px;
             font-family: 'Poppins', Arial, sans-serif !important;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .oc-cell-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
         }
 
         .oc-majitel { background-color: #2e1214 !important; color: #ff4d4d !important; border-left: 4px solid #ff4d4d; }
@@ -81,6 +95,7 @@
         .oc-zaslouzily { background-color: #291816 !important; color: #dc4f42 !important; border-left: 4px solid #dc4f42 !important; }
         
         .cell-omluven { background: rgba(0, 123, 255, 0.35) !important; color: #66b2ff; font-weight: 600; }
+        .cell-pauza { background: rgba(156, 39, 176, 0.35) !important; color: #ce93d8; font-weight: 600; }
         .cell-chyba { background: rgba(240, 140, 0, 0.35) !important; color: #ffaa44; font-weight: 700; }
         .cell-neomluven { background: rgba(255, 77, 77, 0.35) !important; color: #ff6666; font-weight: 600; }
         .cell-future { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.2) !important; }
@@ -100,6 +115,10 @@
             flex-wrap: wrap; gap: 15px; margin-bottom: 20px;
         }
 
+        .header-left-tools {
+            display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
+        }
+
         .legend { display: flex; gap: 20px; font-size: 12px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 10px; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         
@@ -112,6 +131,15 @@
         .highlight-toggle:hover { background: rgba(255, 216, 77, 0.15); }
         .highlight-toggle input { accent-color: #ffd84d; width: 16px; height: 16px; cursor: pointer; }
 
+        .btn-company-graph {
+            display: none;
+            align-items: center; gap: 8px; background: rgba(0, 255, 102, 0.1);
+            border: 1px solid rgba(0, 255, 102, 0.3); padding: 8px 16px; border-radius: 12px;
+            font-size: 13px; font-weight: 600; color: #00ff66; cursor: pointer;
+            transition: all 0.2s ease; font-family: 'Poppins', sans-serif;
+        }
+        .btn-company-graph:hover { background: rgba(0, 255, 102, 0.2); transform: translateY(-1px); }
+
         #monthsHeaderRow th { font-size: 13px; color: #ffffff; padding-top: 6px; padding-bottom: 6px; }
         th:first-child { font-size: 13px; color: #ffd84d !important; padding: 6px 10px; background: #1a1a24 !important; }
 
@@ -121,13 +149,168 @@
             border: 1px solid rgba(255, 216, 77, 0.4) !important;
             font-weight: 700 !important;
         }
-        .logo { display: flex; align-items: center; }
-        .logo img { height: 34px; width: auto; display: block; }
-        
+
+        .info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 216, 77, 0.25);
+            border: 1px solid #ffd84d;
+            color: #ffd84d;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif !important;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .info-btn:hover {
+            background: #ffd84d;
+            color: #000;
+            transform: scale(1.2);
+        }
+
+        /* MODAL POPUP OKNO */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-box {
+            background: rgba(25, 25, 25, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 620px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 14px;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .modal-close:hover { background: rgba(255, 77, 77, 0.8); }
+
+        .modal-filter-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 4px 10px;
+            border-radius: 10px;
+        }
+        .modal-filter-box select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .diff-cards-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            margin-bottom: 5px;
+            max-height: 120px;
+            opacity: 1;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+        }
+        .diff-cards-container.hidden {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
+        .diff-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .diff-card-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0aec0;
+            margin-bottom: 3px;
+        }
+        .diff-card-val {
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .btn-jump-to-driver {
+            background: rgba(255, 216, 77, 0.15);
+            border: 1px solid rgba(255, 216, 77, 0.4);
+            color: #ffd84d;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 6px;
+            align-self: flex-start;
+            transition: all 0.2s ease;
+        }
+        .btn-jump-to-driver:hover {
+            background: #ffd84d;
+            color: #000;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            margin-top: 10px;
+        }
+
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 20px; margin: 0 20px; }
         ::-webkit-scrollbar-thumb { background: rgba(248, 244, 228, 0.2); border: 1px solid rgba(248, 244, 228, 0.2); border-radius: 20px; transition: background 0.2s; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(252, 246, 225, 0.5); box-shadow: 0 0 10px rgba(255, 216, 77, 0.3); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(252, 246, 228, 0.5); box-shadow: 0 0 10px rgba(255, 216, 77, 0.3); }
 
         * { scrollbar-width: thin; scrollbar-color: rgba(248, 244, 228, 0.2) rgba(0, 0, 0, 0.2); }
         
@@ -141,9 +324,11 @@
             .table-container { padding: 10px; border-radius: 14px; }
             th { padding: 5px 3px; font-size: 12px; }
             td { padding: 6px 4px; font-size: 11px; min-width: 50px; }
-            th:first-child, td:first-child { padding-left: 8px; min-width: 60px; }
+            th:first-child, td:first-child { padding-left: 8px; width: 90px; min-width: 90px; }
             .header-tools { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .highlight-toggle { width: 100%; justify-content: center; box-sizing: border-box; }
+            .highlight-toggle, .btn-company-graph { width: 100%; justify-content: center; box-sizing: border-box; }
+            .diff-cards-container { flex-direction: column; max-height: 240px; }
+            .diff-cards-container.hidden { max-height: 0; }
         }
     </style>
 </head>
@@ -163,13 +348,20 @@
 
 <div class="content">
     <h1>alces, a. s. - OVERALL</h1>
-    <h2>Hlavní přehled výkonů a kilometrické evidence</h2>
+    <h2>Hlavní přehled kilometrické evidence</h2>
 
     <div class="header-tools">
-        <div class="legend">
-            <div class="legend-item"><span style="color:#66b2ff; font-weight:700;">/</span> Omluven</div>
-            <div class="legend-item"><span style="color:#ffaa44; font-weight:700;">!</span> Chyba ve výkazu</div>
-            <div class="legend-item"><span style="color:#ff6666; font-weight:700;">X</span> Neomluven</div>
+        <div class="header-left-tools">
+            <div class="legend">
+                <div class="legend-item"><span style="color:#66b2ff; font-weight:700;">/</span> Omluvenka</div>
+                <div class="legend-item"><span style="color:#ce93d8; font-weight:700;">P</span> Pauza</div>
+                <div class="legend-item"><span style="color:#ffaa44; font-weight:700;">!</span> Chyba ve výkazu</div>
+                <div class="legend-item"><span style="color:#ff6666; font-weight:700;">X</span> Neomluven</div>
+            </div>
+
+            <button id="btnCompanyGraph" class="btn-company-graph">
+                <span>Graf vývoj KM</span>
+            </button>
         </div>
 
         <label class="highlight-toggle">
@@ -197,6 +389,55 @@
     </div>
 </div>
 
+<!-- POPUP MODAL PRO DETAILNÍ GRAF ŘÍDIČE NEBO FIRMY -->
+<div class="modal-overlay" id="driverGraphModal">
+    <div class="modal-box">
+        <button class="modal-close" id="modalCloseBtn">✕</button>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-right: 35px; flex-wrap: wrap; gap: 10px;">
+            <h2 id="modalDriverName" style="color: #ffd84d; margin: 0; font-size: 18px; text-transform: none;">Graf řidiče</h2>
+            <div class="modal-filter-box">
+                <label for="modalPeriodSelect" style="font-size: 11px; color: #ffd84d; font-weight:600;">Období:</label>
+                <select id="modalPeriodSelect">
+                    <option value="thisMonth" selected>Tento měsíc</option>
+                    <option value="lastMonth">Minulý měsíc</option>
+                    <option value="last3Months">Poslední 3 měsíce</option>
+                    <option value="thisYear">Tento rok</option>
+                    <option value="allTime">Celá historie</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; font-size: 13px; opacity: 0.9;">
+            <div id="modalOcBox"><strong>OČ:</strong> <span id="modalDriverOc" style="color:#ffd84d; font-weight:700;">-</span></div>
+            <div><strong>Celkový nájezd v období:</strong> <span id="modalDriverKm" style="color:#00ff66; font-weight:700;">0 km</span></div>
+        </div>
+
+        <!-- Karty nárůstu a poklesu oproti minulému měsíci -->
+        <div id="companyDiffContainer" class="diff-cards-container hidden">
+            <div class="diff-card">
+                <div>
+                    <div class="diff-card-title">Největší nárůst KM oproti min. měsíci</div>
+                    <div class="diff-card-val" id="maxIncreaseText" style="color:#00ff66;">-</div>
+                </div>
+                <button class="btn-jump-to-driver" id="btnJumpIncrease">Otevřít graf ➔</button>
+            </div>
+
+            <div class="diff-card">
+                <div>
+                    <div class="diff-card-title">Největší pokles KM oproti min. měsíci</div>
+                    <div class="diff-card-val" id="maxDecreaseText" style="color:#ff6666;">-</div>
+                </div>
+                <button class="btn-jump-to-driver" id="btnJumpDecrease">Otevřít graf ➔</button>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="driverChartCanvas"></canvas>
+        </div>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -217,6 +458,21 @@ const auth = getAuth(app);
 
 let currentUserEmail = "";
 let myPersonalOc = "";
+let isUserManagement = false; 
+let cachedDzvaDocs = [];
+let cachedArchiveDocs = [];
+let ridiciMap = {};
+let matrixGlobal = {}; 
+let aktivniZobrazeneMesice = []; 
+let modalChartInstance = null;
+let currentModalOc = "";
+let currentModalEmail = "";
+let isCompanyMode = false;
+
+let topIncreaserOc = "";
+let topIncreaserEmail = "";
+let topDecreaserOc = "";
+let topDecreaserEmail = "";
 
 const sledovaneMesice = [
     "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09",
@@ -240,10 +496,8 @@ const kvartalMap = {
 };
 const aktualniKvartalId = kvartalMap[aktualniMesicKlic] || "";
 
-const indexAktualnihoMesiceStart = sledovaneMesice.indexOf(aktualniMesicKlic);
-const pocetSloupcuStart = (indexAktualnihoMesiceStart !== -1 ? indexAktualnihoMesiceStart + 1 : sledovaneMesice.length) + 2;
 const loadingCell = document.getElementById("loadingCell");
-if (loadingCell) loadingCell.colSpan = pocetSloupcuStart;
+if (loadingCell) loadingCell.colSpan = sledovaneMesice.length + 2;
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -254,6 +508,47 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
+
+window.addEventListener("DOMContentLoaded", () => {
+    const modalOverlay = document.getElementById("driverGraphModal");
+    const closeBtn = document.getElementById("modalCloseBtn");
+
+    closeBtn.addEventListener("click", closeModal);
+    
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" || e.key === "Esc") {
+            closeModal();
+        }
+    });
+
+    document.getElementById("modalPeriodSelect").addEventListener("change", renderModalChart);
+
+    document.getElementById("btnCompanyGraph").addEventListener("click", () => {
+        openCompanyModal();
+    });
+
+    document.getElementById("btnJumpIncrease").addEventListener("click", () => {
+        if (topIncreaserOc) {
+            openDriverModal(topIncreaserOc, topIncreaserEmail);
+        }
+    });
+
+    document.getElementById("btnJumpDecrease").addEventListener("click", () => {
+        if (topDecreaserOc) {
+            openDriverModal(topDecreaserOc, topDecreaserEmail);
+        }
+    });
+});
+
+function closeModal() {
+    document.getElementById("driverGraphModal").classList.remove("active");
+}
 
 function ZvyrazniHlavičku() {
     if (aktualniKvartalId) {
@@ -287,8 +582,16 @@ function smartSortOc(a, b) {
     return parseInt(cleanA || 999999) - parseInt(cleanB || 999999);
 }
 
-// Bezpečné zjištění klíče měsíce (přečte text i Timestamp bez pádů)
-function ziskejMesicKlic(data) {
+function ziskejMesicKlic(data, docId = "") {
+    if (docId && docId.includes("_")) {
+        const parts = docId.split("_");
+        if (parts[1] && parts[1].includes("-")) return parts[1].trim();
+    }
+    if (data.archiveMonth) return data.archiveMonth;
+    if (data.mesic && data.rok) {
+        const m = String(data.mesic).padStart(2, '0');
+        return `${data.rok}-${m}`;
+    }
     if (data.dateText && typeof data.dateText === "string") {
         const clean = data.dateText.replace(/\s+/g, '');
         const parts = clean.split('.');
@@ -300,11 +603,11 @@ function ziskejMesicKlic(data) {
             }
         }
     }
-    if (data.archiveMonth) return data.archiveMonth;
-    if (data.createdAt) {
+    const dVal = data.datum || data.createdAt || data.date;
+    if (dVal) {
         try {
-            let cd = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-            if (!isNaN(cd.getTime())) {
+            let cd = dVal.toDate ? dVal.toDate() : new Date(dVal);
+            if (!isNaN(cd.getTime()) && cd.getFullYear() > 2000) {
                 return `${cd.getFullYear()}-${String(cd.getMonth() + 1).padStart(2, '0')}`;
             }
         } catch(e) {}
@@ -312,61 +615,58 @@ function ziskejMesicKlic(data) {
     return "";
 }
 
-async function buildOverallDashboard() {
-    try {
-        const indexAktualnihoMesice = sledovaneMesice.indexOf(aktualniMesicKlic);
-        const zobrazeneMesice = indexAktualnihoMesice !== -1 
-            ? sledovaneMesice.slice(0, indexAktualnihoMesice + 1) 
-            : [...sledovaneMesice];
+function parseKmValue(data) {
+    let zaklad = data.najetoKm ?? data.km ?? data.kilometry ?? 0;
+    if (typeof zaklad === "object") zaklad = zaklad.najetoKm || zaklad.celkem || 0;
+    if (typeof zaklad === "string") zaklad = zaklad.replace(",", ".").replace(/[^\d.]/g, "");
+    
+    let bonus = data.bonusKm ?? data.bonus ?? 0;
+    if (typeof bonus === "string") bonus = bonus.replace(",", ".").replace(/[^\d.]/g, "");
 
-        const quartersHeaderRow = document.getElementById("quartersHeaderRow");
-        const monthsHeaderRow = document.getElementById("monthsHeaderRow");
+    const pZaklad = parseFloat(zaklad) || 0;
+    const pBonus = parseFloat(bonus) || 0;
 
-        if (quartersHeaderRow && monthsHeaderRow) {
-            quartersHeaderRow.innerHTML = "<th>Kvartál →</th>";
-            monthsHeaderRow.innerHTML = "<th>Řidič ↓</th>";
+    return pZaklad + pBonus;
+}
 
-            let kvartalPocetSloupcu = {};
-            zobrazeneMesice.forEach(m => {
-                const qId = kvartalMap[m] || "unknown";
-                kvartalPocetSloupcu[qId] = (kvartalPocetSloupcu[qId] || 0) + 1;
-            });
-
-            let zpracovaneKvartaly = [];
-            zobrazeneMesice.forEach(m => {
-                const qId = kvartalMap[m];
-                if (qId && !zpracovaneKvartaly.includes(qId)) {
-                    zpracovaneKvartaly.push(qId);
-                    const thQ = document.createElement("th");
-                    thQ.id = qId;
-                    thQ.style.color = "#a0aec0";
-                    thQ.colSpan = kvartalPocetSloupcu[qId];
-                    const qText = qId.replace("q", "Q").replace("-", "/");
-                    thQ.innerText = qText;
-                    quartersHeaderRow.appendChild(thQ);
-                }
-            });
-
-            const thCelkemKvartal = document.createElement("th");
-            thCelkemKvartal.innerText = "celkem:";
-            quartersHeaderRow.appendChild(thCelkemKvartal);
-
-            zobrazeneMesice.forEach(m => {
-                const thM = document.createElement("th");
-                const [rok, mesic] = m.split("-");
-                thM.innerText = `${parseInt(mesic)}/${rok.slice(-2)}`;
-                monthsHeaderRow.appendChild(thM);
-            });
-
-            const thCelkemMesic = document.createElement("th");
-            thCelkemMesic.innerText = "Celkem";
-            monthsHeaderRow.appendChild(thCelkemMesic);
+function parseDocDate(data, docId = "") {
+    const raw = data.datum || data.createdAt || data.dateText || data.date;
+    
+    if (raw) {
+        if (typeof raw.toDate === "function") return raw.toDate();
+        if (raw instanceof Date && !isNaN(raw.getTime())) return raw;
+        
+        if (typeof raw === "string" && raw.includes(".")) {
+            const parts = raw.split(".").map(p => p.trim());
+            if (parts.length >= 3) {
+                const day = parseInt(parts[0], 10);
+                const mon = parseInt(parts[1], 10) - 1;
+                const yr = parseInt(parts[2], 10);
+                if (!isNaN(day) && !isNaN(mon) && !isNaN(yr)) return new Date(yr, mon, day);
+            }
         }
 
-        ZvyrazniHlavičku();
+        const parsed = new Date(raw);
+        if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 2000) return parsed;
+    }
 
+    const mKlic = ziskejMesicKlic(data, docId);
+    if (mKlic && mKlic.includes("-")) {
+        const parts = mKlic.split("-");
+        const yr = parseInt(parts[0], 10);
+        const mon = parseInt(parts[1], 10) - 1;
+        if (!isNaN(yr) && !isNaN(mon)) {
+            return new Date(yr, mon, 15);
+        }
+    }
+
+    return null;
+}
+
+async function buildOverallDashboard() {
+    try {
         const usersSnapshot = await getDocs(collection(db, "users"));
-        let ridiciMap = {}; 
+        ridiciMap = {}; 
         let dočasnýSeznamCisel = [];
 
         usersSnapshot.forEach(uDoc => {
@@ -377,7 +677,7 @@ async function buildOverallDashboard() {
             const rName = String(uData.rankName || "").trim();
             
             if (oc) {
-                ridiciMap[emailKey] = { oc: oc, rank: rank, rankName: rName };
+                ridiciMap[emailKey] = { oc: oc, rank: rank, rankName: rName, email: emailKey };
                 if (!dočasnýSeznamCisel.includes(oc)) {
                     dočasnýSeznamCisel.push(oc);
                 }
@@ -385,14 +685,22 @@ async function buildOverallDashboard() {
 
             if (emailKey === currentUserEmail) {
                 myPersonalOc = oc;
+                if (rank === "majitel" || rank === "management" || rank.includes("reditel") || rank === "dispecer" || rank.includes("manager")) {
+                    isUserManagement = true;
+                }
             }
         });
+
+        if (isUserManagement) {
+            const btnComp = document.getElementById("btnCompanyGraph");
+            if (btnComp) btnComp.style.display = "flex";
+        }
 
         function ziskejUzivatelData(oc) {
             for (const [em, info] of Object.entries(ridiciMap)) {
                 if (info.oc === oc) return info;
             }
-            return { rank: "ridic", rankName: "" };
+            return { rank: "ridic", rankName: "", email: "" };
         }
 
         let majitele = [];
@@ -453,14 +761,18 @@ async function buildOverallDashboard() {
             ...zkusebniRidici
         ];
 
-        let matrix = {};
+        matrixGlobal = {};
         let omluvenkyMatrix = {}; 
 
+        const indexAktualnihoMesice = sledovaneMesice.indexOf(aktualniMesicKlic);
+        const maxLimitIndex = indexAktualnihoMesice !== -1 ? indexAktualnihoMesice : sledovaneMesice.length - 1;
+        const orezaneSledovaneMesice = sledovaneMesice.slice(0, maxLimitIndex + 1);
+
         seznamOsobníchCiselSerazeny.forEach(oc => {
-            matrix[oc] = {};
+            matrixGlobal[oc] = {};
             omluvenkyMatrix[oc] = {};
-            zobrazeneMesice.forEach(m => {
-                matrix[oc][m] = { type: "empty", val: 0 };
+            orezaneSledovaneMesice.forEach(m => {
+                matrixGlobal[oc][m] = { type: "empty", val: 0 };
                 omluvenkyMatrix[oc][m] = false;
             });
         });
@@ -474,21 +786,24 @@ async function buildOverallDashboard() {
             if (rInfo && data.status === "schvaleno" && data.from) {
                 const startMesic = data.from;
                 const konecMesic = data.to || data.from; 
-                zobrazeneMesice.forEach(m => {
+                const absenceType = String(data.type || "").trim(); // "Pauza" nebo "Omluvenka"
+                
+                orezaneSledovaneMesice.forEach(m => {
                     if (m >= startMesic && m <= konecMesic) {
                         if (omluvenkyMatrix[rInfo.oc]) {
-                            omluvenkyMatrix[rInfo.oc][m] = true;
+                            omluvenkyMatrix[rInfo.oc][m] = absenceType;
                         }
                     }
                 });
             }
         });
 
-        // 🚀 1. NAČTENÍ Z ARCHIVU (Pro minulé / archivované měsíce)
+        cachedArchiveDocs = [];
         const archiveSnapshot = await getDocs(collection(db, "ridici_archivy"));
         archiveSnapshot.forEach(docSnap => {
             const docId = docSnap.id;
             const data = docSnap.data();
+            cachedArchiveDocs.push({ data, docId });
 
             let oc = "";
             let mStr = "";
@@ -499,65 +814,110 @@ async function buildOverallDashboard() {
                 mStr = parts[1].trim();
             }
 
-            if (!oc) {
-                oc = String(data.oc || data.osobniCislo || data.osobni_cislo || "").toUpperCase().trim();
-            }
+            if (!oc) oc = String(data.oc || data.osobniCislo || data.osobni_cislo || "").toUpperCase().trim();
             if (!oc && data.userEmail) {
                 const email = String(data.userEmail).toLowerCase().trim();
                 if (ridiciMap[email]) oc = ridiciMap[email].oc;
             }
 
-            if (!mStr) {
-                mStr = ziskejMesicKlic(data);
-            }
+            if (!mStr) mStr = ziskejMesicKlic(data, docId);
 
-            if (oc && mStr && matrix[oc] && matrix[oc][mStr]) {
+            if (oc && mStr && matrixGlobal[oc] && matrixGlobal[oc][mStr]) {
                 const status = String(data.statusText || "").trim();
                 if (status === "/" || status === "X" || status === "!" || status === "?") {
-                    matrix[oc][mStr] = { type: "status", val: status };
+                    matrixGlobal[oc][mStr] = { type: "status", val: status };
                 } else if (data.najetoKm !== undefined && data.najetoKm !== null) {
-                    let cisteKm = 0;
-                    if (typeof data.najetoKm === "object") {
-                        cisteKm = parseFloat(data.najetoKm.najetoKm || data.najetoKm.celkem || 0);
-                    } else {
-                        cisteKm = parseFloat(data.najetoKm || 0);
-                    }
-                    if (matrix[oc][mStr].type !== "km") matrix[oc][mStr] = { type: "km", val: 0 };
-                    matrix[oc][mStr].val += cisteKm;
+                    let cisteKm = parseKmValue(data);
+                    if (matrixGlobal[oc][mStr].type !== "km") matrixGlobal[oc][mStr] = { type: "km", val: 0 };
+                    matrixGlobal[oc][mStr].val += cisteKm;
                 }
             }
         });
 
-        // 🚀 2. NAČTENÍ AKTIVNÍCH VÝKAZŮ (DZVA)
+        cachedDzvaDocs = [];
         const dzvaSnapshot = await getDocs(collection(db, "dzva"));
         dzvaSnapshot.forEach(docSnap => {
+            const docId = docSnap.id;
             const data = docSnap.data();
+            cachedDzvaDocs.push({ data, docId });
             const email = (data.userEmail || "").toLowerCase().trim();
             
-            // Hledání OČ (primárně podle účtu, sekundárně z dat)
             let oc = ridiciMap[email] ? ridiciMap[email].oc : String(data.oc || data.osobniCislo || "").toUpperCase().trim();
-            
-            // Zjištění měsíce
-            let mStr = ziskejMesicKlic(data);
+            let mStr = ziskejMesicKlic(data, docId);
 
-            if (oc && mStr && matrix[oc] && matrix[oc][mStr]) {
-                // Přičteme do příslušného měsíce
-                if (matrix[oc][mStr].type !== "status") {
-                    if (matrix[oc][mStr].type !== "km") {
-                        matrix[oc][mStr] = { type: "km", val: 0 };
+            if (oc && mStr && matrixGlobal[oc] && matrixGlobal[oc][mStr]) {
+                if (matrixGlobal[oc][mStr].type !== "status") {
+                    if (matrixGlobal[oc][mStr].type !== "km") {
+                        matrixGlobal[oc][mStr] = { type: "km", val: 0 };
                     }
-                    const zaklad = parseFloat(data.najetoKm || 0);
-                    const bonus = parseFloat(data.bonusKm || 0);
-                    matrix[oc][mStr].val += (zaklad + bonus);
+                    const plneKm = parseKmValue(data);
+                    matrixGlobal[oc][mStr].val += plneKm;
                 }
             }
         });
+
+        aktivniZobrazeneMesice = orezaneSledovaneMesice.filter(m => {
+            if (m === aktualniMesicKlic) return true;
+            for (const oc of seznamOsobníchCiselSerazeny) {
+                const cell = matrixGlobal[oc][m];
+                if (cell && ((cell.type === "km" && cell.val > 0) || (cell.type === "status" && cell.val !== ""))) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        const quartersHeaderRow = document.getElementById("quartersHeaderRow");
+        const monthsHeaderRow = document.getElementById("monthsHeaderRow");
+
+        if (quartersHeaderRow && monthsHeaderRow) {
+            quartersHeaderRow.innerHTML = "<th>Kvartál →</th>";
+            monthsHeaderRow.innerHTML = "<th>Řidič ↓</th>";
+
+            let kvartalPocetSloupcu = {};
+            aktivniZobrazeneMesice.forEach(m => {
+                const qId = kvartalMap[m] || "unknown";
+                kvartalPocetSloupcu[qId] = (kvartalPocetSloupcu[qId] || 0) + 1;
+            });
+
+            let zpracovaneKvartaly = [];
+            aktivniZobrazeneMesice.forEach(m => {
+                const qId = kvartalMap[m];
+                if (qId && !zpracovaneKvartaly.includes(qId)) {
+                    zpracovaneKvartaly.push(qId);
+                    const thQ = document.createElement("th");
+                    thQ.id = qId;
+                    thQ.style.color = "#a0aec0";
+                    thQ.colSpan = kvartalPocetSloupcu[qId];
+                    const qText = qId.replace("q", "Q").replace("-", "/");
+                    thQ.innerText = qText;
+                    quartersHeaderRow.appendChild(thQ);
+                }
+            });
+
+            const thCelkemKvartal = document.createElement("th");
+            thCelkemKvartal.innerText = "celkem:";
+            quartersHeaderRow.appendChild(thCelkemKvartal);
+
+            aktivniZobrazeneMesice.forEach(m => {
+                const thM = document.createElement("th");
+                const [rok, mesic] = m.split("-");
+                thM.innerText = `${parseInt(mesic)}/${rok.slice(-2)}`;
+                monthsHeaderRow.appendChild(thM);
+            });
+
+            const thCelkemMesic = document.createElement("th");
+            thCelkemMesic.innerText = "Celkem";
+            monthsHeaderRow.appendChild(thCelkemMesic);
+        }
+
+        ZvyrazniHlavičku();
 
         const tbody = document.getElementById("overallTableBody");
         tbody.innerHTML = "";
 
         let celkemZaMesice = {};
-        zobrazeneMesice.forEach(m => celkemZaMesice[m] = 0);
+        aktivniZobrazeneMesice.forEach(m => celkemZaMesice[m] = 0);
         let globalniCelkovySumar = 0;
 
         seznamOsobníchCiselSerazeny.forEach(oc => {
@@ -589,22 +949,28 @@ async function buildOverallDashboard() {
                 ocStyleClass = "oc-modder";
             }
 
-            let rowHtml = `<tr data-oc="${oc}"><td class="${ocStyleClass}">${oc}</td>`;
+            let infoBtnHtml = "";
+            if (isUserManagement) {
+                infoBtnHtml = `<span class="info-btn" data-oc="${oc}" data-email="${uData.email}" title="Zobrazit graf nájezdu">ⓘ</span>`;
+            }
+
+            let rowHtml = `<tr data-oc="${oc}"><td class="${ocStyleClass}"><div class="oc-cell-wrapper"><span>${oc}</span>${infoBtnHtml}</div></td>`;
             let sumaRidicKm = 0;
 
             let mesicPrvniAktivity = "";
-            for (const m of zobrazeneMesice) {
-                if (matrix[oc][m] && ((matrix[oc][m].type === "km" && matrix[oc][m].val > 0) || matrix[oc][m].type === "status")) {
+            for (const m of aktivniZobrazeneMesice) {
+                if (matrixGlobal[oc][m] && ((matrixGlobal[oc][m].type === "km" && matrixGlobal[oc][m].val > 0) || matrixGlobal[oc][m].type === "status")) {
                     mesicPrvniAktivity = m;
                     break;
                 }
             }
             if (!mesicPrvniAktivity) mesicPrvniAktivity = aktualniMesicKlic;
 
-            zobrazeneMesice.forEach(m => {
-                const cell = matrix[oc][m];
-                const maPauzuVTomtoMesici = omluvenkyMatrix[oc][m]; 
-                const jeOmluven = (maPauzuVTomtoMesici || (cell.type === "status" && cell.val === "/"));
+            aktivniZobrazeneMesice.forEach(m => {
+                const cell = matrixGlobal[oc][m];
+                const absenceType = omluvenkyMatrix[oc][m]; // "Pauza", "Omluvenka" nebo false
+                const jePauza = (absenceType === "Pauza");
+                const jeOmluven = (absenceType === "Omluvenka" || (cell.type === "status" && cell.val === "/"));
 
                 if (mesicPrvniAktivity && m < mesicPrvniAktivity) {
                     rowHtml += `<td class="cell-future">-</td>`;
@@ -618,7 +984,9 @@ async function buildOverallDashboard() {
                     const kilometry = cell.type === "km" ? Math.round(cell.val) : 0;
 
                     if (kilometry === 0) {
-                        if (jeOmluven) {
+                        if (jePauza) {
+                            rowHtml += `<td class="cell-pauza">P</td>`;
+                        } else if (jeOmluven) {
                             rowHtml += `<td class="cell-omluven">/</td>`;
                         } else if (m === aktualniMesicKlic) {
                             rowHtml += `<td class="cell-future">-</td>`;
@@ -629,7 +997,9 @@ async function buildOverallDashboard() {
                         sumaRidicKm += kilometry;
                         celkemZaMesice[m] += kilometry;
 
-                        if (jeOmluven) {
+                        if (jePauza) {
+                            rowHtml += `<td class="cell-pauza" style="font-weight:600;">${kilometry}</td>`;
+                        } else if (jeOmluven) {
                             rowHtml += `<td class="cell-omluven" style="font-weight:600;">${kilometry}</td>`;
                         } else {
                             const cellBgColor = ziskejBarvuSkaly(kilometry, limitProRidic);
@@ -648,31 +1018,316 @@ async function buildOverallDashboard() {
         });
 
         let totalRowHtml = `<tr class="total-row"><td>Celkem</td>`;
-        zobrazeneMesice.forEach(m => {
+        aktivniZobrazeneMesice.forEach(m => {
             totalRowHtml += `<td>${Math.round(celkemZaMesice[m])}</td>`;
         });
         totalRowHtml += `<td>${Math.round(globalniCelkovySumar)}</td></tr>`;
         
         tbody.innerHTML += totalRowHtml;
 
+        document.querySelectorAll(".info-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const targetOc = btn.getAttribute("data-oc");
+                const targetEmail = btn.getAttribute("data-email");
+                openDriverModal(targetOc, targetEmail);
+            });
+        });
+
         const toggleCheckbox = document.getElementById("toggleMyHighlight");
         if (toggleCheckbox) {
-            toggleCheckbox.addEventListener("change", (e) => {
+            const savedState = localStorage.getItem("alces_highlight_my_profile") === "true";
+            toggleCheckbox.checked = savedState;
+
+            function AplikujZvyrazneni(st) {
                 if (!myPersonalOc) return;
                 const myRow = document.querySelector(`tr[data-oc="${myPersonalOc}"]`);
                 if (myRow) {
-                    if (e.target.checked) {
-                        myRow.classList.add("my-profile-highlight");
-                    } else {
-                        myRow.classList.remove("my-profile-highlight");
-                    }
+                    if (st) myRow.classList.add("my-profile-highlight");
+                    else myRow.classList.remove("my-profile-highlight");
                 }
+            }
+
+            if (savedState) AplikujZvyrazneni(true);
+
+            toggleCheckbox.addEventListener("change", (e) => {
+                const st = e.target.checked;
+                localStorage.setItem("alces_highlight_my_profile", st ? "true" : "false");
+                AplikujZvyrazneni(st);
             });
         }
 
     } catch (err) {
         console.error("Chyba dashboardu:", err);
     }
+}
+
+function openDriverModal(oc, email) {
+    isCompanyMode = false;
+    currentModalOc = oc;
+    currentModalEmail = email;
+
+    document.getElementById("modalOcBox").style.display = "block";
+    document.getElementById("companyDiffContainer").classList.add("hidden");
+    document.getElementById("modalDriverOc").innerText = oc;
+    document.getElementById("modalDriverName").innerText = `Graf řidiče (OČ: ${oc})`;
+
+    renderModalChart();
+    document.getElementById("driverGraphModal").classList.add("active");
+}
+
+function openCompanyModal() {
+    isCompanyMode = true;
+    currentModalOc = "";
+    currentModalEmail = "";
+
+    document.getElementById("modalOcBox").style.display = "none";
+    document.getElementById("modalDriverName").innerText = `Celkový vývoj nájezdu alces, a. s.`;
+
+    renderModalChart();
+    document.getElementById("driverGraphModal").classList.add("active");
+}
+
+function computeCompanyMonthOverMonthDifferences() {
+    const currIdx = sledovaneMesice.indexOf(aktualniMesicKlic);
+    const lastIdx = currIdx > 0 ? currIdx - 1 : 0;
+    
+    const currMonthKlic = aktualniMesicKlic;
+    const lastMonthKlic = sledovaneMesice[lastIdx];
+
+    let maxInc = 0;
+    let maxIncOc = "";
+    let maxIncEmail = "";
+
+    let maxDec = 0;
+    let maxDecOc = "";
+    let maxDecEmail = "";
+
+    Object.keys(matrixGlobal).forEach(oc => {
+        const currData = matrixGlobal[oc][currMonthKlic];
+        const lastData = matrixGlobal[oc][lastMonthKlic];
+
+        const currKm = (currData && currData.type === "km") ? currData.val : 0;
+        const lastKm = (lastData && lastData.type === "km") ? lastData.val : 0;
+
+        if (lastKm >= 1) {
+            const diff = currKm - lastKm;
+
+            let email = "";
+            for (const [e, info] of Object.entries(ridiciMap)) {
+                if (info.oc === oc) { email = info.email; break; }
+            }
+
+            if (diff > maxInc) {
+                maxInc = diff;
+                maxIncOc = oc;
+                maxIncEmail = email;
+            }
+            if (diff < maxDec) {
+                maxDec = diff;
+                maxDecOc = oc;
+                maxDecEmail = email;
+            }
+        }
+    });
+
+    topIncreaserOc = maxIncOc;
+    topIncreaserEmail = maxIncEmail;
+    topDecreaserOc = maxDecOc;
+    topDecreaserEmail = maxDecEmail;
+
+    const incBtn = document.getElementById("btnJumpIncrease");
+    const decBtn = document.getElementById("btnJumpDecrease");
+
+    if (maxIncOc && maxInc > 0) {
+        document.getElementById("maxIncreaseText").innerText = `OČ ${maxIncOc} (+${Math.round(maxInc)} km)`;
+        incBtn.style.display = "inline-block";
+    } else {
+        document.getElementById("maxIncreaseText").innerText = "Žádný nárůst";
+        incBtn.style.display = "none";
+    }
+
+    if (maxDecOc && maxDec < 0) {
+        document.getElementById("maxDecreaseText").innerText = `OČ ${maxDecOc} (${Math.round(maxDec)} km)`;
+        decBtn.style.display = "inline-block";
+    } else {
+        document.getElementById("maxDecreaseText").innerText = "Žádný pokles";
+        decBtn.style.display = "none";
+    }
+}
+
+function renderModalChart() {
+    const selectedPeriod = document.getElementById("modalPeriodSelect").value;
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const diffContainer = document.getElementById("companyDiffContainer");
+
+    if (isCompanyMode) {
+        if (selectedPeriod === "thisMonth") {
+            computeCompanyMonthOverMonthDifferences();
+            diffContainer.classList.remove("hidden");
+        } else {
+            diffContainer.classList.add("hidden");
+        }
+    } else {
+        diffContainer.classList.add("hidden");
+    }
+
+    const labelsMap = new Map();
+    let totalPeriodKm = 0;
+
+    const vsechnyDokumenty = [...cachedDzvaDocs, ...cachedArchiveDocs];
+
+    if (selectedPeriod === "thisMonth" || selectedPeriod === "lastMonth") {
+        const targetMonth = selectedPeriod === "thisMonth" ? currentMonth : (currentMonth === 0 ? 11 : currentMonth - 1);
+        const targetYear = (selectedPeriod === "lastMonth" && currentMonth === 0) ? currentYear - 1 : currentYear;
+
+        const records = [];
+        vsechnyDokumenty.forEach(item => {
+            const data = item.data;
+            const docId = item.docId || "";
+            const docEmail = (data.userEmail || "").toLowerCase().trim();
+            const docOc = String(data.oc || data.osobniCislo || data.osobni_cislo || "").toUpperCase().trim();
+
+            if (isCompanyMode || (docOc === currentModalOc || (currentModalEmail && docEmail === currentModalEmail))) {
+                const km = parseKmValue(data);
+                const date = parseDocDate(data, docId);
+
+                if (date && km > 0) {
+                    if (date.getMonth() === targetMonth && date.getFullYear() === targetYear) {
+                        records.push({ date, km });
+                    }
+                }
+            }
+        });
+
+        records.sort((a, b) => a.date - b.date);
+
+        records.forEach(rec => {
+            const m = rec.date.getMonth();
+            const d = rec.date.getDate();
+            const key = `${d}. ${m + 1}.`;
+            labelsMap.set(key, (labelsMap.get(key) || 0) + rec.km);
+            totalPeriodKm += rec.km;
+        });
+
+    } else {
+        const currIdx = sledovaneMesice.indexOf(aktualniMesicKlic);
+        let targetMonths = [];
+
+        if (selectedPeriod === "last3Months") {
+            const start = Math.max(0, currIdx - 2);
+            targetMonths = sledovaneMesice.slice(start, currIdx + 1);
+        } else if (selectedPeriod === "thisYear") {
+            const currentYearStr = String(new Date().getFullYear());
+            targetMonths = sledovaneMesice.filter(m => m.startsWith(currentYearStr));
+        } else {
+            if (!isCompanyMode && currentModalOc) {
+                let firstActiveIndex = -1;
+                aktivniZobrazeneMesice.forEach((m, idx) => {
+                    const cell = matrixGlobal[currentModalOc][m];
+                    if (firstActiveIndex === -1 && cell && ((cell.type === "km" && cell.val > 0) || (cell.type === "status" && cell.val !== "" && cell.val !== "-"))) {
+                        firstActiveIndex = idx;
+                    }
+                });
+                if (firstActiveIndex !== -1) {
+                    targetMonths = aktivniZobrazeneMesice.slice(firstActiveIndex);
+                } else {
+                    targetMonths = [...aktivniZobrazeneMesice];
+                }
+            } else {
+                targetMonths = [...aktivniZobrazeneMesice];
+            }
+        }
+
+        targetMonths.forEach(mKlic => {
+            const [r, m] = mKlic.split("-");
+            const label = `${parseInt(m)}/${r.slice(-2)}`;
+
+            let mSum = 0;
+            if (isCompanyMode) {
+                Object.keys(matrixGlobal).forEach(oc => {
+                    const cell = matrixGlobal[oc][mKlic];
+                    if (cell && cell.type === "km") {
+                        mSum += cell.val;
+                    }
+                });
+            } else if (currentModalOc && matrixGlobal[currentModalOc]) {
+                const cell = matrixGlobal[currentModalOc][mKlic];
+                if (cell && cell.type === "km") {
+                    mSum += cell.val;
+                }
+            }
+
+            if (selectedPeriod === "allTime" || selectedPeriod === "thisYear") {
+                if (!isCompanyMode && mSum === 0 && labelsMap.size === 0) {
+                    return; 
+                }
+            }
+
+            labelsMap.set(label, Math.round(mSum));
+            totalPeriodKm += mSum;
+        });
+    }
+
+    document.getElementById("modalDriverKm").innerText = Math.round(totalPeriodKm).toLocaleString("cs-CZ") + " km";
+
+    const ctx = document.getElementById("driverChartCanvas").getContext("2d");
+    const labels = Array.from(labelsMap.keys());
+    const values = Array.from(labelsMap.values());
+
+    if (modalChartInstance) {
+        modalChartInstance.destroy();
+    }
+
+    const chartTitle = isCompanyMode ? "Celkový firemní nájezd (km)" : "Osobní nájezd (km)";
+    const lineColor = isCompanyMode ? "#ffd84d" : "#00ff66";
+    const bgGradient = isCompanyMode ? "rgba(255, 216, 77, 0.15)" : "rgba(0, 255, 102, 0.12)";
+
+    modalChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: chartTitle,
+                data: values,
+                borderColor: lineColor,
+                backgroundColor: bgGradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#ffffff',
+                pointRadius: 4,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: 'rgba(255, 255, 255, 0.7)', font: { family: 'Poppins' } }
+                },
+                y: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: 'rgba(255, 255, 255, 0.7)', font: { family: 'Poppins' } }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#ffffff', font: { family: 'Poppins' } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` Nájezd: ${Math.round(context.raw).toLocaleString('cs-CZ')} km`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function upravFaviconuPodleRezimu() {

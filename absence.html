@@ -264,7 +264,7 @@ async function loadMyAbsences() {
             let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
             if (data.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
             if (data.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
-            if (data.adminNote) statusBadge += `<br><span style="font-size: 11px; opacity: 0.7; color: #ffd84d; display: block; margin-top: 2px;">💬 Vyjádření: ${data.adminNote}</span>`;
+            if (data.adminNote) statusBadge += `<br><span style="font-size: 11px; opacity: 0.7; color: #ffd84d; display: block; margin-top: 2px;"><b>Vyjádření:</b> ${data.adminNote}</span>`;
 
             const mFrom = formatMonthHTML(data.from);
             const mTo = formatMonthHTML(data.to);
@@ -345,6 +345,7 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
         const mTo = formatMonthHTML(toValue);
 
         const discordMessage = {
+            content: "<@1159375700889972736>",
             embeds: [{
                 title: type === "Omluvenka" ? "Nová omluvenka ke schválení" : "Nová žádost o pauzu",
                 color: type === "Omluvenka" ? 16738657 : 16766029,
@@ -354,7 +355,7 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
                     { name: "Termín", value: type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`, inline: false },
                     { name: "Důvod / poznámka", value: reason, inline: false }
                 ],
-                footer: { text: "alces-as.fun" },
+                footer: { text: "alcesas.fun" },
                 timestamp: new Date().toISOString()
             }]
         };

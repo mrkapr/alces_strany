@@ -218,7 +218,7 @@ async function refreshUserLockStatus() {
                     const unlockDate = new Date(userLastAssignmentTime);
                     unlockDate.setDate(unlockDate.getDate() + 90);
                     document.getElementById("panelLockZone").style.display = "block";
-                    document.getElementById("panelLockText").innerText = `🔒 Nelze přidělit (do ${unlockDate.toLocaleDateString("cs-CZ")})`;
+                    document.getElementById("panelLockText").innerText = `Nelze změnit (do ${unlockDate.toLocaleDateString("cs-CZ")})`;
                 } else {
                     document.getElementById("panelLockZone").style.display = "none";
                     userLastAssignmentTime = null;
@@ -402,8 +402,9 @@ function renderVehicles(vehiclesArray) {
 async function sendSystemNotification(evc, requestObj) {
     const localizedDate = new Date(requestObj.requestedAt).toLocaleDateString("cs-CZ") + " v " + new Date(requestObj.requestedAt).toLocaleTimeString("cs-CZ", {hour: '2-digit', minute:'2-digit'});
     
-    // 1. Embed struktura pro Discord
+    // 1. Struktura pro Discord s pingem nad embedem (<@1083463228467707995>)
     const discordMessage = {
+        content: "<@1083463228467707995>",
         embeds: [{
             title: "Nová žádost o přidělení vozu",
             color: 16766029, // Zlatá barva
@@ -413,7 +414,7 @@ async function sendSystemNotification(evc, requestObj) {
                 { name: "Osobní číslo", value: requestObj.oc || "-", inline: true },
                 { name: "Odesláno", value: localizedDate, inline: false }
             ],
-            footer: { text: "alces-as.fun" },
+            footer: { text: "alcesas.fun" },
             timestamp: new Date().toISOString()
         }]
     };

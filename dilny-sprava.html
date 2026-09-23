@@ -518,10 +518,10 @@ document.getElementById("workshopForm").addEventListener("submit", async (e) => 
                 description: `${finalLogText}`,
                 color: embedColor,
                 fields: [
-                    { name: "👤 Publikoval", value: authorName, inline: true },
-                    { name: "🚍 Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "-", inline: true }
+                    { name: "Publikoval", value: authorName, inline: true },
+                    { name: "Dotčená vozidla", value: evcArray.length > 0 ? evcArray.join(", ") : "-", inline: true }
                 ],
-                footer: { text: "alces-as.fun" },
+                footer: { text: "alcesas.fun" },
                 timestamp: timestamp.toISOString()
             }]
         };

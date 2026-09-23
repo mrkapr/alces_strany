@@ -51,10 +51,10 @@
         .admin-table tr:last-child td { border-bottom: none; }
 
         /* Šířky sloupců v tabulce za účelem vyváženého layoutu */
-        .col-driver { width: 18%; }
+        .col-driver { width: 20%; }
         .col-type { width: 12%; }
         .col-date { width: 16%; }
-        .col-reason { width: 28%; word-break: break-word; }
+        .col-reason { width: 26%; word-break: break-word; }
         .col-status { width: 11%; }
         .col-actions { width: 15%; text-align: right; }
 
@@ -199,6 +199,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+let usersOcMap = {};
 
 onAuthStateChanged(auth, async (user) => {
     const userRank = localStorage.getItem("rank") || "";
@@ -206,6 +207,7 @@ onAuthStateChanged(auth, async (user) => {
     if (allowedRanks.includes(userRank)) {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("error-screen").style.display = "none";
+        await loadUsersMap();
         await loadAllAbsences();
     } else {
         document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto stránku může zobrazit pouze vedení firmy (Team Manager a vyšší).";
@@ -213,6 +215,23 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("mainContent").style.display = "none";
     }
 });
+
+async function loadUsersMap() {
+    try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        usersOcMap = {};
+        usersSnap.forEach(uDoc => {
+            const uData = uDoc.data();
+            const email = uDoc.id.toLowerCase().trim();
+            const oc = String(uData.oc || uData.osobniCislo || "").toUpperCase().trim();
+            if (email && oc) {
+                usersOcMap[email] = oc;
+            }
+        });
+    } catch (err) {
+        console.error("Chyba při načítání uživatelů pro OČ:", err);
+    }
+}
 
 function formatMonthHTML(monthString) {
     if (!monthString) return "";
@@ -246,6 +265,15 @@ async function loadAllAbsences() {
             const reqId = item.id;
             const reqData = item.data;
 
+            // Zjištění osobního čísla (OČ)
+            let userOc = String(reqData.oc || reqData.osobniCislo || "").toUpperCase().trim();
+            if (!userOc && reqData.userEmail) {
+                const emKey = String(reqData.userEmail).toLowerCase().trim();
+                userOc = usersOcMap[emKey] || "Neznámé OČ";
+            } else if (!userOc) {
+                userOc = "Neznámé OČ";
+            }
+
             let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
             if (reqData.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
             if (reqData.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
@@ -267,7 +295,6 @@ async function loadAllAbsences() {
             const mTo = formatMonthHTML(reqData.to);
             const reasonText = reqData.reason || "-";
 
-            // Pokud existuje vzkaz od vedení, přiložíme ho přímo pod důvod
             const adminNoteHtml = reqData.adminNote 
                 ? `<div class="admin-note-box"><strong>Vzkaz:</strong> ${reqData.adminNote}</div>` 
                 : "";
@@ -276,10 +303,11 @@ async function loadAllAbsences() {
             row.innerHTML = `
                 <td data-label="Jméno řidiče" class="col-driver">
                     <strong>${reqData.userName || "Neznámý řidič"}</strong><br>
+                    <span style="color: #ffd84d; font-weight: 600; font-size: 12px;">OČ: ${userOc}</span><br>
                     <span style="font-size:11px; opacity:0.5;">${reqData.userEmail}</span>
                 </td>
                 <td data-label="Typ" class="col-type" style="font-weight: 600;">${reqData.type}</td>
-                <td data-label="Termín" class="col-date">${reqData.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
+                <td data-label="Termín" class="col-date">${reqData.type === "Omluvenka" ? mFrom : `${mFrom} -${mTo}`}</td>
                 <td data-label="Důvod / Poznámka" class="col-reason">
                     ${reasonText}
                     ${adminNoteHtml}

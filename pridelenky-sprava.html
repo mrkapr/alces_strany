@@ -149,18 +149,37 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const allowedRanks = ["team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
+let usersOcMap = {};
 
 onAuthStateChanged(auth, async (user) => {
     const userRank = localStorage.getItem("rank") || "";
     if (user && allowedRanks.includes(userRank)) {
         document.getElementById("mainContent").style.display = "block";
         document.getElementById("error-screen").style.display = "none";
+        await loadUsersMap();
         await loadPendingRequests();
     } else {
         document.getElementById("error-screen").innerText = "Přístup odepřen. Tuto sekci může spravovat pouze vedení.";
         document.getElementById("error-screen").style.display = "block";
     }
 });
+
+async function loadUsersMap() {
+    try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        usersOcMap = {};
+        usersSnap.forEach(uDoc => {
+            const uData = uDoc.data();
+            const email = uDoc.id.toLowerCase().trim();
+            const oc = String(uData.oc || uData.osobniCislo || "").toUpperCase().trim();
+            if (email && oc) {
+                usersOcMap[email] = oc;
+            }
+        });
+    } catch (err) {
+        console.error("Chyba při načítání uživatelů pro OČ:", err);
+    }
+}
 
 async function loadPendingRequests() {
     const tbody = document.getElementById("requestsTableBody");
@@ -179,11 +198,20 @@ async function loadPendingRequests() {
             pending.forEach((req) => {
                 hasAnyRequest = true;
                 const safeEmailId = req.email.replace(/[^a-zA-Z0-9]/g, "");
+                
+                // Zjištění osobního čísla (OČ) z objektu žádosti nebo z mapy uživatelů podle e-mailu
+                let driverOc = String(req.oc || "").toUpperCase().trim();
+                if (!driverOc && req.email) {
+                    const emailKey = req.email.toLowerCase().trim();
+                    driverOc = usersOcMap[emailKey] || "-";
+                }
+                if (!driverOc) driverOc = "-";
+
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td data-label="Ev.č. vozu"><strong>ev.č. ${evc}</strong></td>
                     <td data-label="Řidič">${req.name}</td>
-                    <td data-label="Osobní číslo"><strong>${req.oc || "-"}</strong></td>
+                    <td data-label="Osobní číslo"><strong style="color: #ffd84d;">${driverOc}</strong></td>
                     <td data-label="E-mail">${req.email}</td>
                     <td data-label="Datum žádosti">${new Date(req.requestedAt).toLocaleDateString("cs-CZ")}</td>
                     <td data-label="Akce">
@@ -230,10 +258,17 @@ window.resolveRequest = async function(evc, driverEmail, isApproved) {
 
             if (isApproved && foundRequest) {
                 const timestampNow = new Date().toISOString();
+                
+                // Dobaře dohledáme OČ i při schvalování pro jistotu
+                let finalOc = String(foundRequest.oc || "").toUpperCase().trim();
+                if (!finalOc || finalOc === "-") {
+                    finalOc = usersOcMap[driverEmail.toLowerCase().trim()] || "-";
+                }
+
                 currentDrivers.push({
                     email: foundRequest.email,
                     name: foundRequest.name,
-                    oc: foundRequest.oc || "-",
+                    oc: finalOc,
                     assignedAt: timestampNow
                 });
                 
