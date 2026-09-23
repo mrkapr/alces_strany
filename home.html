@@ -828,8 +828,8 @@
 
 #menuToggleBtn {
     position: fixed; 
-    right: 20px;       
-    top: 90px;         
+    right: 20px;      
+    top: 90px;        
     
     /* Skleněný, poloprůhledný vzhled */
     background: rgba(255, 255, 255, 0.08);
@@ -844,7 +844,7 @@
     cursor: pointer; 
     backdrop-filter: blur(12px); 
     -webkit-backdrop-filter: blur(12px); 
-    z-index: 9999;     
+    z-index: 9999;    
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
@@ -1159,17 +1159,17 @@
         <div class="mentor-section">
             <div class="mentor-card">
                 <div class="mentor-profile">
-                    <img id="mentorAvatar">
+                    <img id="mentorAvatar" src="fotky/univ/logo.png" alt="Mentor">
                 </div>
-                <div class="mentor-name" id="mentorName"></div>
-                <div class="mentor-role" id="mentorRole"></div>
+                <div class="mentor-name" id="mentorName">Načítám...</div>
+                <div class="mentor-role" id="mentorRole">Mentor</div>
                 <div id="mentorRoom" style="font-size: 13px; color: #ffd84d; font-weight: 600; margin-top: 4px;"></div>
                 <div class="mentor-label">Přidělený mentor</div>
             </div>
 
             <div class="mentor-bubble">
                 <div class="bubble-arrow"></div>
-                <div class="bubble-text" id="mentorMessage">Načítám...</div>
+                <div class="bubble-text" id="mentorMessage">Načítám zprávu...</div>
                 <div class="bubble-sign">alces</div>
             </div>
         </div>
@@ -1279,14 +1279,12 @@ function showRankContent(rank) {
         });
     }
 
-    // Pro řidiče i repaintera zobrazíme společný obsah pro řidiče
     if (rank === "ridic" || rank === "repainter") {
         document.querySelectorAll(".rank-ridic").forEach(element => {
             element.style.display = "inline-block";
         });
     }
 
-    // Speciální zapnutí prvků navíc pro repaintera
     if (rank === "repainter") {
         document.querySelectorAll(".rank-repainter").forEach(element => {
             element.style.display = "inline-block";
@@ -1398,16 +1396,13 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let userEmail = ""; 
-const mentorId = localStorage.getItem("mentorId");
-
-// Přidán "repainter" do povolených rolí pro otevření boční správy
 const allowedRanks = ["repainter", "team-manager", "dispecer", "provozni-reditel", "management", "majitel"];
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         userEmail = user.email; 
         
-        await loadMentor();
+        await loadMentorQuickly(user.email);
         await loadAnnouncements();
         await loadUnconfirmedWorkshopLogs(user.email);
 
@@ -1445,26 +1440,40 @@ window.logout = async function() {
     }
 };
 
-async function loadMentor() {
-    if (mentorId) {
-        try {
-            const docRef = doc(db, "mentors", String(mentorId).trim());
+async function loadMentorQuickly(currentUserEmail) {
+    try {
+        const userDocSnap = await getDoc(doc(db, "users", currentUserEmail));
+        let activeMentorId = localStorage.getItem("mentorId");
+
+        if (userDocSnap.exists()) {
+            const uData = userDocSnap.data();
+            if (uData.mentorId) {
+                activeMentorId = String(uData.mentorId).trim();
+                localStorage.setItem("mentorId", activeMentorId);
+            }
+        }
+
+        if (activeMentorId) {
+            const docRef = doc(db, "mentors", activeMentorId);
             const mentorSnap = await getDoc(docRef);
 
             if (mentorSnap.exists()) {
                 const mentor = mentorSnap.data();
                 if (document.getElementById("mentorName")) document.getElementById("mentorName").innerText = mentor.name || "Jméno se nepodařilo načíst.";
                 if (document.getElementById("mentorRole")) document.getElementById("mentorRole").innerText = mentor.role || "Mentor";
-                if (document.getElementById("mentorAvatar") && mentor.avatar) document.getElementById("mentorAvatar").src = mentor.avatar;
                 if (document.getElementById("mentorMessage")) document.getElementById("mentorMessage").innerText = mentor.message || "Zpráva nebyla načtena.";
                 if (document.getElementById("mentorRoom")) document.getElementById("mentorRoom").innerText = mentor.room ? `Přidělená místnost: ${mentor.room}` : "";
                 
+                if (mentor.avatar && document.getElementById("mentorAvatar")) {
+                    document.getElementById("mentorAvatar").src = mentor.avatar;
+                }
+
                 const mentorSection = document.querySelector(".mentor-section");
                 if (mentorSection) mentorSection.style.display = "flex";
             }
-        } catch (error) {
-            console.error("Chyba při načítání mentora:", error);
         }
+    } catch (error) {
+        console.error("Chyba při načítání mentora:", error);
     }
 }
 

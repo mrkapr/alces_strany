@@ -174,6 +174,14 @@
                     <button class="btn-save" id="saveHorryBtn">Uložit</button>
                 </div>
             </div>
+
+            <div class="panel" id="panelJakubMsg" style="display:none;">
+                <h2>Bublina: Jakub Sch. (7063)</h2>
+                <div class="msg-form">
+                    <textarea id="msgJakubText" placeholder="Zpráva pro Jakubovu bublinu..."></textarea>
+                    <button class="btn-save" id="saveJakubBtn">Uložit</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -221,11 +229,13 @@ async function setupPermissions() {
         document.getElementById("roleBadge").style.color = "white";
         document.getElementById("middlePanelTitle").innerText = "Kompletní přehled přidělených nováčků";
         
-        // Majitel vidí a spravuje oba mentory najednou
+        // Majitel vidí a spravuje všechny mentory najednou
         document.getElementById("panelVasikMsg").style.display = "block";
         document.getElementById("panelHorryMsg").style.display = "block";
+        document.getElementById("panelJakubMsg").style.display = "block";
         loadMentorMessage("7002", "msgVasikText");
         loadMentorMessage("7067", "msgHorryText");
+        loadMentorMessage("7063", "msgJakubText");
     } else if (currentUserEmail === "vasik.kovyt.stream@gmail.com") {
         currentMentorId = "7002";
         document.getElementById("welcomeTitle").innerText = "Panel mentora";
@@ -240,6 +250,13 @@ async function setupPermissions() {
         document.getElementById("middlePanelTitle").innerText = "Moji svěření nováčci";
         document.getElementById("panelHorryMsg").style.display = "block";
         loadMentorMessage("7067", "msgHorryText");
+    } else if (currentUserEmail === "jakubkoschwarz@gmail.com") {
+        currentMentorId = "7063";
+        document.getElementById("welcomeTitle").innerText = "Panel mentora";
+        document.getElementById("roleBadge").innerText = "Mentor (ID 7063)";
+        document.getElementById("middlePanelTitle").innerText = "Moji svěření nováčci";
+        document.getElementById("panelJakubMsg").style.display = "block";
+        loadMentorMessage("7063", "msgJakubText");
     } else {
         document.getElementById("welcomeTitle").innerText = "Přístup odepřen";
         document.getElementById("roleBadge").innerText = "Chybějící oprávnění";
@@ -255,7 +272,6 @@ async function loadMentorMessage(mId, textareaId) {
 }
 
 // Hlavní načítání dat z Firebase
-// Hlavní načítání dat z Firebase
 async function loadData() {
     const unassignedList = document.getElementById("unassignedList");
     const myStudentsList = document.getElementById("myStudentsList");
@@ -267,7 +283,6 @@ async function loadData() {
     let hasUnassignedAny = false;
 
     try {
-        // TADY JE TA OPRAVA: Vždy při volání loadData() si stáhneme úplně nová, aktuální data
         const querySnapshot = await getDocs(collection(db, "users"));
         
         querySnapshot.forEach((userDoc) => {
@@ -284,6 +299,7 @@ async function loadData() {
                 let mentorStatusText = "Volný nováček";
                 if(mentorId === "7002") mentorStatusText = "Svěřen: Vašek K. (7002)";
                 if(mentorId === "7067") mentorStatusText = "Svěřen: Jan H. (7067)";
+                if(mentorId === "7063") mentorStatusText = "Svěřen: Jakub Sch. (7063)";
 
                 li.innerHTML = `
                     <div class="user-info">
@@ -303,18 +319,16 @@ async function loadData() {
                         <option value="" ${mentorId === "" ? "selected" : ""}>-- Bez mentora --</option>
                         <option value="7002" ${mentorId === "7002" ? "selected" : ""}>Vašek K. (7002)</option>
                         <option value="7067" ${mentorId === "7067" ? "selected" : ""}>Jan H. (7067)</option>
+                        <option value="7063" ${mentorId === "7063" ? "selected" : ""}>Jakub Sch. (7063)</option>
                     `;
                     
                     select.addEventListener("change", async () => {
-                        // 1. Zápis do Firebase
                         await updateDoc(doc(db, "users", userDocId), { mentorId: select.value });
-                        // 2. Okamžité znovunačtení čerstvých dat, které lidi správně přesune
                         await loadData(); 
                     });
                     btnContainer.appendChild(select);
                     li.appendChild(btnContainer);
 
-                    // ROZDĚLENÍ SEZNAMŮ PRO MAJITELE: 
                     if (!mentorId) {
                         unassignedList.appendChild(li);
                         hasUnassignedAny = true;
@@ -324,7 +338,7 @@ async function loadData() {
                     }
 
                 } else {
-                    // CO VIDÍ MENTORI (Vašík / Horry)
+                    // CO VIDÍ MENTORI
                     if (!mentorId) {
                         const btn = document.createElement("button");
                         btn.className = "btn-claim";
@@ -371,7 +385,7 @@ async function loadData() {
     }
 }
 
-// AKCE UKLÁDÁNÍ PRO TEXTY BUBILN
+// AKCE UKLÁDÁNÍ PRO TEXTY BUBLIN
 document.getElementById("saveVasikBtn").addEventListener("click", async () => {
     const text = document.getElementById("msgVasikText").value;
     try {
@@ -388,6 +402,14 @@ document.getElementById("saveHorryBtn").addEventListener("click", async () => {
     } catch (e) { alert("Chyba: " + e.message); }
 });
 
+document.getElementById("saveJakubBtn").addEventListener("click", async () => {
+    const text = document.getElementById("msgJakubText").value;
+    try {
+        await updateDoc(doc(db, "mentors", "7063"), { message: text });
+        alert("Zpráva pro Jakuba (7063) byla úspěšně změněna!");
+    } catch (e) { alert("Chyba: " + e.message); }
+});
+
 function upravFaviconuPodleRezimu() {
     const favicon = document.getElementById('favicon');
     if (!favicon) return;
@@ -395,9 +417,9 @@ function upravFaviconuPodleRezimu() {
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';  // Ikonka pro tmavý režim (např. svítivá/bílá)
+        favicon.href = 'fotky/univ/favicon.png';  
     } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png'; // Ikonka pro světlý režim (např. tmavá)
+        favicon.href = 'fotky/univ/favicon-cerna.png'; 
     }
 }
 
