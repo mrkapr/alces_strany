@@ -292,6 +292,7 @@ async function loadData() {
             if (userData.rank === "zkusebni-ridic") {
                 const mentorId = userData.mentorId ? String(userData.mentorId).trim() : "";
                 const zobrazenoJmeno = userData.name || userData.username || "Bez Jména";
+                const osobniCislo = userData.osobni_cislo || userData.osobniCislo || userData.oc || "-";
 
                 const li = document.createElement("li");
                 li.className = "user-item";
@@ -303,7 +304,7 @@ async function loadData() {
 
                 li.innerHTML = `
                     <div class="user-info">
-                        <span class="user-name">${zobrazenoJmeno}</span>
+                        <span class="user-name">${zobrazenoJmeno} <span style="font-size: 14px; opacity: 0.9; font-weight: 600; color: #ffd84d;">(OČ: ${osobniCislo})</span></span>
                         <span class="user-email">${userDocId}</span>
                         <span class="mentor-status">${mentorStatusText}</span>
                     </div>
