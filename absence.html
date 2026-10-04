@@ -46,6 +46,7 @@
         }
         textarea { resize: vertical; min-height: 100px; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+        input:disabled { opacity: 0.7; cursor: not-allowed; background: rgba(0,0,0,0.6); }
         button {
             font-family: 'Poppins', sans-serif; font-weight: 600; padding: 12px 20px;
             border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px;
@@ -57,6 +58,73 @@
         .absence-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         .absence-table th { padding: 12px 8px; color: #ffd84d; border-bottom: 2px solid rgba(255,255,255,0.15); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         .absence-table td { padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        
+        .btn-detail {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-detail:hover {
+            background: rgba(255, 216, 77, 0.2);
+            border-color: #ffd84d;
+            color: #ffd84d;
+        }
+
+        /* Vyskakovací okno (Modal) s animací */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            box-sizing: border-box;
+            transform: translateY(-30px) scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.open .modal-content {
+            transform: translateY(0) scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #ff4d4d; }
+        .modal-title { font-size: 20px; font-weight: 700; color: #ffd84d; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .modal-row { margin-bottom: 14px; }
+        .modal-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.5; margin-bottom: 4px; display: block; }
+        .modal-val { font-size: 14px; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); word-break: break-word; }
+
         .sidebar-right {
             position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
             background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -88,12 +156,6 @@
             .panel:has(.absence-table) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
             .absence-table th { padding: 8px 4px; font-size: 11px; }
             .absence-table td { padding: 10px 4px; }
-            .absence-table td[style*="max-width"] {
-                max-width: 130px !important;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
             .sidebar-right { width: 100vw; right: -100vw; }
         }
     </style>
@@ -117,6 +179,35 @@
     <a href="absence-sprava.html" style="display:block; color:white; text-decoration:none; padding:12px; border-radius:8px; margin-bottom:5px;">📅 Schvalování omluvenek</a>
 </div>
 
+<!-- Vyskakovací okno (Modal) s animací -->
+<div id="detailModal" class="modal-overlay" onclick="closeDetailModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeDetailModal()">✕</button>
+        <h3 class="modal-title">Detail žádosti</h3>
+        
+        <div class="modal-row">
+            <span class="modal-label">Typ žádosti</span>
+            <div class="modal-val" id="modalType">-</div>
+        </div>
+        <div class="modal-row">
+            <span class="modal-label">Měsíc / Termín</span>
+            <div class="modal-val" id="modalTermin">-</div>
+        </div>
+        <div class="modal-row">
+            <span class="modal-label">Stav žádosti</span>
+            <div class="modal-val" id="modalStatusBadge">-</div>
+        </div>
+        <div class="modal-row">
+            <span class="modal-label">Tvoje poznámka / důvod</span>
+            <div class="modal-val" id="modalReason">-</div>
+        </div>
+        <div class="modal-row">
+            <span class="modal-label">Vyjádření od vedení</span>
+            <div class="modal-val" id="modalAdminNote" style="color: #ffd84d;">-</div>
+        </div>
+    </div>
+</div>
+
 <div class="content">
     <h1>Žádost o omluvenku / pauzu</h1>
     
@@ -127,20 +218,20 @@
                 <div class="form-group">
                     <label>Typ žádosti</label>
                     <select id="absenceType" required onchange="handleTypeChange()">
-                        <option value="Omluvenka">Omluvenka (pouze aktuální měsíc)</option>
-                        <option value="Pauza">Pauza (dlouhodobá, max 3 měsíce)</option>
+                        <option value="Omluvenka">Omluvenka</option>
+                        <option value="Pauza">Pauza</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label id="labelFrom">Od měsíce</label>
-                    <input type="month" id="absenceFrom" required>
+                    <input type="month" id="absenceFrom" required disabled>
                 </div>
                 <div class="form-group" id="groupTo">
                     <label>Do měsíce (včetně)</label>
-                    <input type="month" id="absenceTo" required>
+                    <input type="month" id="absenceTo" required disabled>
                 </div>
                 <div class="form-group">
-                    <label>Důvod / Poznámka</label>
+                    <label>Důvod</label>
                     <textarea id="absenceReason" placeholder="Zde rozepiš podrobnosti..." required></textarea>
                 </div>
                 <button type="submit" id="absenceSubmitBtn" class="btn-add">Odeslat žádost</button>
@@ -154,8 +245,8 @@
                     <tr>
                         <th>Typ</th>
                         <th>Termín</th>
-                        <th>Poznámka</th>
-                        <th>Stav žádosti</th>
+                        <th>Stav</th>
+                        <th>Akce</th>
                     </tr>
                 </thead>
                 <tbody id="myAbsenceList">
@@ -169,6 +260,9 @@
 </div>
 
 <script>
+let calculatedFromValue = "";
+let calculatedToValue = "";
+
 function handleTypeChange() {
     const type = document.getElementById("absenceType").value;
     const inputFrom = document.getElementById("absenceFrom");
@@ -178,29 +272,72 @@ function handleTypeChange() {
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-    const currentMonthString = `${currentYear}-${currentMonth}`;
+    const currentMonth = now.getMonth(); // 0-11
+    const currentDate = now.getDate();
+    
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysRemaining = lastDayOfMonth - currentDate;
 
     if (type === "Omluvenka") {
         groupTo.style.display = "none";
         inputTo.removeAttribute("required");
         labelFrom.innerText = "Měsíc k omluvení";
         
+        const currentMonthString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        calculatedFromValue = currentMonthString;
+        calculatedToValue = "";
         inputFrom.value = currentMonthString;
-        inputFrom.min = currentMonthString;
-        inputFrom.max = currentMonthString;
     } else {
         groupTo.style.display = "flex";
         inputTo.setAttribute("required", "true");
         labelFrom.innerText = "Od měsíce";
         
-        inputFrom.value = "";
-        inputFrom.removeAttribute("min");
-        inputFrom.removeAttribute("max");
+        let targetMonthOffset = 1; 
+        if (daysRemaining < 5) {
+            targetMonthOffset = 2; 
+        }
+
+        const startDate = new Date(currentYear, currentMonth + targetMonthOffset, 1);
+        const startYear = startDate.getFullYear();
+        const startMonthStr = String(startDate.getMonth() + 1).padStart(2, '0');
+        calculatedFromValue = `${startYear}-${startMonthStr}`;
+        inputFrom.value = calculatedFromValue;
+
+        const endDate = new Date(startYear, startDate.getMonth() + 2, 1);
+        calculatedToValue = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}`;
+        inputTo.value = calculatedToValue;
     }
 }
 
 window.addEventListener("DOMContentLoaded", handleTypeChange);
+
+let loadedAbsencesData = {};
+
+function openDetailModal(id) {
+    const item = loadedAbsencesData[id];
+    if (!item) return;
+
+    document.getElementById("modalType").innerText = item.type;
+    
+    const mFrom = formatMonthHTML(item.from);
+    const mTo = formatMonthHTML(item.to);
+    document.getElementById("modalTermin").innerText = item.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`;
+    
+    document.getElementById("modalReason").innerText = item.reason || "Bez poznámky";
+
+    let statusText = "⏳ Čeká na vyřízení";
+    if (item.status === "schvaleno") statusText = "✓ Schváleno";
+    if (item.status === "zamitnuto") statusText = "✕ Zamítnuto";
+    document.getElementById("modalStatusBadge").innerText = statusText;
+
+    document.getElementById("modalAdminNote").innerText = item.adminNote ? item.adminNote : "-";
+
+    document.getElementById("detailModal").classList.add("open");
+}
+
+function closeDetailModal() {
+    document.getElementById("detailModal").classList.remove("open");
+}
 </script>
 
 <script type="module">
@@ -222,6 +359,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let userEmail = "";
+let myAllAbsencesHistory = [];
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -246,25 +384,43 @@ function formatMonthHTML(monthString) {
     const text = date.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
+window.formatMonthHTML = formatMonthHTML;
+
+function getQuarter(monthStr) {
+    if (!monthStr) return 1;
+    const month = parseInt(monthStr.split("-")[1], 10);
+    return Math.ceil(month / 3);
+}
+
+// Pomocná funkce pro převod "YYYY-MM" na celkový počet měsíců od epochy
+function monthToNumber(monthStr) {
+    if (!monthStr) return 0;
+    const [y, m] = monthStr.split("-").map(Number);
+    return y * 12 + m;
+}
 
 async function loadMyAbsences() {
     const tbody = document.getElementById("myAbsenceList");
     if (!tbody) return;
     tbody.innerHTML = "";
+    loadedAbsencesData = {};
+    myAllAbsencesHistory = [];
 
     try {
         const q = query(collection(db, "absences"), where("userEmail", "==", userEmail));
         const querySnapshot = await getDocs(q);
         let count = 0;
 
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const docId = docSnap.id;
+            loadedAbsencesData[docId] = data;
+            myAllAbsencesHistory.push({ id: docId, data: data });
             count++;
 
             let statusBadge = `<span style="color: #ffd84d; font-weight:600;">⏳ Čeká</span>`;
             if (data.status === "schvaleno") statusBadge = `<span style="color: #00ff66; font-weight:600;">✓ Schváleno</span>`;
             if (data.status === "zamitnuto") statusBadge = `<span style="color: #ff4d4d; font-weight:600;">✕ Zamítnuto</span>`;
-            if (data.adminNote) statusBadge += `<br><span style="font-size: 11px; opacity: 0.7; color: #ffd84d; display: block; margin-top: 2px;"><b>Vyjádření:</b> ${data.adminNote}</span>`;
 
             const mFrom = formatMonthHTML(data.from);
             const mTo = formatMonthHTML(data.to);
@@ -272,9 +428,9 @@ async function loadMyAbsences() {
             tbody.innerHTML += `
                 <tr>
                     <td style="font-weight: 600;">${data.type}</td>
-                    <td>${data.type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`}</td>
-                    <td style="opacity: 0.8; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${data.reason || ''}">${data.reason || "-"}</td>
+                    <td>${data.type === "Omluvenka" ? mFrom : `${mFrom} -${mTo}`}</td>
                     <td>${statusBadge}</td>
+                    <td><button class="btn-detail" onclick="openDetailModal('${docId}')">Zobrazit detail</button></td>
                 </tr>
             `;
         });
@@ -287,43 +443,113 @@ async function loadMyAbsences() {
     }
 }
 
+// Pokročilá validace pravidel 3.5.1 a 3.5.2 před odesláním
+function validateBeforeSubmit(type, fromVal) {
+    // Bereme v potaz pouze schválené nebo již čekající žádosti
+    const activeHistory = myAllAbsencesHistory.filter(item => item.data.status === "schvaleno" || item.data.status === "ceka");
+
+    const targetYear = fromVal.split("-")[0];
+    const targetQ = getQuarter(fromVal);
+    const targetMonthNum = monthToNumber(fromVal);
+
+    // 1. KONTROLA PRAVIDLA 2 MĚSÍCŮ PO PAUZĚ (3.5.2):
+    // "další dva měsíce nesmí být omluveny či nedojety [po pauze]"
+    for (const item of activeHistory) {
+        if (item.data.type === "Pauza" && item.data.to) {
+            const pauseEndMonthNum = monthToNumber(item.data.to); // poslední měsíc pauzy (např. prosinec)
+            // Zakázané měsíce jsou přesně následující 2 měsíce po skončení pauzy
+            if (targetMonthNum > pauseEndMonthNum && targetMonthNum <= pauseEndMonthNum + 2) {
+                return `Chyba podle pravidla 3.5.2: Od tvojí poslední pauzy neuplynuly povinné 2 měsíce bez omluvenek!`;
+            }
+        }
+    }
+
+    if (type === "Omluvenka") {
+        // Zjistíme, v jakém kvartálu byl předchozí kvartál (pro kontrolu zákazu v následujícím kvartálu)
+        // Kvartál před tímto:
+        let prevQ = targetQ - 1;
+        let prevQYear = parseInt(targetYear, 10);
+        if (prevQ === 0) {
+            prevQ = 4;
+            prevQYear -= 1;
+        }
+
+        // Kolik omluvenek měl řidič v MINULÉM kvartálu? Pokud 2 nebo více, ztrácí nárok na omluvenku v tomto kvartálu!
+        const omluvenkyMinulyKvartal = activeHistory.filter(item => {
+            if (item.data.type !== "Omluvenka") return false;
+            const m = item.data.from;
+            return m && m.startsWith(prevQYear) && getQuarter(m) === prevQ;
+        });
+
+        if (omluvenkyMinulyKvartal.length >= 2) {
+            return `Chyba podle pravidla 3.5.1: V minulém kvartálu jsi se omluvil/a 2×, proto ztrácíš nárok na omluvenku v tomto následujícím kvartálu!`;
+        }
+
+        // Kolik omluvenek už má v tomto aktuálním kvartálu? (Max 1 za kvartál)
+        const omluvenkyTentoKvartal = activeHistory.filter(item => {
+            if (item.data.type !== "Omluvenka") return false;
+            const m = item.data.from;
+            return m && m.startsWith(targetYear) && getQuarter(m) === targetQ;
+        });
+
+        if (omluvenkyTentoKvartal.length >= 1) {
+            return `Chyba podle pravidla 3.5.1: Na tento kvartál už máš vyčerpanou omluvenku (má-li řidič 2 omluvenky, platí přísnější postihy).`;
+        }
+
+    } else if (type === "Pauza") {
+        // Max 1 pauza za rok
+        const pauzyRok = activeHistory.filter(item => {
+            if (item.data.type !== "Pauza") return false;
+            const m = item.data.from;
+            return m && m.startsWith(targetYear);
+        });
+
+        if (pauzyRok.length >= 1) {
+            return "Chyba podle pravidla 3.5.2: O pauzu si můžeš zažádat maximálně 1× za kalendářní rok!";
+        }
+
+        // Měsíc před pauzou nesmí být omluven
+        const prevDate = new Date(parseInt(targetYear, 10), targetMonthNum % 12 - 2, 1);
+        const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+
+        const omluvenaPredchazi = activeHistory.find(item => {
+            if (item.data.type !== "Omluvenka") return false;
+            return item.data.from === prevMonthStr;
+        });
+
+        if (omluvenaPredchazi) {
+            return `Chyba podle pravidla 3.5.2: Měsíc předcházející pauze (${formatMonthHTML(prevMonthStr)}) nesmí být omluven!`;
+        }
+    }
+    return null;
+}
+
 document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // 🚀 INICIALIZACE ZÁMKU TLAČÍTKA PROTI VÍCENÁSOBNÉMU KLIKÁNÍ
     const submitBtn = document.getElementById("absenceSubmitBtn");
     if (submitBtn.disabled) return;
 
     const type = document.getElementById("absenceType").value;
-    const fromValue = document.getElementById("absenceFrom").value; // Změna názvu proměnné na fromValue (obsahuje čisté např. "2026-07")
-    let toValue = document.getElementById("absenceTo").value;     // Změna názvu proměnné na toValue (obsahuje čisté např. "2026-09")
+    const fromValue = calculatedFromValue;
+    let toValue = calculatedToValue;
     const reason = document.getElementById("absenceReason").value.trim();
     const userName = localStorage.getItem("username") || "Řidič";
 
-    if (type === "Pauza") {
-        const [yearFrom, monthFrom] = fromValue.split("-").map(Number);
-        const [yearTo, monthTo] = toValue.split("-").map(Number);
+    // Ověření pravidel před odesláním
+    const ruleError = validateBeforeSubmit(type, fromValue);
+    if (ruleError) {
+        alert(ruleError);
+        return;
+    }
 
-        const totalMonthsDiff = (yearTo - yearFrom) * 12 + (monthTo - monthFrom) + 1;
-
-        if (totalMonthsDiff <= 0) {
-            alert("Chyba: Koncový měsíc nemůže být dříve než počáteční!");
-            return;
-        }
-
-        if (totalMonthsDiff > 3) {
-            alert(`Chyba: Délka pauzy může být maximálně 3 měsíce! Zvolil jsi ${totalMonthsDiff} měsíců.`);
-            return;
-        }
-    } else {
+    if (type !== "Pauza") {
         toValue = ""; 
     }
 
-    // Jakmile projdou základní kontroly, tlačítko ihned uzamkneme
     submitBtn.disabled = true;
     submitBtn.innerText = "Odesílám...";
 
-    // 🚀 OPRAVA: Do databáze ukládáme čisté "2026-07", nikoliv český název textem
     const newRequest = {
         userEmail: userEmail,
         userName: userName,
@@ -340,20 +566,19 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
 
         const discordWebhookUrl = "https://discord.com/api/webhooks/1513537254755405956/aDusJk9CZCpnMYXvOblvGPsHYhQ5oVUKyJ0-ln1tFAW8IHdgHKuzFimWU8ppdISxJb-R"; 
         
-        // Formátování měsíců do češtiny provádíme až TEĎ a výhradně jen pro Discord zprávu
         const mFrom = formatMonthHTML(fromValue);
         const mTo = formatMonthHTML(toValue);
 
         const discordMessage = {
             content: "<@1159375700889972736>",
             embeds: [{
-                title: type === "Omluvenka" ? "Nová omluvenka ke schválení" : "Nová žádost o pauzu",
+                title: type === "Omluvenka" ? "Nová omluvenka ke schválení" : "Nová žádost o pauzu (3 měsíce)",
                 color: type === "Omluvenka" ? 16738657 : 16766029,
                 fields: [
                     { name: "Řidič", value: `**${userName}** (${userEmail})`, inline: true },
                     { name: "Typ", value: type, inline: true },
                     { name: "Termín", value: type === "Omluvenka" ? mFrom : `${mFrom} - ${mTo}`, inline: false },
-                    { name: "Důvod / poznámka", value: reason, inline: false }
+                    { name: "Důvod", value: reason, inline: false }
                 ],
                 footer: { text: "alcesas.fun" },
                 timestamp: new Date().toISOString()
@@ -366,14 +591,13 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
             body: JSON.stringify(discordMessage)
         }).catch(err => console.error(err));
 
-        alert("Žádost byla úspěšně odeslána a zprávu jsme poslali vedení na Discord!");
+        alert("Žádost byla úspěšně odeslána.");
         document.getElementById("absenceForm").reset();
         handleTypeChange(); 
         await loadMyAbsences();
     } catch (err) {
         alert("Chyba při odesílání: " + err.message);
     } finally {
-        // Po dokončení operace vrátíme tlačítko do původního stavu
         submitBtn.disabled = false;
         submitBtn.innerText = "Odeslat žádost";
     }

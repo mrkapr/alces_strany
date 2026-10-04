@@ -300,7 +300,7 @@ async function loadAnnouncementsAdmin() {
 
             const ulNo = annBlock.querySelector(`#no-${annId}`);
             if (missingPeople.length === 0) {
-                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni z cílové skupiny splnili povinnost!</li>`;
+                if (ulNo) ulNo.innerHTML = `<li style="color:#00ff66;">Všichni z vybraných rolí zprávu potvrdili.</li>`;
             } else {
                 missingPeople.forEach(p => {
                     if (ulNo) ulNo.innerHTML += `<li><strong>${p.name}</strong> <span style="font-size:11px; opacity:0.5;">(${p.rankName})</span></li>`;
@@ -350,6 +350,20 @@ document.getElementById("announcementForm").addEventListener("submit", async (e)
 
     try {
         await setDoc(doc(db, "announcements", uniqueDocId), newAnnouncement);
+
+        // --- ODESLÁNÍ JEDNODUCHÉHO UPOZORNĚNÍ NA DISCORD WEBHOOK ---
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1556260584805376062/DPhYTMj-4GsfEpzQdhVJaaphOYc29WAZxfwlCn9k7xm7XjEJKKlnfGYDt6PpPaKr0JrA";
+        const discordMessage = {
+            content: "Na stránkách bylo publikováno nové oznámení."
+        };
+
+        fetch(discordWebhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(discordMessage)
+        }).catch(err => console.error("Chyba při odesílání na Discord webhook:", err));
+        // -------------------------------------------------------------
+
         alert("Oznámení bylo úspěšně publikováno!");
         document.getElementById("announcementForm").reset();
         await loadSystem(); 

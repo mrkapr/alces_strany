@@ -63,7 +63,7 @@
             font-family: 'Inter', sans-serif !important; 
             font-weight: 700 !important;
             letter-spacing: -0.2px; 
-        }     
+        }    
         
         th:first-child, td:first-child {
             position: sticky; left: 0; z-index: 10; 
@@ -243,6 +243,50 @@
             cursor: pointer;
         }
 
+        /* Sekce pro úpravu limitu majitelem */
+        .admin-limit-section {
+            background: rgba(255, 216, 77, 0.08);
+            border: 1px solid rgba(255, 216, 77, 0.3);
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            display: none; /* Řízeno dynamicky přes JS */
+        }
+        .admin-limit-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #ffd84d;
+        }
+        .admin-limit-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .admin-limit-row select, .admin-limit-row input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            outline: none;
+        }
+        .admin-limit-row input { width: 80px; }
+        .btn-save-limit {
+            background: #ffd84d;
+            color: #000;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif; /* Převedeno na Poppins */
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 12px;
+            transition: transform 0.1s;
+        }
+        .btn-save-limit:hover { transform: scale(1.03); background: #ffea80; }
+
         .diff-cards-container {
             display: flex;
             gap: 10px;
@@ -303,7 +347,7 @@
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: 230px;
+            height: 200px;
             margin-top: 10px;
         }
 
@@ -413,6 +457,15 @@
             <div><strong>Celkový nájezd v období:</strong> <span id="modalDriverKm" style="color:#00ff66; font-weight:700;">0 km</span></div>
         </div>
 
+        <!-- Sekce pro majitele k úpravě limitu řidiče (ukáže se jen pro aktuální měsíc) -->
+        <div id="adminLimitSection" class="admin-limit-section">
+            <h3>Změnit měsíční limit</h3>
+            <div class="admin-limit-row">
+                <input type="number" id="adminLimitInput" placeholder="Limit (km)" min="0" max="1000">
+                <button class="btn-save-limit" id="btnSaveAdminLimit">Uložit limit</button>
+            </div>
+        </div>
+
         <!-- Karty nárůstu a poklesu oproti minulému měsíci -->
         <div id="companyDiffContainer" class="diff-cards-container hidden">
             <div class="diff-card">
@@ -440,7 +493,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -527,7 +580,10 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.getElementById("modalPeriodSelect").addEventListener("change", renderModalChart);
+    document.getElementById("modalPeriodSelect").addEventListener("change", () => {
+        checkAdminLimitVisibility();
+        renderModalChart();
+    });
 
     document.getElementById("btnCompanyGraph").addEventListener("click", () => {
         openCompanyModal();
@@ -544,6 +600,8 @@ window.addEventListener("DOMContentLoaded", () => {
             openDriverModal(topDecreaserOc, topDecreaserEmail);
         }
     });
+
+    document.getElementById("btnSaveAdminLimit").addEventListener("click", saveCustomDriverLimit);
 });
 
 function closeModal() {
@@ -675,9 +733,16 @@ async function buildOverallDashboard() {
             const oc = String(uData.oc || uData.osobniCislo || "").toUpperCase().trim();
             const rank = String(uData.rank || "ridic").toLowerCase().trim();
             const rName = String(uData.rankName || "").trim();
-            
+            const monthlyLimits = uData.monthlyLimits || uData.customLimits || {};
+
             if (oc) {
-                ridiciMap[emailKey] = { oc: oc, rank: rank, rankName: rName, email: emailKey };
+                ridiciMap[emailKey] = { 
+                    oc: oc, 
+                    rank: rank, 
+                    rankName: rName, 
+                    email: emailKey,
+                    monthlyLimits: monthlyLimits 
+                };
                 if (!dočasnýSeznamCisel.includes(oc)) {
                     dočasnýSeznamCisel.push(oc);
                 }
@@ -700,7 +765,7 @@ async function buildOverallDashboard() {
             for (const [em, info] of Object.entries(ridiciMap)) {
                 if (info.oc === oc) return info;
             }
-            return { rank: "ridic", rankName: "", email: "" };
+            return { rank: "ridic", rankName: "", email: "", monthlyLimits: {} };
         }
 
         let majitele = [];
@@ -786,7 +851,7 @@ async function buildOverallDashboard() {
             if (rInfo && data.status === "schvaleno" && data.from) {
                 const startMesic = data.from;
                 const konecMesic = data.to || data.from; 
-                const absenceType = String(data.type || "").trim(); // "Pauza" nebo "Omluvenka"
+                const absenceType = String(data.type || "").trim();
                 
                 orezaneSledovaneMesice.forEach(m => {
                     if (m >= startMesic && m <= konecMesic) {
@@ -924,8 +989,10 @@ async function buildOverallDashboard() {
             const uData = ziskejUzivatelData(oc);
             const uRank = uData.rank;
             const uRankName = uData.rankName.toLowerCase();
-            const limitProRidic = (uRank === "ridic" || uRank === "zkusebni-ridic") ? 70 : 50;
             
+            const globalniLimitProRidic = (uRank === "ridic" || uRank === "zkusebni-ridic") ? 70 : 50;
+            const mLimits = uData.monthlyLimits || {};
+
             let ocStyleClass = "oc-ridic"; 
             if (uRank === "management" && (uRankName.includes("úvazek") || uRankName.includes("poloviční"))) {
                 ocStyleClass = "oc-majitel-polovicni-uvazek";
@@ -951,7 +1018,7 @@ async function buildOverallDashboard() {
 
             let infoBtnHtml = "";
             if (isUserManagement) {
-                infoBtnHtml = `<span class="info-btn" data-oc="${oc}" data-email="${uData.email}" title="Zobrazit graf nájezdu">ⓘ</span>`;
+                infoBtnHtml = `<span class="info-btn" data-oc="${oc}" data-email="${uData.email}" title="Zobrazit graf nájezdu / nastavit limit">ⓘ</span>`;
             }
 
             let rowHtml = `<tr data-oc="${oc}"><td class="${ocStyleClass}"><div class="oc-cell-wrapper"><span>${oc}</span>${infoBtnHtml}</div></td>`;
@@ -968,9 +1035,11 @@ async function buildOverallDashboard() {
 
             aktivniZobrazeneMesice.forEach(m => {
                 const cell = matrixGlobal[oc][m];
-                const absenceType = omluvenkyMatrix[oc][m]; // "Pauza", "Omluvenka" nebo false
+                const absenceType = omluvenkyMatrix[oc][m];
                 const jePauza = (absenceType === "Pauza");
                 const jeOmluven = (absenceType === "Omluvenka" || (cell.type === "status" && cell.val === "/"));
+
+                const limitProRidic = mLimits[m] !== undefined ? mLimits[m] : globalniLimitProRidic;
 
                 if (mesicPrvniAktivity && m < mesicPrvniAktivity) {
                     rowHtml += `<td class="cell-future">-</td>`;
@@ -1005,7 +1074,7 @@ async function buildOverallDashboard() {
                             const cellBgColor = ziskejBarvuSkaly(kilometry, limitProRidic);
                             const isSplneno = kilometry >= limitProRidic;
                             const textStyle = isSplneno ? "color:#00ff66; font-weight:700;" : "color:#fff;";
-                            rowHtml += `<td style="background-color: ${cellBgColor}; ${textStyle}">${kilometry}</td>`;
+                            rowHtml += `<td style="background-color: ${cellBgColor}; ${textStyle}" title="Limit pro tento měsíc: ${limitProRidic} km">${kilometry}</td>`;
                         }
                     }
                 }
@@ -1072,8 +1141,63 @@ function openDriverModal(oc, email) {
     document.getElementById("modalDriverOc").innerText = oc;
     document.getElementById("modalDriverName").innerText = `Graf řidiče (OČ: ${oc})`;
 
+    checkAdminLimitVisibility();
     renderModalChart();
     document.getElementById("driverGraphModal").classList.add("active");
+}
+
+function checkAdminLimitVisibility() {
+    const adminLimitSection = document.getElementById("adminLimitSection");
+    const selectedPeriod = document.getElementById("modalPeriodSelect").value;
+    
+    // Zobrazit možnost úpravy limitu pouze pokud je uživatel vedení a zároveň je vybrán "Tento měsíc"
+    if (isUserManagement && !isCompanyMode && selectedPeriod === "thisMonth") {
+        adminLimitSection.style.display = "block";
+        setupAdminLimitInput(currentModalEmail);
+    } else {
+        adminLimitSection.style.display = "none";
+    }
+}
+
+function setupAdminLimitInput(email) {
+    const limitInput = document.getElementById("adminLimitInput");
+    const uInfo = ridiciMap[email] || {};
+    const mLimits = uInfo.monthlyLimits || {};
+    
+    // Načte limit pro aktuální měsíc
+    const currentLimit = mLimits[aktualniMesicKlic] !== undefined ? mLimits[aktualniMesicKlic] : ((uInfo.rank === "ridic" || uInfo.rank === "zkusebni-ridic") ? 70 : 50);
+    limitInput.value = currentLimit;
+}
+
+async function saveCustomDriverLimit() {
+    if (!currentModalEmail) return;
+    const newLimit = parseInt(document.getElementById("adminLimitInput").value);
+
+    if (isNaN(newLimit) || newLimit < 0) {
+        alert("Zadej platné číslo pro limit.");
+        return;
+    }
+
+    try {
+        const uInfo = ridiciMap[currentModalEmail];
+        if (!uInfo) return;
+
+        if (!uInfo.monthlyLimits) uInfo.monthlyLimits = {};
+        uInfo.monthlyLimits[aktualniMesicKlic] = newLimit;
+
+        // Uložení do Firebase do kolekce users pod daný email
+        const userRef = doc(db, "users", currentModalEmail);
+        await updateDoc(userRef, {
+            monthlyLimits: uInfo.monthlyLimits
+        });
+
+        alert(`Limit pro řidiče OČ ${currentModalOc} na aktuální měsíc (${aktualniMesicKlic}) byl úspěšně nastaven na ${newLimit} km!`);
+        closeModal();
+        await buildOverallDashboard(); // Překreslení tabulky
+    } catch (err) {
+        console.error("Chyba při ukládání limitu:", err);
+        alert("Chyba při ukládání limitu: " + err.message);
+    }
 }
 
 function openCompanyModal() {
@@ -1082,6 +1206,7 @@ function openCompanyModal() {
     currentModalEmail = "";
 
     document.getElementById("modalOcBox").style.display = "none";
+    document.getElementById("adminLimitSection").style.display = "none";
     document.getElementById("modalDriverName").innerText = `Celkový vývoj nájezdu alces, a. s.`;
 
     renderModalChart();
