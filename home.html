@@ -222,122 +222,112 @@
     .popup-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
-    }
-
-    .popup {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-30px);
-        background: #ffd84d;
-        color: #000;
-        width: 90%;
-        max-width: 420px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-        z-index: 9999;
-        opacity: 0;
-        transition: all 0.4s ease;
-        font-family: 'Poppins', Arial, sans-serif;
-    }
-
-    .popup.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-
-    .popup-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-weight: 600;
-        padding: 14px 16px 8px 16px;
-    }
-
-    .popup-body {
-        padding: 0 16px 16px 16px;
-        font-size: 14px;
-        font-weight: 400;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    /* ===== overlay ===== */
-    #recruitment-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-
+        z-index: 99999;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
     }
 
-    #recruitment-overlay.active {
+    .popup-overlay.active {
         opacity: 1;
         pointer-events: auto;
     }
 
-    #recruitment-popup {
-        background: #ffd500;
-        color: #000;
+    .popup-box {
+        background: rgba(25, 25, 25, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 24px;
+        padding: 30px;
         width: 90%;
-        max-width: 520px;
-        padding: 30px 40px;
-        border-radius: 16px;
+        max-width: 400px;
         text-align: center;
-        position: relative;
-
-        transform: translateY(-60px);
-        opacity: 0;
-        transition: all 0.45s ease;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
     }
 
-    #recruitment-overlay.active #recruitment-popup {
+    .popup-overlay.active .popup-box {
         transform: translateY(0);
-        opacity: 1;
     }
 
-    #recruitment-popup h2 {
-        margin: 0 0 12px 0;
-        font-size: 28px;
-        font-weight: 700;
+    .popup-box h3 {
+        margin-top: 0;
+        color: #ffd84d;
+        font-size: 22px;
+        margin-bottom: 20px;
     }
 
-    #recruitment-popup p {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 400;
+    .popup-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
-    .close-btn {
-        position: absolute;
-        top: 12px;
-        right: 14px;
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
+    .popup-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: white;
+        padding: 14px;
+        border-radius: 14px;
+        font-family: 'Poppins', sans-serif;
         font-weight: 600;
-    } 
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: block;
+    }
+
+    .popup-btn:hover {
+        background: rgba(255, 216, 77, 0.2);
+        border-color: #ffd84d;
+        color: #ffd84d;
+        transform: translateY(-2px);
+    }
+
+    .close-popup-btn {
+        background: rgba(212, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        margin-top: 15px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        transition: background 0.2s;
+    }
+
+    .close-popup-btn:hover {
+        background: rgba(212, 0, 0, 0.7);
+    }
+
+    .sidebar-header .close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-header .close-btn:hover {
+    background: rgba(212, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
 
     .user-rank {
         margin-top: 14px;
@@ -783,9 +773,14 @@
     <div class="menu">
         <a href="https://docs.google.com/document/d/13_RL9_TSrgVlJBS8ZzrUVwnWgE8VS5Om5RFRVftZZHY/edit?usp=drivesdk">Pravidla</a>
         <span class="divider rank-ridic rank-repainter"></span>
-        <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783">Vozidla + výpravy</a>
+        
+        <!-- DYNAMICKÉ ODKAZY V HORNÍ LIŠTĚ -->
+        <div id="dynamicVozyMenuContainer" style="display: inline-block;"></div>
+        
         <a href="vykazy.html">Výkazy (DZVA)</a>        
-        <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing">Repainty</a>
+        
+        <div id="dynamicRepaintMenuContainer" style="display: inline-block;"></div>
+
         <span class="divider"></span>
         <button class="logout" onclick="logout()">Odhlásit se</button>
     </div>
@@ -809,6 +804,18 @@
 </div>
 
 <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- MODÁLNÍ OKNO PRO VÝBĚR MAPY (STAZKY) -->
+<div id="stazkyModal" class="popup-overlay" onclick="handleModalOutsideClick(event)">
+    <div class="popup-box">
+        <h3>Vyberte mapu</h3>
+        <div class="popup-buttons">
+            <a href="https://drive.google.com/file/d/18MM62HSeYnpNBxUn-pJ9j-fe75Jt3O8D/view?usp=sharing" target="_blank" class="popup-btn" onclick="closeStazkyModal()">Ahlheim</a>
+            <a href="https://drive.google.com/file/d/1uu931yBAbETHj0zbwAq9eIhPGGAp-yjH/view?usp=sharing" target="_blank" class="popup-btn" onclick="closeStazkyModal()">Benešov</a>
+        </div>
+        <button type="button" class="close-popup-btn" onclick="closeStazkyModal()">Zavřít</button>
+    </div>
+</div>
 
 <div class="content">
     <!-- Hlavní obal, kde je uvítání a mentorský box vedle sebe -->
@@ -856,30 +863,27 @@
         <div class="announcements-box" style="flex: 0.6; min-width: 240px; margin-top: 0;">
             <div class="announcements-title" style="color: #ffd84d;">Odkazy</div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px;">
                 
                 <!-- DYNAMICKÉ TLAČÍTKO PRO VOZY + VÝPRAVY -->
                 <div id="dynamicVozyButtonContainer" style="display: contents;"></div>
                 
-                <!-- Výkazy (DZVA) - Velký čtverec s tužkou -->
+                <!-- Výkazy (DZVA) -->
                 <a href="vykazy.html" target="_blank" class="glass-square-btn">
                     <svg class="sq-svg-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                     <span class="sq-text">Výkazy (DZVA)</span>
                 </a>
                 
-                <!-- Repainty - SVG autobus -->
-                <a href="https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing" target="_blank" class="glass-square-btn">
-                    <svg class="sq-svg-icon" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11V6h14v5H5z"/></svg>
-                    <span class="sq-text">Repainty</span>
-                </a>
+                <!-- DYNAMICKÉ TLAČÍTKO PRO REPAINTY -->
+                <div id="dynamicRepaintButtonContainer" style="display: contents;"></div>
                 
-                <!-- Pravidla - SVG dokument -->
+                <!-- Pravidla -->
                 <a href="https://docs.google.com/document/d/13_RL9_TSrgVlJBS8ZzrUVwnWgE8VS5Om5RFRVftZZHY/edit?usp=drivesdk" target="_blank" class="glass-square-btn">
                     <svg class="sq-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                     <span class="sq-text">Pravidla</span>
                 </a>
 
-                <!-- Ostatní tlačítka -->
+                <!-- Ostatní širší tlačítka -->
                 <a href="overall.html" class="glass-square-btn" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; display: flex; align-items: center; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px;">
                     <svg class="sq-svg-icon" style="width:20px;height:20px;margin-bottom:0;" viewBox="0 0 24 24"><path d="M16 11V3H8v8H2v10h20V11h-6zm-6-6h4v14h-4V5zm-6 8h4v6H4v-6zm16 6h-4v-4h4v4z"/></svg>
                     <span>Overall</span>
@@ -905,6 +909,12 @@
                     <svg class="sq-svg-icon" style="width:20px;height:20px;margin-bottom:0;" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11V6h14v5H5z"/></svg>
                     <span>Přidělení vozidel</span>
                 </a>
+
+                <!-- Stazky -->
+                <div onclick="openStazkyModal()" class="glass-square-btn" style="grid-column: span 2; border-color: rgba(255, 216, 77, 0.3); color: #ffd84d; display: flex; align-items: center; flex-direction: row; gap: 10px; height: auto; aspect-ratio: auto; padding: 12px; cursor: pointer;">
+                    <svg class="sq-svg-icon" style="width:20px;height:20px;margin-bottom:0;" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    <span>Stazky</span>
+                </div>
             </div>
         </div>
     </div>
@@ -926,30 +936,80 @@ if (!username || !rank || !rankName) {
     showRankContent(rank);
     showRankMenu(rank);
     renderVozyButton(rank); 
+    renderRepaintButton(rank);
     checkZkusebniPrideleniVozidel(rank);
 }
 
+function openStazkyModal() {
+    document.getElementById("stazkyModal").classList.add("active");
+}
+
+function closeStazkyModal() {
+    document.getElementById("stazkyModal").classList.remove("active");
+}
+
+function handleModalOutsideClick(event) {
+    if (event.target.id === "stazkyModal") {
+        closeStazkyModal();
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeStazkyModal();
+        const sidebar = document.getElementById("rightSidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        if (sidebar && overlay) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("open");
+        }
+    }
+});
+
 function renderVozyButton(userRank) {
     const container = document.getElementById("dynamicVozyButtonContainer");
-    if (!container) return;
+    const menuContainer = document.getElementById("dynamicVozyMenuContainer");
+    if (!container || !menuContainer) return;
 
     const clipboardSvg = `<svg class="sq-svg-icon" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V5h2v3h10V5h2v16z"/><path d="M7 10h10v2H7zm0 4h7v2H7z"/></svg>`;
 
-    if (userRank === "zkusebni-ridic") {
-        container.innerHTML = `
-            <a href="https://docs.google.com/spreadsheets/d/10DNASdUey0SMEpWCyeJ_xTIUkzxHehMS2R4j42dSl0w/edit?gid=962915084#gid=962915084" target="_blank" class="glass-square-btn">
-                ${clipboardSvg}
-                <span class="sq-text">Vozy + výpravy</span>
-            </a>
-        `;
-    } else {
-        container.innerHTML = `
-            <a href="https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783" target="_blank" class="glass-square-btn">
-                ${clipboardSvg}
-                <span class="sq-text">Vozy + výpravy</span>
-            </a>
-        `;
-    }
+    let vozyUrl = (userRank === "zkusebni-ridic") 
+        ? "https://docs.google.com/spreadsheets/d/10DNASdUey0SMEpWCyeJ_xTIUkzxHehMS2R4j42dSl0w/edit?gid=962915084#gid=962915084" 
+        : "https://docs.google.com/spreadsheets/d/1xZmap2ZlNtdJbJSCNzSDvAL-X3jTe1v1njc1bbja7H4/edit?gid=2043752783#gid=2043752783";
+
+    container.innerHTML = `
+        <a href="${vozyUrl}" target="_blank" class="glass-square-btn">
+            ${clipboardSvg}
+            <span class="sq-text">Vozy + výpravy</span>
+        </a>
+    `;
+
+    menuContainer.innerHTML = `
+        <a href="${vozyUrl}" target="_blank">Vozidla + výpravy</a>
+    `;
+}
+
+function renderRepaintButton(userRank) {
+    const container = document.getElementById("dynamicRepaintButtonContainer");
+    const menuContainer = document.getElementById("dynamicRepaintMenuContainer");
+    if (!container || !menuContainer) return;
+
+    const busSvg = `<svg class="sq-svg-icon" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11V6h14v5H5z"/></svg>`;
+
+    let repaintUrl = (userRank === "zkusebni-ridic") 
+        ? "https://drive.google.com/drive/folders/1FT_wgV4-7yC1Ecc_EmOy4dkxITXSnLbe?usp=sharing" 
+        : "https://drive.google.com/drive/folders/1hOn5_ZfKc7wz-s0B9qT6YBs3buMZAKVT?usp=sharing";
+
+    container.innerHTML = `
+        <a href="${repaintUrl}" target="_blank" class="glass-square-btn">
+            ${busSvg}
+            <span class="sq-text">Repainty</span>
+        </a>
+    `;
+
+    menuContainer.innerHTML = `
+        <a href="${repaintUrl}" target="_blank">Repainty</a>
+    `;
 }
 
 function checkZkusebniPrideleniVozidel(userRank) {

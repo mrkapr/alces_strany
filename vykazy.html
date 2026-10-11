@@ -61,6 +61,8 @@
             font-size: 13px; color: #fff; font-weight: 600; pointer-events: none; opacity: 0.9;
         }
 
+        
+
         .multiselect-container { position: relative; width: 100%; }
         .multiselect-select { cursor: pointer; text-align: left; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); padding: 10px 12px; border-radius: 10px; font-size: 14px; color: white; }
         .multiselect-dropdown { 
@@ -318,11 +320,11 @@
 
 <script>
 const linkyPodleProvozovny = {
-    "Severní Čechy": ["S1", "NAD", "224", "225", "240", "251", "349", "400", "410", "451", "Jiné"],
-    "Benešov": ["6", "332", "338", "360", "361", "390", "437", "438", "440", "485", "753", "755", "667", "668", "669", "Jiné"],
-    "Kameniště": ["001", "680", "810", "811", "812", "Jiné"],
-    "Břeclav": ["572", "573", "574", "Jiné"],
-    "Ahlheim": ["131", "132", "133", "134", "135", "136", "137", "143", "146", "152", "156", "163", "164", "192", "193", "E20", "E30", "E81", "E90", "E93", "E97", "E99", "NE01", "NE02", "NE03", "NE04", "NE05", "NE06", "NE09", "NE10", "NE11", "NE12", "NE21", "Jiné"]
+    "Severní Čechy": ["S1", "NAD", "224", "225", "240", "251", "349", "400", "410", "451", "jiné"],
+    "Benešov": ["6", "332", "338", "360", "361", "437", "x438", "440", "485", "488", "753", "755", "jiné"],
+    "Kameniště": ["001", "680", "810", "811", "812", "jiné"],
+    "Břeclav": ["572", "573", "574", "jiné"],
+    "Ahlheim": ["131", "132", "133", "134", "135", "136", "137", "143", "146", "152", "156", "163", "164", "192", "193", "E20", "E30", "E81", "E90", "E93", "E97", "E99", "NE01", "NE02", "NE03", "NE04", "NE05", "NE06", "NE09", "NE10", "NE11", "NE12", "NE21", "jiné"]
 };
 
 const zvoleneLinky = [];
