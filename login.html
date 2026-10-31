@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Přihlášení | alces, a. s.</title>
-<link rel="icon" href="favicon.png" type="image/png" id="favicon">
+<link rel="icon" href="fotky/univ/favicon.png" type="image/png" id="favicon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -355,7 +355,7 @@ button:active { transform: scale(0.94); }
 
 <div class="login is-loading" id="loginBox">
     <div class="loader-overlay" id="loaderOverlay">
-        <img src="loading/ALCESLOADING.gif" alt="Načítání..." class="loader-gif">
+        <img src="https://i.postimg.cc/2j0r37ch/ALCESLOADING.gif" alt="Načítání..." class="loader-gif">
         <div class="loader-text" id="loaderText">Načítám...</div>
     </div>
 
@@ -448,7 +448,6 @@ function stopLoading() {
 document.getElementById("loginBtn").addEventListener("click", loginWithEmail);
 document.getElementById("googleBtn").addEventListener("click", loginWithGoogle);
 
-// Sledování stavu přihlášení
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         startLoading("Přesměrovávám...");
@@ -546,7 +545,7 @@ function upravFaviconuPodleRezimu() {
 }
 
 upravFaviconuPodleRezimu();
-window.matchMedia('(prefers-color-scheme: dark)').matches.addEventListener('change', upravFaviconuPodleRezimu);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 
 </body>

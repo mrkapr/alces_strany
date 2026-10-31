@@ -140,8 +140,8 @@
 <!-- CENZUROVANÉ MODÁLNÍ OKNO S FADE ANIMACÍ -->
 <div id="passwordModal" class="modal-overlay">
     <div class="modal-box" id="modalBoxContent">
-        <h2 style="color: #ffd84d; margin-top: 0; font-size: 20px;">Je vyžadováno heslo</h2>
-        <p id="passwordModalText" style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;">Pro provedení této akce zadejte administrátorské heslo:</p>
+        <h2 style="color: #ffd84d; margin-top: 0; font-size: 20px;">Zabezpečený přístup</h2>
+        <p id="passwordModalText" style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;">Zadejte administrátorské heslo:</p>
         <form id="passwordModalForm">
             <div class="form-group">
                 <input type="password" id="modalPasswordInput" required placeholder="••••••••••••" style="text-align: center; font-size: 16px;">
@@ -250,18 +250,6 @@ const rankOrder = [
     "team-manager", "repainter", "zasloužily-ridic", "ridic", "zkusebni-ridic"
 ];
 
-const rankHierarchy = {
-    "zkusebni-ridic": 1,
-    "ridic": 2,
-    "repainter": 3,
-    "zasloužily-ridic": 3,
-    "team-manager": 4,
-    "dispecer": 5,
-    "provozni-reditel": 6,
-    "management": 7,
-    "majitel": 8
-};
-
 const rankNameMapping = {
     "zkusebni-ridic": "Řidič - zkušební doba", "ridic": "Řidič", 
     "repainter": "Repainter", "zasloužily-ridic": "Zasloužilý řidič", 
@@ -336,8 +324,15 @@ function promptPassword(message) {
 }
 
 onAuthStateChanged(auth, async (user) => {
+    // Kontrola, zda je uživatel přihlášen. Pokud ne, přesměruje ho na login.html
     if (!user) {
-        document.getElementById("error-screen").innerText = "Musíš být přihlášen.";
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Ochrana: Ověření, zda je přihlášen správný e-mail majitele
+    if (user.email.toLowerCase() !== "ytkapr@gmail.com") {
+        document.getElementById("error-screen").innerText = "Přístup odepřen.";
         document.getElementById("error-screen").style.display = "block";
         return;
     }
@@ -477,12 +472,10 @@ function renderUsersList(usersArray) {
                         const nextRank = rankOrder[currentIndex - 1];
                         const nextRankName = rankNameMapping[nextRank];
 
-                        // Podmínka: Povýšení mezi zkusebni-ridic -> ridic -> zasloužily-ridic je BEZ HESLA
                         const isBasicPromotion = (currentRank === "zkusebni-ridic" && nextRank === "ridic") || 
                                                  (currentRank === "ridic" && nextRank === "zasloužily-ridic");
 
                         if (!isBasicPromotion) {
-                            // Pro vyšší pozice vyžadujeme heslo
                             const promoPass = await promptPassword(`Povýšení uživatele ${uName} na vysokou pozici "${nextRankName}" vyžaduje heslo:`);
                             if (!promoPass) return;
                             
