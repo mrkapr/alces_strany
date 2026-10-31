@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispečerský panel | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: #121212; min-height: 100vh; color: white; padding: 100px 40px 40px 40px; }
+        
+        /* Horní lišta přesně dle náčrtku */
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+        }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        .topbar-title { font-size: 14px; font-weight: 600; color: #ffd84d; }
+
+        /* Rozvržení dvou boxů vedle sebe */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: white; }
+
+        .box {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 24px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        /* Položky v seznamu řidičů */
+        .driver-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 14px 18px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+        .driver-card:hover { background: rgba(255,255,255,0.07); }
+        
+        .driver-left { display: flex; align-items: center; gap: 14px; }
+        
+        /* Avatar s barevnou tečkou stavu */
+        .avatar-placeholder {
+            width: 38px; height: 38px; background: rgba(255,255,255,0.1); border-radius: 50%;
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%; position: absolute; bottom: 2px; right: 2px;
+            border: 2px solid #121212;
+        }
+        .dot-red { background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; }
+        .dot-green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
+        .dot-yellow { background: #ffd84d; box-shadow: 0 0 8px #ffd84d; }
+
+        .btn-manage {
+            background: transparent; border: none; color: white; font-size: 13px; font-weight: 500;
+            cursor: pointer; opacity: 0.8; transition: opacity 0.2s, color 0.2s;
+        }
+        .btn-manage:hover { opacity: 1; color: #ffd84d; }
+
+        /* Velké zelené tlačítko + dole v boxu */
+        .btn-add-big {
+            margin-top: auto;
+            background: transparent;
+            border: 2px solid #00b84f;
+            color: #00b84f;
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .btn-add-big:hover { background: rgba(0, 184, 79, 0.15); transform: translateY(-2px); }
+
+        /* Sekce oznámení */
+        .notif-group-title { font-size: 16px; font-weight: 600; color: #ffd84d; margin-bottom: 10px; }
+        .notif-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; font-size: 13px;
+        }
+        .btn-icon-yellow {
+            background: rgba(255, 216, 77, 0.15); border: 1px solid rgba(255, 216, 77, 0.4);
+            color: #ffd84d; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
+        }
+        .btn-icon-yellow:hover { transform: scale(1.1); }
+
+        /* Popup okno */
+        .popup-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .popup-box {
+            background: rgba(25, 25, 25, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px;
+            padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+        }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; font-weight: 600; opacity: 0.9; }
+        input, select, textarea { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; padding: 12px; width: 100%; outline: none; }
+        .btn-primary { background: #00b84f; color: white; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-primary:hover { background: #00963f; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo"><a href="home.html"><img src="fotky/univ/logo.png" alt="alces"></a></div>
+    <div class="topbar-title">Dispečerský panel</div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- BOX 1: SEZNAM ŘIDIČŮ -->
+    <div>
+        <div class="section-title">Seznam řidičů:</div>
+        <div class="box">
+            <div id="driversListContainer">
+                <p style="opacity: 0.5;">Načítám řidiče...</p>
+            </div>
+            <button class="btn-add-big" onclick="openNewTurnusModal()">+</button>
+        </div>
+    </div>
+
+    <!-- BOX 2: SPRÁVA OZNÁMENÍ -->
+    <div>
+        <div class="section-title">Sprava oznameni:</div>
+        <div class="box">
+            <div class="notif-group-title">Probíhá:</div>
+            <div id="activeNotifsList" style="margin-bottom: 20px;">
+                <div class="notif-item">
+                    <span>Mimořádná výluka na lince 101</span>
+                    <button class="btn-icon-yellow" title="Upravit">✏️</button>
+                </div>
+            </div>
+
+            <div class="notif-group-title">Ukončeno:</div>
+            <div id="closedNotifsList" style="margin-bottom: 20px;">
+                <div class="notif-item" style="opacity: 0.6;">
+                    <span>Zpoždění spojů kvůli nehodě</span>
+                </div>
+            </div>
+
+            <button class="btn-add-big" onclick="openNewNotifModal()">+</button>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP OKNO PRO VYTVOŘENÍ JEŽDĚNÍ / TURNUSU -->
+<div id="turnusModal" class="popup-overlay">
+    <div class="popup-box">
+        <h2 style="color: #ffd84d; margin-top: 0;">Vytvořit / Správa turnusu</h2>
+        <form id="turnusForm">
+            <div class="form-group">
+                <label>Vyberte řidiče</label>
+                <select id="modalDriverSelect" required></select>
+            </div>
+            <div class="form-group">
+                <label>Datum</label>
+                <input type="date" id="modalDate" required>
+            </div>
+            <div class="form-group">
+                <label>Název turnusu</label>
+                <input type="text" id="modalTurnusName" placeholder="např. Turnus A1" required>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">Uložit turnus</button>
+            <button type="button" onclick="closeModals()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); width: 100%; margin-top: 10px; cursor: pointer;">Zrušit</button>
+        </form>
+    </div>
+</div>
+
+<!-- POPUP OKNO PRO NOVÉ OZNÁMENÍ (Windows notifikace + zvuk) -->
+<div id="notifModal" class="popup-overlay">
+    <div class="popup-box">
+        <h2 style="color: #ffd84d; margin-top: 0;">Nové oznámení řidičům</h2>
+        <form id="notifForm">
+            <div class="form-group">
+                <label>Nadpis</label>
+                <input type="text" id="modalNotifTitle" placeholder="Nadpis oznámení" required>
+            </div>
+            <div class="form-group">
+                <label>Text zprávy</label>
+                <textarea id="modalNotifBody" placeholder="Podrobnosti..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">Odeslat oznámení</button>
+            <button type="button" onclick="closeModals()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); width: 100%; margin-top: 10px; cursor: pointer;">Zrušit</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let allDrivers = [];
+
+// Načtení seznamu řidičů a jejich stavů
+async function loadDrivers() {
+    const container = document.getElementById("driversListContainer");
+    const modalSelect = document.getElementById("modalDriverSelect");
+    
+    try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        allDrivers = [];
+        modalSelect.innerHTML = "";
+
+        usersSnap.forEach(d => {
+            const data = d.data();
+            const email = d.id;
+            allDrivers.push({ email, name: data.name || email, oc: data.osobni_cislo || '-' });
+            
+            const opt = document.createElement("option");
+            opt.value = email;
+            opt.innerText = `[OČ ${data.osobni_cislo || '-'}] ${data.name || email}`;
+            modalSelect.appendChild(opt);
+        });
+
+        // Sledujeme aktivní turnusy pro stavy teček
+        onSnapshot(collection(db, "active_turnusy"), (snapshot) => {
+            const turnusyMap = {};
+            snapshot.forEach(t => turnusyMap[t.id] = t.data());
+
+            container.innerHTML = "";
+            allDrivers.forEach(driver => {
+                const turnus = turnusMap[driver.email];
+                const stav = turnus ? (turnus.stav || "jidem") : "konec"; // pokud nemá ježdění, svítí červeně / konec
+                
+                let dotClass = "dot-green";
+                if (stav === "pauza") dotClass = "dot-yellow";
+                if (stav === "konec" || !turnus) dotClass = "dot-red";
+
+                const div = document.createElement("div");
+                div.className = "driver-card";
+                div.innerHTML = `
+                    <div class="driver-left">
+                        <div class="avatar-placeholder">
+                            👤
+                            <span class="status-dot ${dotClass}"></span>
+                        </div>
+                        <div>
+                            <strong>${driver.name}</strong><br>
+                            <span style="font-size: 11px; opacity: 0.6;">OČ: ${driver.oc}</span>
+                        </div>
+                    </div>
+                    <button class="btn-manage" onclick="handleDriverClick('${driver.email}')">Sprava turnusu uzivatele</button>
+                `;
+                container.appendChild(div);
+            });
+        });
+
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Kliknutí na "Sprava turnusu uzivatele" - pokud neexistuje ježdění, otevře popup pro vytvoření
+window.handleDriverClick = async function(email) {
+    const ref = doc(db, "active_turnusy", email);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+        // Ježdění neexistuje -> otevřeme popup pro vytvoření
+        document.getElementById("modalDriverSelect").value = email;
+        document.getElementById("turnusModal").style.display = "flex";
+    } else {
+        // Ježdění existuje -> lze přesměrovat nebo upravit
+        alert(`Řidič ${email} již má aktivní turnus: ${snap.data().nazevTurnusu}`);
+    }
+}
+
+window.openNewTurnusModal = function() {
+    document.getElementById("turnusModal").style.display = "flex";
+}
+
+window.openNewNotifModal = function() {
+    document.getElementById("notifModal").style.display = "flex";
+}
+
+window.closeModals = function() {
+    document.getElementById("turnusModal").style.display = "none";
+    document.getElementById("notifModal").style.display = "none";
+}
+
+// Uložení nového turnusu z popupu
+document.getElementById("turnusForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("modalDriverSelect").value;
+    const datum = document.getElementById("modalDate").value;
+    const nazev = document.getElementById("modalTurnusName").value;
+
+    try {
+        await setDoc(doc(db, "active_turnusy", email), {
+            nazevTurnusu: nazev,
+            datum: datum,
+            stav: "jidem",
+            spoje: [
+                { typ: "Začátek směny", casOdjezdu: "06:00", casPrichodu: "06:15", popis: "Nástup" },
+                { typ: "Linkový spoj", casOdjezdu: "06:30", casPrichodu: "08:00", popis: "Linka 1" }
+            ]
+        });
+        alert("Turnus byl úspěšně vytvořen!");
+        closeModals();
+    } catch (err) {
+        alert("Chyba: " + err.message);
+    }
+});
+
+// Odeslání oznámení (spustí u řidičů Windows notifikaci a zvuk)[cite: 8]
+document.getElementById("notifForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nadpis = document.getElementById("modalNotifTitle").value;
+    const text = document.getElementById("modalNotifBody").value;
+
+    try {
+        await setDoc(doc(db, "broadcast_notifications", "global"), {
+            nadpis: nadpis,
+            text: text,
+            timestamp: Date.now()
+        });
+        alert("Oznámení bylo úspěšně odesláno!");
+        closeModals();
+        document.getElementById("notifForm").reset();
+    } catch (err) {
+        alert("Chyba: " + err.message);
+    }
+});
+
+loadDrivers();
+</script>
+</body>
+</html>

@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Chart.js knihovna pro grafy -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -433,7 +432,6 @@
     </div>
 </div>
 
-<!-- POPUP MODAL PRO DETAILNÍ GRAF ŘÍDIČE NEBO FIRMY -->
 <div class="modal-overlay" id="driverGraphModal">
     <div class="modal-box">
         <button class="modal-close" id="modalCloseBtn">✕</button>
@@ -457,7 +455,6 @@
             <div><strong>Celkový nájezd v období:</strong> <span id="modalDriverKm" style="color:#00ff66; font-weight:700;">0 km</span></div>
         </div>
 
-        <!-- Sekce pro majitele k úpravě limitu řidiče (ukáže se jen pro aktuální měsíc) -->
         <div id="adminLimitSection" class="admin-limit-section">
             <h3>Změnit měsíční limit</h3>
             <div class="admin-limit-row">
@@ -465,8 +462,6 @@
                 <button class="btn-save-limit" id="btnSaveAdminLimit">Uložit limit</button>
             </div>
         </div>
-
-        <!-- Karty nárůstu a poklesu oproti minulému měsíci -->
         <div id="companyDiffContainer" class="diff-cards-container hidden">
             <div class="diff-card">
                 <div>

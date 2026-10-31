@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jízda a Turnus | alces, a. s.</title>
+    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: #121212; min-height: 100vh; color: white; }
+        
+        /* Horní lišta */
+        .topbar {
+            height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
+            background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
+            backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+        }
+        .topbar .logo img { height: 34px; width: auto; display: block; }
+        .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+        
+        /* Barevná tečka stavu s animací */
+        .status-dot {
+            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 10px currentColor; transition: background 0.3s ease, color 0.3s ease;
+        }
+        .dot-jidem { color: #00ff66; background: #00ff66; } /* Zrovna jede */
+        .dot-pauza { color: #ffd84d; background: #ffd84d; } /* Má pauzu */
+        .dot-konec { color: #ff4d4d; background: #ff4d4d; } /* Skončil */
+
+        /* Pod-menu pod hlavní lištou */
+        .submenu {
+            position: fixed; top: 88px; left: 24px; right: 24px; z-index: 980;
+            display: flex; justify-content: center; gap: 15px; pointer-events: none;
+        }
+        .submenu-btn {
+            pointer-events: auto; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            color: white; padding: 10px 24px; border-radius: 14px; cursor: pointer; font-weight: 600;
+            backdrop-filter: blur(10px); transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .submenu-btn.active, .submenu-btn:hover { background: rgba(8, 172, 38, 0.85); border-color: rgba(8, 172, 38, 1); transform: translateY(-2px); }
+
+        /* Obsah s animací načtení */
+        .content { margin: 160px 40px 40px 40px; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+            padding: 24px; border-radius: 24px; backdrop-filter: blur(20px); margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: transform 0.2s ease;
+        }
+        h2 { color: #ffd84d; margin-top: 0; font-size: 20px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; }
+        th { color: #ffd84d; font-weight: 600; }
+        
+        .radio-group { display: flex; gap: 15px; }
+        .radio-group label { cursor: pointer; font-size: 12px; opacity: 0.85; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
+        .radio-group label:hover { opacity: 1; }
+        .radio-group input { accent-color: #08ac26; cursor: pointer; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .logout-link { color: #ffb3b3; text-decoration: none; font-size: 13px; margin-left: 10px; transition: color 0.2s; }
+        .logout-link:hover { color: #ff4d4d; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo"><a href="home.html"><img src="fotky/univ/logo.png" alt="alces"></a></div>
+    <div class="user-info">
+        <span class="status-dot dot-jidem" id="userStatusDot" title="Stav turnusu"></span>
+        <span id="userNameDisplay">Načítám...</span>
+        <a href="#" id="logoutBtn" class="logout-link">Odhlásit</a>
+    </div>
+</div>
+
+<div class="submenu">
+    <button class="submenu-btn active" onclick="switchTab('vykazy', this)">Provozní výkazy</button>
+    <button class="submenu-btn" onclick="switchTab('udalosti', this)">Události a vzkazy</button>
+</div>
+
+<div class="content">
+    <!-- PROVOZNÍ VÝKAZY -->
+    <div id="tab-vykazy" class="tab-content active">
+        <div class="panel">
+            <h2 id="welcomeTurnusTitle">Načítám turnus...</h2>
+            <p style="font-size: 13px; opacity: 0.7;">Zde průběžně zaznamenávejte stav jednotlivých spojů dnešního turnusu.</p>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Typ spoje</th>
+                            <th>Odjezd</th>
+                            <th>Příjezd</th>
+                            <th>Stav / Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="spojeTableBody">
+                        <tr><td colspan="4" style="opacity: 0.5; text-align: center;">Načítám spoje...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- UDÁLOSTI A VZKAZY -->
+    <div id="tab-udalosti" class="tab-content">
+        <div class="panel">
+            <h2>Vzkaz od dispečera</h2>
+            <div id="dispatcherMessage" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border-left: 4px solid #ffd84d; font-size: 14px;">
+                Žádné nové vzkazy od dispečinku.
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Seznam ukončených událostí</h2>
+            <ul id="closedEventsList" style="margin: 0; padding-left: 20px; font-size: 13px; opacity: 0.8; line-height: 1.6;">
+                <li>Žádné uzavřené události.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUserEmail = "";
+
+window.switchTab = function(tabName, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.submenu-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    btn.classList.add('active');
+}
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    currentUserEmail = user.email.toLowerCase();
+    const username = localStorage.getItem("username") || "Řidič";
+    const oc = localStorage.getItem("rankName") || "Řidič";
+    document.getElementById("userNameDisplay").innerText = `${username} (OČ: ${oc})`;
+
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
+    // Načtení turnusu řidiče
+    const turnusRef = doc(db, "active_turnusy", currentUserEmail);
+    
+    onSnapshot(turnusRef, (docSnap) => {
+        if (!docSnap.exists()) {
+            document.getElementById("welcomeTurnusTitle").innerText = "Pro dnešní den nemáte přiřazen žádný turnus.";
+            document.getElementById("spojeTableBody").innerHTML = `<tr><td colspan="4" style="opacity: 0.5; text-align: center;">Žádné spoje k zobrazení.</td></tr>`;
+            return;
+        }
+
+        const data = docSnap.data();
+        document.getElementById("welcomeTurnusTitle").innerText = `Turnus: ${data.nazevTurnusu || 'Standardní'} (${data.datum || 'Dnes'})`;
+
+        // Aktualizace stavové tečky podle dat z DB
+        updateStatusDot(data.stav || "jidem");
+
+        const tbody = document.getElementById("spojeTableBody");
+        tbody.innerHTML = "";
+        
+        (data.spoje || []).forEach((spoj, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${spoj.typ}</strong><br><span style="font-size: 11px; opacity: 0.6;">${spoj.popis || ''}</span></td>
+                <td>${spoj.casOdjezdu}</td>
+                <td>${spoj.casPrichodu}</td>
+                <td>
+                    <div class="radio-group">
+                        <label><input type="radio" name="spoj_${index}" value="odjel" ${spoj.stav === 'odjel' ? 'checked' : ''} onclick="updateSpojStav('${currentUserEmail}', ${index}, 'odjel')"> Odjel</label>
+                        <label><input type="radio" name="spoj_${index}" value="neodjel" ${spoj.stav === 'neodjel' ? 'checked' : ''} onclick="updateSpojStav('${currentUserEmail}', ${index}, 'neodjel')"> Neodjel</label>
+                        <label><input type="radio" name="spoj_${index}" value="zaloha" ${spoj.stav === 'zaloha' ? 'checked' : ''} onclick="updateSpojStav('${currentUserEmail}', ${index}, 'zaloha')"> Záloha</label>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+
+    // Poslech globálních oznámení
+    onSnapshot(doc(db, "broadcast_notifications", "global"), (docSnap) => {
+        if (docSnap.exists()) {
+            const notif = docSnap.data();
+            triggerWindowsNotification(notif.nadpis, notif.text);
+        }
+    });
+});
+
+function updateStatusDot(stav) {
+    const dot = document.getElementById("userStatusDot");
+    dot.className = "status-dot";
+    if (stav === "jidem") { dot.classList.add("dot-jidem"); dot.title = "Zrovna jede"; }
+    else if (stav === "pauza") { dot.classList.add("dot-pauza"); dot.title = "Má pauzu"; }
+    else if (stav === "konec") { dot.classList.add("dot-konec"); dot.title = "Skončil turnus"; }
+}
+
+window.updateSpojStav = async function(email, index, stav) {
+    const ref = doc(db, "active_turnusy", email);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+        let spoje = snap.data().spoje;
+        spoje[index].stav = stav;
+        await updateDoc(ref, { spoje: spoje });
+    }
+}
+
+function triggerWindowsNotification(title, body) {
+    if (Notification.permission === "granted") {
+        new Notification(title, { body: body, icon: "favicon.png" });
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.play().catch(e => console.log("Audio zablokováno prohlížečem"));
+    }
+}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth).then(() => window.location.href = "login.html");
+});
+</script>
+</body>
+</html>

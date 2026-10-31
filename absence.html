@@ -179,7 +179,6 @@
     <a href="absence-sprava.html" style="display:block; color:white; text-decoration:none; padding:12px; border-radius:8px; margin-bottom:5px;">📅 Schvalování omluvenek</a>
 </div>
 
-<!-- Vyskakovací okno (Modal) s animací -->
 <div id="detailModal" class="modal-overlay" onclick="closeDetailModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeDetailModal()">✕</button>
@@ -272,7 +271,7 @@ function handleTypeChange() {
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-11
+    const currentMonth = now.getMonth();
     const currentDate = now.getDate();
     
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -392,7 +391,6 @@ function getQuarter(monthStr) {
     return Math.ceil(month / 3);
 }
 
-// Pomocná funkce pro převod "YYYY-MM" na celkový počet měsíců od epochy
 function monthToNumber(monthStr) {
     if (!monthStr) return 0;
     const [y, m] = monthStr.split("-").map(Number);
@@ -443,21 +441,16 @@ async function loadMyAbsences() {
     }
 }
 
-// Pokročilá validace pravidel 3.5.1 a 3.5.2 před odesláním
 function validateBeforeSubmit(type, fromVal) {
-    // Bereme v potaz pouze schválené nebo již čekající žádosti
     const activeHistory = myAllAbsencesHistory.filter(item => item.data.status === "schvaleno" || item.data.status === "ceka");
 
     const targetYear = fromVal.split("-")[0];
     const targetQ = getQuarter(fromVal);
     const targetMonthNum = monthToNumber(fromVal);
 
-    // 1. KONTROLA PRAVIDLA 2 MĚSÍCŮ PO PAUZĚ (3.5.2):
-    // "další dva měsíce nesmí být omluveny či nedojety [po pauze]"
     for (const item of activeHistory) {
         if (item.data.type === "Pauza" && item.data.to) {
-            const pauseEndMonthNum = monthToNumber(item.data.to); // poslední měsíc pauzy (např. prosinec)
-            // Zakázané měsíce jsou přesně následující 2 měsíce po skončení pauzy
+            const pauseEndMonthNum = monthToNumber(item.data.to); 
             if (targetMonthNum > pauseEndMonthNum && targetMonthNum <= pauseEndMonthNum + 2) {
                 return `Chyba podle pravidla 3.5.2: Od tvojí poslední pauzy neuplynuly povinné 2 měsíce bez omluvenek!`;
             }
@@ -465,8 +458,6 @@ function validateBeforeSubmit(type, fromVal) {
     }
 
     if (type === "Omluvenka") {
-        // Zjistíme, v jakém kvartálu byl předchozí kvartál (pro kontrolu zákazu v následujícím kvartálu)
-        // Kvartál před tímto:
         let prevQ = targetQ - 1;
         let prevQYear = parseInt(targetYear, 10);
         if (prevQ === 0) {
@@ -474,7 +465,6 @@ function validateBeforeSubmit(type, fromVal) {
             prevQYear -= 1;
         }
 
-        // Kolik omluvenek měl řidič v MINULÉM kvartálu? Pokud 2 nebo více, ztrácí nárok na omluvenku v tomto kvartálu!
         const omluvenkyMinulyKvartal = activeHistory.filter(item => {
             if (item.data.type !== "Omluvenka") return false;
             const m = item.data.from;
@@ -485,7 +475,6 @@ function validateBeforeSubmit(type, fromVal) {
             return `Chyba podle pravidla 3.5.1: V minulém kvartálu jsi se omluvil/a 2×, proto ztrácíš nárok na omluvenku v tomto následujícím kvartálu!`;
         }
 
-        // Kolik omluvenek už má v tomto aktuálním kvartálu? (Max 1 za kvartál)
         const omluvenkyTentoKvartal = activeHistory.filter(item => {
             if (item.data.type !== "Omluvenka") return false;
             const m = item.data.from;
@@ -497,7 +486,6 @@ function validateBeforeSubmit(type, fromVal) {
         }
 
     } else if (type === "Pauza") {
-        // Max 1 pauza za rok
         const pauzyRok = activeHistory.filter(item => {
             if (item.data.type !== "Pauza") return false;
             const m = item.data.from;
@@ -508,7 +496,6 @@ function validateBeforeSubmit(type, fromVal) {
             return "Chyba podle pravidla 3.5.2: O pauzu si můžeš zažádat maximálně 1× za kalendářní rok!";
         }
 
-        // Měsíc před pauzou nesmí být omluven
         const prevDate = new Date(parseInt(targetYear, 10), targetMonthNum % 12 - 2, 1);
         const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
 
@@ -536,7 +523,6 @@ document.getElementById("absenceForm").addEventListener("submit", async (e) => {
     const reason = document.getElementById("absenceReason").value.trim();
     const userName = localStorage.getItem("username") || "Řidič";
 
-    // Ověření pravidel před odesláním
     const ruleError = validateBeforeSubmit(type, fromValue);
     if (ruleError) {
         alert(ruleError);

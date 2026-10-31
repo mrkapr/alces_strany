@@ -27,11 +27,10 @@
         .topbar .logo a { margin-left: 0 !important; display: flex; align-items: center; }
         .topbar .logo img { height: 34px; width: auto; display: block; }
         
-        /* Centrování textových odkazů vpravo */
         .topbar div:last-child { display: flex; align-items: center; height: 100%; }
         .topbar a { color: white; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; }
         .topbar a:hover { color: #ffd84d; }
-        .content { margin: 120px 40px 40px 40px; }
+        .content { margin: 120px 40px 40px 40px; display: none; }
     
     h1 { font-size: 36px; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
     
@@ -87,7 +86,7 @@
     .user-table th { color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12px; text-transform: uppercase; }
     .user-table tr:hover { background: rgba(255,255,255,0.03); }
     
-    .actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
     
     .btn-promo { background: rgba(255, 216, 77, 0.2); color: #ffd84d; border: 1px solid rgba(255, 216, 77, 0.4); padding: 5px 12px; font-size: 12px; }
     .btn-promo:hover { background: rgba(255, 216, 77, 0.4); transform: scale(1.02); }
@@ -101,7 +100,26 @@
     .logo { display: flex; align-items: center; }
     .logo img { height: 34px; width: auto; display: block; }
 
-    #error-screen { display: none; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
+    #error-screen { display: block; text-align: center; margin-top: 200px; color: #ff4d4d; font-size: 24px; font-weight: 700; }
+
+    /* Styly s Fade animacemi pro cenzurované popup okno */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+        z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-box {
+        background: rgba(25, 25, 25, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px;
+        padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); text-align: center;
+        transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-box {
+        transform: scale(1);
+    }
 </style>
 </head>
 <body>
@@ -117,7 +135,21 @@
     </div>
 </div>
 
-<div id="error-screen">Přístup odepřen. Tento panel může zobrazit pouze majitel.</div>
+<div id="error-screen">Ověřování přístupu...</div>
+
+<!-- CENZUROVANÉ MODÁLNÍ OKNO S FADE ANIMACÍ -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal-box" id="modalBoxContent">
+        <h2 style="color: #ffd84d; margin-top: 0; font-size: 20px;">Je vyžadováno heslo</h2>
+        <p id="passwordModalText" style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;">Pro provedení této akce zadejte administrátorské heslo:</p>
+        <form id="passwordModalForm">
+            <div class="form-group">
+                <input type="password" id="modalPasswordInput" required placeholder="••••••••••••" style="text-align: center; font-size: 16px;">
+            </div>
+            <button type="submit" class="btn-add" style="margin-top: 10px;">Potvrdit heslo</button>
+        </form>
+    </div>
+</div>
 
 <div class="content" id="mainContent">
     <h1>Správa firemních účtů (uživatelů)</h1>
@@ -197,7 +229,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -214,27 +246,27 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const rankOrder = [
-    "majitel",
-    "management",
-    "provozni-reditel",
-    "dispecer",
-    "team-manager",
-    "repainter",
-    "zasloužily-ridic",
-    "ridic",
-    "zkusebni-ridic"
+    "majitel", "management", "provozni-reditel", "dispecer", 
+    "team-manager", "repainter", "zasloužily-ridic", "ridic", "zkusebni-ridic"
 ];
 
+const rankHierarchy = {
+    "zkusebni-ridic": 1,
+    "ridic": 2,
+    "repainter": 3,
+    "zasloužily-ridic": 3,
+    "team-manager": 4,
+    "dispecer": 5,
+    "provozni-reditel": 6,
+    "management": 7,
+    "majitel": 8
+};
+
 const rankNameMapping = {
-    "zkusebni-ridic": "Řidič - zkušební doba",
-    "ridic": "Řidič",
-    "repainter": "Repainter",
-    "zasloužily-ridic": "Zasloužilý řidič",
-    "team-manager": "Team Manager",
-    "dispecer": "Dispečer",
-    "provozni-reditel": "Provozní ředitel",
-    "management": "Management",
-    "majitel": "Majitel"
+    "zkusebni-ridic": "Řidič - zkušební doba", "ridic": "Řidič", 
+    "repainter": "Repainter", "zasloužily-ridic": "Zasloužilý řidič", 
+    "team-manager": "Team Manager", "dispecer": "Dispečer", 
+    "provozni-reditel": "Provozní ředitel", "management": "Management", "majitel": "Majitel"
 };
 
 let cachedUsersData = [];
@@ -258,14 +290,82 @@ document.getElementById("sortSelect").addEventListener("change", () => {
     renderUsersList(cachedUsersData);
 });
 
+// Zabezpečené modální okno s podporou Fade, ESC a kliknutí mimo okno
+function promptPassword(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("passwordModal");
+        const textEl = document.getElementById("passwordModalText");
+        const inputEl = document.getElementById("modalPasswordInput");
+        const formEl = document.getElementById("passwordModalForm");
+
+        textEl.innerText = message || "Zadejte administrátorské heslo:";
+        inputEl.value = "";
+        
+        modal.classList.add("active");
+        inputEl.focus();
+
+        let resolved = false;
+
+        const cleanup = (result) => {
+            if (resolved) return;
+            resolved = true;
+            modal.classList.remove("active");
+            formEl.removeEventListener("submit", submitHandler);
+            window.removeEventListener("keydown", escHandler);
+            modal.removeEventListener("click", outsideHandler);
+            resolve(result);
+        };
+
+        const submitHandler = (e) => {
+            e.preventDefault();
+            cleanup(inputEl.value);
+        };
+
+        const escHandler = (e) => {
+            if (e.key === "Escape") cleanup(null);
+        };
+
+        const outsideHandler = (e) => {
+            if (e.target === modal) cleanup(null);
+        };
+
+        formEl.addEventListener("submit", submitHandler);
+        window.addEventListener("keydown", escHandler);
+        modal.addEventListener("click", outsideHandler);
+    });
+}
+
 onAuthStateChanged(auth, async (user) => {
-    const email = user ? user.email : localStorage.getItem("userEmail");
-    if (email === "ytkapr@gmail.com") {
-        document.getElementById("mainContent").style.display = "block";
-        document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
-        toggleMentorField("zkusebni-ridic");
-        await fetchUsersFromFirebase();
-    } else {
+    if (!user) {
+        document.getElementById("error-screen").innerText = "Musíš být přihlášen.";
+        document.getElementById("error-screen").style.display = "block";
+        return;
+    }
+
+    try {
+        const passDocRef = doc(db, "settingsoc", "admin_password");
+        const passSnap = await getDoc(passDocRef);
+        
+        let correctPassword = "snekousek1";
+        if (passSnap.exists() && passSnap.data().password) {
+            correctPassword = passSnap.data().password;
+        }
+
+        const inputPassword = await promptPassword("Zadejte administrátorské heslo pro vstup do správy:");
+
+        if (inputPassword === correctPassword) {
+            document.getElementById("mainContent").style.display = "block";
+            document.getElementById("error-screen").style.display = "none";
+            document.getElementById("userRankName").value = rankNameMapping["zkusebni-ridic"];
+            toggleMentorField("zkusebni-ridic");
+            await fetchUsersFromFirebase();
+        } else {
+            document.getElementById("error-screen").innerText = "Nesprávné heslo nebo zrušeno. Přístup odepřen.";
+            document.getElementById("error-screen").style.display = "block";
+        }
+    } catch(err) {
+        console.error(err);
+        document.getElementById("error-screen").innerText = "Chyba při ověřování hesla: " + err.message;
         document.getElementById("error-screen").style.display = "block";
     }
 });
@@ -311,8 +411,8 @@ function renderUsersList(usersArray) {
 
         if (sortMethod === "oc") {
             usersInRank.sort((a, b) => {
-                const strA = String(a.data.oc || a.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
-                const strB = String(b.data.oc || b.data.osobniCislo || "999999").toUpperCase().replace("Z", "");
+                const strA = String(a.data.oc || a.data.osobniCisla || "999999").toUpperCase().replace("Z", "");
+                const strB = String(b.data.oc || b.data.osobniCisla || "999999").toUpperCase().replace("Z", "");
                 return parseInt(strA) - parseInt(strB);
             });
         } else if (sortMethod === "jmeno") {
@@ -350,7 +450,7 @@ function renderUsersList(usersArray) {
         usersInRank.forEach((user) => {
             const uName = user.data.name || user.data.username || "Bez jména";
             const uMentor = user.data.mentorId ? user.data.mentorId : "-";
-            const uOc = user.data.oc || user.data.osobniCislo || "-";
+            const uOc = user.data.oc || user.data.osobniCisla || "-";
             const mentorTdHtml = (currentRank === "zkusebni-ridic") 
                 ? `<td style="color:#ffd84d; font-weight:600; font-size:13px;">${uMentor}</td>` 
                 : "";
@@ -366,29 +466,51 @@ function renderUsersList(usersArray) {
 
             const tdActions = tr.querySelector(".actions");
 
-            if (currentRank === "zkusebni-ridic" || currentRank === "ridic") {
+            if (currentRank !== "majitel") {
                 const btnPromo = document.createElement("button");
                 btnPromo.className = "btn-promo";
                 btnPromo.innerText = "Povýšit ↑";
                 
                 btnPromo.addEventListener("click", async () => {
-                    let nextRank = "";
-                    let nextRankName = "";
-                    if (currentRank === "zkusebni-ridic") {
-                        nextRank = "ridic"; nextRankName = "Řidič";
-                    } else if (currentRank === "ridic") {
-                        nextRank = "zasloužily-ridic"; nextRankName = "Zasloužilý řidič";
-                    }
-                    
-                    if (confirm(`Chceš řidiče ${uName} povýšit na hodnost: ${nextRankName}?`)) {
-                        try {
-                            await updateDoc(doc(db, "users", user.email), {
-                                rank: nextRank,
-                                rankName: nextRankName
-                            });
-                            await fetchUsersFromFirebase();
-                        } catch (err) {
-                            alert("Chyba při povyšování: " + err.message);
+                    const currentIndex = rankOrder.indexOf(currentRank);
+                    if (currentIndex > 0) {
+                        const nextRank = rankOrder[currentIndex - 1];
+                        const nextRankName = rankNameMapping[nextRank];
+
+                        // Podmínka: Povýšení mezi zkusebni-ridic -> ridic -> zasloužily-ridic je BEZ HESLA
+                        const isBasicPromotion = (currentRank === "zkusebni-ridic" && nextRank === "ridic") || 
+                                                 (currentRank === "ridic" && nextRank === "zasloužily-ridic");
+
+                        if (!isBasicPromotion) {
+                            // Pro vyšší pozice vyžadujeme heslo
+                            const promoPass = await promptPassword(`Povýšení uživatele ${uName} na vysokou pozici "${nextRankName}" vyžaduje heslo:`);
+                            if (!promoPass) return;
+                            
+                            let correctPassword = "snekousek1";
+                            try {
+                                const passDocRef = doc(db, "settingsoc", "admin_password");
+                                const passSnap = await getDoc(passDocRef);
+                                if (passSnap.exists() && passSnap.data().password) {
+                                    correctPassword = passSnap.data().password;
+                                }
+                            } catch(e) {}
+
+                            if (promoPass !== correctPassword) {
+                                alert("Nesprávné heslo. Povýšení bylo zrušeno.");
+                                return;
+                            }
+                        }
+                        
+                        if (confirm(`Chceš řidiče ${uName} povýšit na hodnost: ${nextRankName}?`)) {
+                            try {
+                                await updateDoc(doc(db, "users", user.email), {
+                                    rank: nextRank,
+                                    rankName: nextRankName
+                                });
+                                await fetchUsersFromFirebase();
+                            } catch (err) {
+                                alert("Chyba při povyšování: " + err.message);
+                            }
                         }
                     }
                 });
@@ -405,6 +527,23 @@ function renderUsersList(usersArray) {
             btnDelete.innerText = "Smazat";
             btnDelete.addEventListener("click", async () => {
                 if(confirm(`Opravdu chceš úplně SMAZAT uživatele ${uName}?`)) {
+                    const delPass = await promptPassword(`Smazání uživatele ${uName} vyžaduje administrátorské heslo:`);
+                    if (!delPass) return;
+
+                    let correctPassword = "snekousek1";
+                    try {
+                        const passDocRef = doc(db, "settingsoc", "admin_password");
+                        const passSnap = await getDoc(passDocRef);
+                        if (passSnap.exists() && passSnap.data().password) {
+                            correctPassword = passSnap.data().password;
+                        }
+                    } catch(e) {}
+
+                    if (delPass !== correctPassword) {
+                        alert("Nesprávné heslo. Smazání zrušeno.");
+                        return;
+                    }
+
                     await deleteDoc(doc(db, "users", user.email));
                     await fetchUsersFromFirebase();
                 }
@@ -433,7 +572,7 @@ function startEdit(email, data) {
     emailField.disabled = true;
 
     document.getElementById("userName").value = data.name || data.username || "";
-    document.getElementById("userOc").value = data.oc || "";
+    document.getElementById("userOc").value = data.oc || data.osobniCisla || "";
     document.getElementById("userDiscordId").value = data.discordId || "";
     document.getElementById("userRank").value = data.rank || "zkusebni-ridic";
     document.getElementById("userRankName").value = data.rankName || "";
@@ -461,6 +600,23 @@ function resetForm() {
 document.getElementById("userForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
+    const formPass = await promptPassword("Uložení změn uživatele vyžaduje administrátorské heslo:");
+    if (!formPass) return;
+
+    let correctPassword = "snekousek1";
+    try {
+        const passDocRef = doc(db, "settingsoc", "admin_password");
+        const passSnap = await getDoc(passDocRef);
+        if (passSnap.exists() && passSnap.data().password) {
+            correctPassword = passSnap.data().password;
+        }
+    } catch(e) {}
+
+    if (formPass !== correctPassword) {
+        alert("Nesprávné heslo. Změny nebyly uloženy.");
+        return;
+    }
+
     const email = document.getElementById("userEmail").value.trim();
     const name = document.getElementById("userName").value.trim();
     const oc = document.getElementById("userOc").value.trim();
@@ -492,18 +648,11 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
 function upravFaviconuPodleRezimu() {
     const favicon = document.getElementById('favicon');
     if (!favicon) return;
-
     const jeTemnyRezim = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (jeTemnyRezim) {
-        favicon.href = 'fotky/univ/favicon.png';
-    } else {
-        favicon.href = 'fotky/univ/favicon-cerna.png';
-    }
+    favicon.href = jeTemnyRezim ? 'fotky/univ/favicon.png' : 'fotky/univ/favicon-cerna.png';
 }
 
 upravFaviconuPodleRezimu();
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', upravFaviconuPodleRezimu);
 </script>
 </body>
