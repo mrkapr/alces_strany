@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS</title>
+    <link rel="icon" href="fotky/univ/favicon.png" type="image/png">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: "MS Sans Serif", Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .navbar {
+            background-color: #c0c0c0;
+            border: 2px solid #dfdfdf;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #808080;
+            border-right-color: #808080;
+            padding: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .navbar a, .navbar button {
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 4px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        .navbar a:active, .navbar button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        h1, h2 {
+            font-family: Arial, sans-serif;
+            border-bottom: 2px solid #808080;
+            padding-bottom: 5px;
+        }
+
+        .panel-box {
+            background-color: #ececec;
+            border: 2px solid #808080;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 2px solid #808080;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #808080;
+            padding: 6px 10px;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #c0c0c0;
+            font-weight: bold;
+        }
+
+        button.retro-btn {
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
+        button.retro-btn:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        button.btn-red { color: #800000; }
+        button.btn-green { color: #006600; }
+        button.btn-blue { color: #000080; }
+
+        input[type="text"], input[type="month"], select {
+            border: 2px solid #808080;
+            border-top-color: #000000;
+            border-left-color: #000000;
+            padding: 3px;
+            font-size: 12px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #access-denied {
+            text-align: center;
+            margin-top: 100px;
+            font-size: 18px;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="access-denied" style="display: none;">
+        Přístup odepřen.
+    </div>
+
+    <div id="main-admin-content" style="display: none;">
+        
+        <!-- NAVIGACE NAHÓRE -->
+        <div class="navbar">
+            <button onclick="switchTab('prideleny')">Žádosti o přidělenky</button>
+            <button onclick="switchTab('sprava')">Správa vozidel</button>
+            <button onclick="switchTab('omluvenky')">Správa omluvenek a pauz</button>
+            <a href="home.html">Zpět na web</a>
+        </div>
+
+        <h1>Správa správ</h1>
+
+        <div id="tab-prideleny" class="panel-box">
+            <h2>Správa aktivních žádostí o přidělenky</h2>
+            <table id="requestsTable">
+                <thead>
+                    <tr>
+                        <th>Ev.č. vozu</th>
+                        <th>Žadatel</th>
+                        <th>OČ</th>
+                        <th>Stav</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody id="requestsTbody">
+                    <tr><td colspan="5">Načítám žádosti...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tab-sprava" class="panel-box" style="display: none;">
+            <h2>Správa vozového parku - přidělení řidiči</h2>
+            <div style="margin-bottom: 10px;">
+                <input type="text" id="searchVehicleInput" placeholder="Hledat podle ev.č. ..." onkeyup="filterVehiclesAdmin()" style="width: 250px;">
+            </div>
+            <table id="vehiclesAdminTable">
+                <thead>
+                    <tr>
+                        <th>Ev.č. vozu</th>
+                        <th>Aktuální řidiči ve voze</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody id="vehiclesAdminTbody">
+                    <tr><td colspan="3">Načítám vozidla...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tab-omluvenky" class="panel-box" style="display: none;">
+            <h2>Správa omluvenek a pauz zaměstnanců</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Řidič / E-mail</th>
+                        <th>Typ</th>
+                        <th>Od měsíce</th>
+                        <th>Do měsíce</th>
+                        <th>Důvod</th>
+                        <th>Stav</th>
+                        <th>Akce / Uložení</th>
+                    </tr>
+                </thead>
+                <tbody id="absencesAdminTbody">
+                    <tr><td colspan="7">Načítám omluvenky...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
+    authDomain: "alces-d505c.firebaseapp.com",
+    projectId: "alces-d505c",
+    storageBucket: "alces-d505c.firebasestorage.app",
+    messagingSenderId: "318520073072",
+    appId: "1:318520073072:web:53ab5c0033f60e96bbcdb5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let allVehiclesCache = [];
+
+onAuthStateChanged(auth, async (user) => {
+    if (user && user.email.toLowerCase().trim() === "ytkapr@gmail.com") {
+        document.getElementById("main-admin-content").style.display = "block";
+        document.getElementById("access-denied").style.display = "none";
+        await loadAllAdminData();
+    } else {
+        document.getElementById("main-admin-content").style.display = "none";
+        document.getElementById("access-denied").style.display = "block";
+    }
+});
+
+window.switchTab = function(tabName) {
+    document.getElementById('tab-prideleny').style.display = (tabName === 'prideleny') ? 'block' : 'none';
+    document.getElementById('tab-sprava').style.display = (tabName === 'sprava') ? 'block' : 'none';
+    document.getElementById('tab-omluvenky').style.display = (tabName === 'omluvenky') ? 'block' : 'none';
+}
+
+async function loadAllAdminData() {
+    await loadRequestsData();
+    await loadVehiclesManagementData();
+    await loadAbsencesAdminData();
+}
+
+// ================= ŽÁDOSTI (PŘIDĚLENKY) =================
+async function loadRequestsData() {
+    const tbody = document.getElementById("requestsTbody");
+    tbody.innerHTML = `<tr><td colspan="5">Načítám...</td></tr>`;
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "assignments"));
+        tbody.innerHTML = "";
+        let count = 0;
+
+        querySnapshot.forEach(vDoc => {
+            const evc = vDoc.id;
+            const data = vDoc.data();
+            const pending = data.pendingRequests || [];
+            const waitingCo = data.waitingForCoDriver;
+
+            pending.forEach(req => {
+                count++;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>ev.č. ${evc}</strong></td>
+                    <td>${req.name} (${req.email})</td>
+                    <td>OČ: ${req.oc || "-"}</td>
+                    <td><span style="color: blue; font-weight:bold;">Čeká na schválení vedením</span></td>
+                    <td>
+                        <button class="retro-btn btn-green" onclick="approveRequest('${evc}', '${req.email}')">Potvrdit</button>
+                        <button class="retro-btn btn-red" onclick="rejectRequest('${evc}', '${req.email}')">Zamítnout</button>
+                        <button class="retro-btn btn-red" onclick="deleteRequestRecord('${evc}', '${req.email}', 'pending')">Smazat</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (waitingCo) {
+                count++;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>ev.č. ${evc}</strong></td>
+                    <td>${waitingCo.name} (${waitingCo.email})</td>
+                    <td>OČ: ${waitingCo.oc || "-"}</td>
+                    <td><span style="color: #b8860b; font-weight:bold;">Čeká na souhlas</span></td>
+                    <td>
+                        <button class="retro-btn btn-blue" onclick="skipCoDriverAndSendToAdmin('${evc}')">Přeskočit → Vedení</button>
+                        <button class="retro-btn btn-red" onclick="deleteRequestRecord('${evc}', '${waitingCo.email}', 'waiting')">Smazat</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        if (count === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: gray;">Žádné aktivní žádosti o vozidla.</td></tr>`;
+        }
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Chyba při načítání: ${e.message}</td></tr>`;
+    }
+}
+
+window.approveRequest = async function(evc, email) {
+    if (!confirm(`Potvrdit přidělení vozu ${evc} pro ${email}?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const data = snap.data();
+            let pending = data.pendingRequests || [];
+            const req = pending.find(r => r.email === email);
+            pending = pending.filter(r => r.email !== email);
+            
+            let drivers = data.drivers || [];
+            if (req) {
+                drivers.push({ email: req.email, name: req.name, oc: req.oc || "-", assignedAt: new Date().toISOString() });
+            }
+            await updateDoc(ref, { drivers: drivers, pendingRequests: pending });
+            alert("Žádost schválena a vůz přidělen!");
+            await loadAllAdminData();
+        }
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+window.rejectRequest = async function(evc, email) {
+    if (!confirm(`Zamítnout žádost pro ${email}?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const data = snap.data();
+            let pending = (data.pendingRequests || []).filter(r => r.email !== email);
+            await updateDoc(ref, { pendingRequests: pending });
+            await updateDoc(doc(db, "users", email), { lastVehicleAssignmentAt: null });
+            alert("Žádost zamítnuta.");
+            await loadAllAdminData();
+        }
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+window.deleteRequestRecord = async function(evc, email, type) {
+    if (!confirm(`Natvrdo smazat tuto žádost?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const data = snap.data();
+            if (type === 'pending') {
+                let pending = (data.pendingRequests || []).filter(r => r.email !== email);
+                await updateDoc(ref, { pendingRequests: pending });
+            } else {
+                await updateDoc(ref, { waitingForCoDriver: null });
+            }
+            await updateDoc(doc(db, "users", email), { lastVehicleAssignmentAt: null });
+            alert("Žádost byla smazána.");
+            await loadAllAdminData();
+        }
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+window.skipCoDriverAndSendToAdmin = async function(evc) {
+    if (!confirm(`Přeskočit schválení druhým řidičem a poslat rovnou k vedení?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const data = snap.data();
+            const waiting = data.waitingForCoDriver;
+            if (!waiting) return;
+
+            let pending = data.pendingRequests || [];
+            pending.push(waiting);
+
+            await updateDoc(ref, {
+                waitingForCoDriver: null,
+                pendingRequests: pending
+            });
+            alert("Žádost přesunuta k řádnému schválení vedením!");
+            await loadAllAdminData();
+        }
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+
+// ================= SPRÁVA VOZIDEL (ODPŘIDĚLENÍ) =================
+async function loadVehiclesManagementData() {
+    const tbody = document.getElementById("vehiclesAdminTbody");
+    tbody.innerHTML = `<tr><td colspan="3">Načítám vozidla...</td></tr>`;
+
+    try {
+        const snap = await getDocs(collection(db, "vehicles"));
+        const assignSnap = await getDocs(collection(db, "assignments"));
+        let assignMap = {};
+        assignSnap.forEach(d => assignMap[d.id] = d.data());
+
+        allVehiclesCache = [];
+        snap.forEach(vDoc => {
+            const evc = vDoc.id;
+            const drivers = (assignMap[evc] && assignMap[evc].drivers) ? assignMap[evc].drivers : [];
+            allVehiclesCache.push({ evc: evc, drivers: drivers });
+        });
+
+        renderVehiclesAdminTable(allVehiclesCache);
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="3" style="color:red;">Chyba: ${e.message}</td></tr>`;
+    }
+}
+
+function renderVehiclesAdminTable(vehiclesArr) {
+    const tbody = document.getElementById("vehiclesAdminTbody");
+    tbody.innerHTML = "";
+
+    if (vehiclesArr.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Žádná vozidla nenalezena.</td></tr>`;
+        return;
+    }
+
+    vehiclesArr.forEach(item => {
+        const evc = item.evc;
+        const drivers = item.drivers;
+
+        let driversHtml = "";
+        if (drivers.length === 0) {
+            driversHtml = `<span style="color:gray;">Nikdo (Volné)</span>`;
+        } else {
+            driversHtml = drivers.map(d => `<div><strong>${d.name}</strong> (${d.email}) [OČ: ${d.oc || '-'}] <button class="retro-btn btn-red" style="padding:1px 4px; font-size:10px;" onclick="removeDriverFromVehicle('${evc}', '${d.email}')">Odpřidělit</button></div>`).join('');
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><strong>ev.č. ${evc}</strong></td>
+            <td>${driversHtml}</td>
+            <td>
+                ${drivers.length > 0 ? `<button class="retro-btn btn-red" onclick="removeAllDriversFromVehicle('${evc}')">Odpřidělit všechny</button>` : '-'}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.filterVehiclesAdmin = function() {
+    const query = document.getElementById("searchVehicleInput").value.toLowerCase();
+    const filtered = allVehiclesCache.filter(v => v.evc.toLowerCase().includes(query));
+    renderVehiclesAdminTable(filtered);
+};
+
+window.removeDriverFromVehicle = async function(evc, email) {
+    if (!confirm(`Odpřidělit řidiče ${email} z vozu ${evc}?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            let drivers = snap.data().drivers || [];
+            drivers = drivers.filter(d => d.email !== email);
+            await updateDoc(ref, { drivers: drivers });
+            alert("Řidič byl odpřidělen.");
+            await loadVehiclesManagementData();
+        }
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+window.removeAllDriversFromVehicle = async function(evc) {
+    if (!confirm(`Odpřidělit všechny řidiče z vozu ${evc}?`)) return;
+    try {
+        const ref = doc(db, "assignments", evc);
+        await updateDoc(ref, { drivers: [] });
+        alert("Vozidlo je volné.");
+        await loadVehiclesManagementData();
+    } catch(e) { alert("Chyba: " + e.message); }
+};
+
+
+// ================= SPRÁVA OMLUVENEK A PAUZ =================
+async function loadAbsencesAdminData() {
+    const tbody = document.getElementById("absencesAdminTbody");
+    tbody.innerHTML = `<tr><td colspan="7">Načítám omluvenky...</td></tr>`;
+
+    try {
+        const snap = await getDocs(collection(db, "absences"));
+        tbody.innerHTML = "";
+        let count = 0;
+
+        snap.forEach(dDoc => {
+            count++;
+            const id = dDoc.id;
+            const data = dDoc.data();
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${data.userName || "Neznámý"}</strong><br><span style="font-size:11px; color:#555;">${data.userEmail || ""}</span></td>
+                <td>
+                    <select id="abs-type-${id}">
+                        <option value="Omluvenka" ${data.type === "Omluvenka" ? "selected" : ""}>Omluvenka</option>
+                        <option value="Pauza" ${data.type === "Pauza" ? "selected" : ""}>Pauza</option>
+                    </select>
+                </td>
+                <td><input type="month" id="abs-from-${id}" value="${data.from || ""}"></td>
+                <td><input type="month" id="abs-to-${id}" value="${data.to || ""}"></td>
+                <td style="font-size:12px; word-break:break-word;">${data.reason || "-"}</td>
+                <td>
+                    <select id="abs-status-${id}">
+                        <option value="ceka" ${data.status === "ceka" ? "selected" : ""}>Čeká</option>
+                        <option value="schvaleno" ${data.status === "schvaleno" ? "selected" : ""}>Schváleno</option>
+                        <option value="zamitnuto" ${data.status === "zamitnuto" ? "selected" : ""}>Zamítnuto</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="retro-btn btn-green" onclick="saveAbsenceEdit('${id}')">Ulož</button>
+                    <button class="retro-btn btn-red" onclick="deleteAbsenceRecord('${id}')">Smazat</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if (count === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: gray;">Žádné omluvenky ani pauzy v databázi.</td></tr>`;
+        }
+    } catch(e) {
+        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="7" style="color:red;">Chyba: ${e.message}</td></tr>`;
+    }
+}
+
+window.saveAbsenceEdit = async function(id) {
+    const newType = document.getElementById(`abs-type-${id}`).value;
+    const newFrom = document.getElementById(`abs-from-${id}`).value;
+    const newTo = document.getElementById(`abs-to-${id}`).value;
+    const newStatus = document.getElementById(`abs-status-${id}`).value;
+
+    try {
+        const ref = doc(db, "absences", id);
+        await updateDoc(ref, {
+            type: newType,
+            from: newFrom,
+            to: newType === "Pauza" ? newTo : "",
+            status: newStatus
+        });
+        alert("Změny u omluvenky byly uloženy.");
+        await loadAbsencesAdminData();
+    } catch(e) { alert("Chyba při ukládání: " + e.message); }
+};
+
+window.deleteAbsenceRecord = async function(id) {
+    if (!confirm("Opravdu natvrdo smazat tuto omluvenku/pauzu?")) return;
+    try {
+        await deleteDoc(doc(db, "absences", id));
+        alert("Záznam byl smazán.");
+        await loadAbsencesAdminData();
+    } catch(e) { alert("Chyba při mazání: " + e.message); }
+};
+</script>
+
+</body>
+</html>
