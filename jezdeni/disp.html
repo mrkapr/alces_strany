@@ -4,215 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dispečerský panel | alces, a. s.</title>
-    <link rel="icon" href="favicon.png" type="image/png" id="favicon">
+    <link rel="icon" href="../fotky/univ/favicon.png" type="image/png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: #121212; min-height: 100vh; color: white; padding: 100px 40px 40px 40px; }
-        
-        /* Horní lišta přesně dle náčrtku */
+        body { margin: 0; font-family: 'Poppins', Arial, sans-serif; background: #121212; min-height: 100vh; color: white; padding-bottom: 40px; }
         .topbar {
             height: 58px; position: fixed; top: 16px; left: 24px; right: 24px; z-index: 999;
             background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
             display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 24px;
-            backdrop-filter: blur(24px); box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+            backdrop-filter: blur(24px); box-sizing: border-box;
         }
-        .topbar .logo img { height: 34px; width: auto; display: block; }
-        .topbar-title { font-size: 14px; font-weight: 600; color: #ffd84d; }
+        .topbar .logo img { height: 34px; display: block; }
+        .topbar a { color: white; text-decoration: none; font-weight: 600; }
+        .topbar a:hover { color: #ffd84d; }
 
-        /* Rozvržení dvou boxů vedle sebe */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .content { margin: 110px 24px 20px 24px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+        @media(max-width: 1000px) { .content { grid-template-columns: 1fr; } }
 
-        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: white; }
+        .panel {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px; border-radius: 20px; backdrop-filter: blur(12px); margin-bottom: 20px;
+        }
+        .panel h2 { margin-top: 0; font-size: 18px; color: #ffd84d; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
 
-        .box {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 24px;
-            padding: 24px;
-            min-height: 500px;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-
-        /* Položky v seznamu řidičů */
-        .driver-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 14px 18px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            transition: background 0.2s;
-        }
-        .driver-card:hover { background: rgba(255,255,255,0.07); }
-        
-        .driver-left { display: flex; align-items: center; gap: 14px; }
-        
-        /* Avatar s barevnou tečkou stavu */
-        .avatar-placeholder {
-            width: 38px; height: 38px; background: rgba(255,255,255,0.1); border-radius: 50%;
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .status-dot {
-            width: 10px; height: 10px; border-radius: 50%; position: absolute; bottom: 2px; right: 2px;
-            border: 2px solid #121212;
-        }
-        .dot-red { background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; }
-        .dot-green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
-        .dot-yellow { background: #ffd84d; box-shadow: 0 0 8px #ffd84d; }
-
-        .btn-manage {
-            background: transparent; border: none; color: white; font-size: 13px; font-weight: 500;
-            cursor: pointer; opacity: 0.8; transition: opacity 0.2s, color 0.2s;
-        }
-        .btn-manage:hover { opacity: 1; color: #ffd84d; }
-
-        /* Velké zelené tlačítko + dole v boxu */
-        .btn-add-big {
-            margin-top: auto;
-            background: transparent;
-            border: 2px solid #00b84f;
-            color: #00b84f;
-            border-radius: 16px;
-            padding: 14px;
-            font-size: 20px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .btn-add-big:hover { background: rgba(0, 184, 79, 0.15); transform: translateY(-2px); }
-
-        /* Sekce oznámení */
-        .notif-group-title { font-size: 16px; font-weight: 600; color: #ffd84d; margin-bottom: 10px; }
-        .notif-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; font-size: 13px;
-        }
-        .btn-icon-yellow {
-            background: rgba(255, 216, 77, 0.15); border: 1px solid rgba(255, 216, 77, 0.4);
-            color: #ffd84d; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
-        }
-        .btn-icon-yellow:hover { transform: scale(1.1); }
-
-        /* Popup okno */
-        .popup-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(10px);
-        }
-        .popup-box {
-            background: rgba(25, 25, 25, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px;
-            padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-        }
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 13px; font-weight: 600; opacity: 0.9; }
-        input, select, textarea { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; padding: 12px; width: 100%; outline: none; }
-        .btn-primary { background: #00b84f; color: white; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; width: 100%; }
-        .btn-primary:hover { background: #00963f; }
+        input, select, textarea {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+            color: white; padding: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; box-sizing: border-box; width: 100%;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffd84d; }
+
+        button {
+            font-family: 'Poppins', sans-serif; font-weight: 600; padding: 10px 16px;
+            border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; font-size: 13px;
+        }
+        .btn-primary { background: #ffd84d; color: black; width: 100%; }
+        .btn-primary:hover { background: #e6c240; }
+
+        .driver-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        .driver-table th, .driver-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .driver-table th { color: #ffd84d; font-size: 11px; text-transform: uppercase; }
+
+        .msg-box { height: 160px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.08); font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .msg-item { background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 8px; border-left: 3px solid #66b2ff; }
+
+        #error-screen { display: none; text-align: center; margin-top: 150px; color: #ff4d4d; font-size: 20px; font-weight: 700; }
+        
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="topbar">
-    <div class="logo"><a href="home.html"><img src="fotky/univ/logo.png" alt="alces"></a></div>
-    <div class="topbar-title">Dispečerský panel</div>
+    <div class="logo"><a href="../home.html"><img src="../fotky/univ/logo.png" alt="alces"></a></div>
+    <div><a href="../home.html">Domů</a></div>
 </div>
 
-<div class="dashboard-grid">
-    <!-- BOX 1: SEZNAM ŘIDIČŮ -->
+<div id="error-screen">Ověřuji oprávnění a dostupnost dispečinku...</div>
+
+<!-- MODÁL POKUD JE DISPEČINK OBSAZEN NĚKÝM JINÝM -->
+<div id="busyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="background: rgba(25,25,25,0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 30px; width: 90%; max-width: 400px;">
+        <h2 style="color: #ff4d4d; margin-top: 0;">Dispečink je obsazen</h2>
+        <p style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;" id="busyModalText">Na stránce je již aktivní jiný dispečer.</p>
+        <a href="home.html" class="btn-primary" style="display: block; text-decoration: none; padding: 12px; text-align: center; color: black; box-sizing: border-box;">Zpět domů</a>
+    </div>
+</div>
+
+<div class="content" id="mainDashboard" style="display: none;">
+    
+    <!-- LEVÝ SLOUPEC: Aktivní řidiči & Příchozí zprávy -->
     <div>
-        <div class="section-title">Seznam řidičů:</div>
-        <div class="box">
-            <div id="driversListContainer">
-                <p style="opacity: 0.5;">Načítám řidiče...</p>
+        <div class="panel">
+            <h2>Aktivní řidiči v provozu</h2>
+            <div style="overflow-x: auto;">
+                <table class="driver-table">
+                    <thead>
+                        <tr>
+                            <th>OČ / Jméno</th>
+                            <th>Směna</th>
+                            <th>Stav</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeDriversTbody">
+                        <tr><td colspan="3" style="opacity: 0.5;">Žádní aktivní řidiči...</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <button class="btn-add-big" onclick="openNewTurnusModal()">+</button>
+        </div>
+
+        <div class="panel">
+            <h2>Příchozí zprávy od řidičů</h2>
+            <div class="msg-box" id="incomingDispatcherMsgs">
+                <span style="opacity: 0.5;">Žádné nové zprávy...</span>
+            </div>
         </div>
     </div>
 
-    <!-- BOX 2: SPRÁVA OZNÁMENÍ -->
+    <!-- PRAVÝ SLOUPEC: Odesílání zpráv (Všem / Konkrétnímu) -->
     <div>
-        <div class="section-title">Sprava oznameni:</div>
-        <div class="box">
-            <div class="notif-group-title">Probíhá:</div>
-            <div id="activeNotifsList" style="margin-bottom: 20px;">
-                <div class="notif-item">
-                    <span>Mimořádná výluka na lince 101</span>
-                    <button class="btn-icon-yellow" title="Upravit">✏️</button>
+        <!-- Hromadné oznámení -->
+        <div class="panel">
+            <h2>Hromadné oznámení</h2>
+            <form id="globalAnnounceForm">
+                <div class="form-group">
+                    <label>Text oznámení pro všechny</label>
+                    <textarea id="globalText" placeholder="Napište hromadnou zprávu..." required style="min-height: 70px;"></textarea>
                 </div>
-            </div>
+                <button type="submit" class="btn-primary">Odeslat všem</button>
+            </form>
+        </div>
 
-            <div class="notif-group-title">Ukončeno:</div>
-            <div id="closedNotifsList" style="margin-bottom: 20px;">
-                <div class="notif-item" style="opacity: 0.6;">
-                    <span>Zpoždění spojů kvůli nehodě</span>
+        <!-- Soukromá zpráva konkrétnímu řidiči -->
+        <div class="panel">
+            <h2>Zpráva konkrétnímu řidiči</h2>
+            <form id="privateMsgForm">
+                <div class="form-group">
+                    <label>Vyber řidiče</label>
+                    <select id="targetDriverSelect" required>
+                        <option value="">-- Vyber aktivního řidiče --</option>
+                    </select>
                 </div>
-            </div>
-
-            <button class="btn-add-big" onclick="openNewNotifModal()">+</button>
+                <div class="form-group">
+                    <label>Zpráva</label>
+                    <textarea id="privateText" placeholder="Zpráva pro zvoleného řidiče..." required style="min-height: 70px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Odeslat řidiči</button>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- POPUP OKNO PRO VYTVOŘENÍ JEŽDĚNÍ / TURNUSU -->
-<div id="turnusModal" class="popup-overlay">
-    <div class="popup-box">
-        <h2 style="color: #ffd84d; margin-top: 0;">Vytvořit / Správa turnusu</h2>
-        <form id="turnusForm">
-            <div class="form-group">
-                <label>Vyberte řidiče</label>
-                <select id="modalDriverSelect" required></select>
-            </div>
-            <div class="form-group">
-                <label>Datum</label>
-                <input type="date" id="modalDate" required>
-            </div>
-            <div class="form-group">
-                <label>Název turnusu</label>
-                <input type="text" id="modalTurnusName" placeholder="např. Turnus A1" required>
-            </div>
-            <button type="submit" class="btn-primary" style="margin-top: 10px;">Uložit turnus</button>
-            <button type="button" onclick="closeModals()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); width: 100%; margin-top: 10px; cursor: pointer;">Zrušit</button>
-        </form>
-    </div>
-</div>
-
-<!-- POPUP OKNO PRO NOVÉ OZNÁMENÍ (Windows notifikace + zvuk) -->
-<div id="notifModal" class="popup-overlay">
-    <div class="popup-box">
-        <h2 style="color: #ffd84d; margin-top: 0;">Nové oznámení řidičům</h2>
-        <form id="notifForm">
-            <div class="form-group">
-                <label>Nadpis</label>
-                <input type="text" id="modalNotifTitle" placeholder="Nadpis oznámení" required>
-            </div>
-            <div class="form-group">
-                <label>Text zprávy</label>
-                <textarea id="modalNotifBody" placeholder="Podrobnosti..." required></textarea>
-            </div>
-            <button type="submit" class="btn-primary" style="margin-top: 10px;">Odeslat oznámení</button>
-            <button type="button" onclick="closeModals()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); width: 100%; margin-top: 10px; cursor: pointer;">Zrušit</button>
-        </form>
-    </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAwRV2OuIhA-oyg295gIv5-4zfzO4qb9MY",
@@ -225,141 +158,183 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-let allDrivers = [];
+const allowedManagementRanks = ["dispecer", "team-manager", "provozni-reditel", "management", "majitel"];
 
-// Načtení seznamu řidičů a jejich stavů
-async function loadDrivers() {
-    const container = document.getElementById("driversListContainer");
-    const modalSelect = document.getElementById("modalDriverSelect");
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    const email = user.email.toLowerCase();
     
-    try {
-        const usersSnap = await getDocs(collection(db, "users"));
-        allDrivers = [];
-        modalSelect.innerHTML = "";
+    // Zjisti uživatelské údaje z DB (pro kontrolu hodnosti a OČ)
+    const uSnap = await getDoc(doc(db, "users", email));
+    if (!uSnap.exists()) {
+        showError("Účet nemá oprávnění.");
+        return;
+    }
+    const uData = uSnap.data();
+    const rank = uData.rank || "";
+    const oc = String(uData.oc || uData.osobniCislo || "");
+    const userName = uData.name || uData.username || email;
 
-        usersSnap.forEach(d => {
-            const data = d.data();
-            const email = d.id;
-            allDrivers.push({ email, name: data.name || email, oc: data.osobni_cislo || '-' });
+    if (!allowedManagementRanks.includes(rank)) {
+        showError("Přístup odepřen. Tento panel je určen pouze pro dispečink a vedení.");
+        return;
+    }
+
+    // LOGIKA EXKLUZIVITY DISPEČERA (Může být pouze 1, výjimka OČ 7001)
+    const activeDispatcherRef = doc(db, "system_state", "active_dispatcher");
+    const dispatcherSnap = await getDoc(activeDispatcherRef);
+
+    const nowTimestamp = Date.now();
+    let currentDispatcher = dispatcherSnap.exists() ? dispatcherSnap.data() : null;
+
+    // Pokud je někdo zapsaný, ale nebyl aktivní posledních 30 sekund (heartbeat), považujeme ho za odpojeného
+    if (currentDispatcher && (nowTimestamp - currentDispatcher.lastHeartbeat > 30000) && currentDispatcher.email !== email) {
+        currentDispatcher = null;
+    }
+
+    if (currentDispatcher && currentDispatcher.email !== email && oc !== "7001") {
+        // Obsazeno někým jiným a nejsme OČ 7001
+        document.getElementById("error-screen").style.display = "none";
+        document.getElementById("busyModal").style.display = "flex";
+        document.getElementById("busyModalText").innerHTML = `Na dispečinku je aktuálně aktivní: <strong>${currentDispatcher.name}</strong>. Přístup má pouze 1 dispečer v jeden moment.`;
+        return;
+    }
+
+    // Jinak zapsat sebe jako aktivního dispečera
+    await setDoc(activeDispatcherRef, {
+        email: email,
+        name: userName,
+        oc: oc,
+        lastHeartbeat: nowTimestamp
+    });
+
+    // Spuštění intervalu (heartbeat každých 10 sekund, aby držel zámek)
+    setInterval(async () => {
+        try {
+            await setDoc(activeDispatcherRef, {
+                email: email,
+                name: userName,
+                oc: oc,
+                lastHeartbeat: Date.now()
+            }, { merge: true });
+        } catch(e) {}
+    }, 10000);
+
+    // Odstranění zámku při zavření okna
+    window.addEventListener("beforeunload", () => {
+        navigator.sendBeacon ? null : deleteDoc(activeDispatcherRef); // fallback
+    });
+
+    // Vše OK, ukážeme dashboard
+    document.getElementById("error-screen").style.display = "none";
+    document.getElementById("mainDashboard").style.display = "grid";
+    initDispatcherListeners(userName);
+});
+
+function showError(msg) {
+    const err = document.getElementById("error-screen");
+    err.innerText = msg;
+    err.style.display = "block";
+}
+
+function initDispatcherListeners(dispatcherName) {
+    // 1. Posluchač aktivních řidičů
+    onSnapshot(collection(db, "active_drivers"), (snapshot) => {
+        const tbody = document.getElementById("activeDriversTbody");
+        const select = document.getElementById("targetDriverSelect");
+        
+        tbody.innerHTML = "";
+        // Zachováme první defaultní možnost v selectu
+        select.innerHTML = `<option value="">-- Vyber aktivního řidiče --</option>`;
+
+        if (snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="3" style="opacity: 0.5;">Žádní aktivní řidiči...</td></tr>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const statusColor = data.status === "Aktivní" ? "#00ff66" : "#ffaa00";
             
-            const opt = document.createElement("option");
-            opt.value = email;
-            opt.innerText = `[OČ ${data.osobni_cislo || '-'}] ${data.name || email}`;
-            modalSelect.appendChild(opt);
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${data.name}</strong><br><span style="font-size:11px; opacity:0.6;">OČ: ${data.oc || '-'}</span></td>
+                    <td>${data.shift || 'Nezadáno'}</td>
+                    <td><span style="color: ${statusColor}; font-weight:600;">${data.status}</span></td>
+                </tr>
+            `;
+
+            // Naplnění selectu pro soukromé zprávy
+            select.innerHTML += `<option value="${data.email}">${data.name} (OČ: ${data.oc || '-'})</option>`;
         });
+    });
 
-        // Sledujeme aktivní turnusy pro stavy teček
-        onSnapshot(collection(db, "active_turnusy"), (snapshot) => {
-            const turnusyMap = {};
-            snapshot.forEach(t => turnusyMap[t.id] = t.data());
+    // 2. Příchozí zprávy od řidičů
+    onSnapshot(query(collection(db, "dispatcher_messages"), orderBy("createdAt", "desc"), limit(30)), (snapshot) => {
+        const box = document.getElementById("incomingDispatcherMsgs");
+        box.innerHTML = "";
+        if (snapshot.empty) {
+            box.innerHTML = `<span style="opacity: 0.5;">Žádné nové zprávy...</span>`;
+            return;
+        }
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            box.innerHTML += `
+                <div class="msg-item">
+                    <strong>${data.fromName}</strong> (OČ: ${data.fromOc || '-'}):<br>
+                    ${data.text}
+                </div>
+            `;
+        });
+    });
 
-            container.innerHTML = "";
-            allDrivers.forEach(driver => {
-                const turnus = turnusMap[driver.email];
-                const stav = turnus ? (turnus.stav || "jidem") : "konec"; // pokud nemá ježdění, svítí červeně / konec
-                
-                let dotClass = "dot-green";
-                if (stav === "pauza") dotClass = "dot-yellow";
-                if (stav === "konec" || !turnus) dotClass = "dot-red";
+    // 3. Odeslání hromadného oznámení
+    document.getElementById("globalAnnounceForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = document.getElementById("globalText").value.trim();
+        if (!text) return;
 
-                const div = document.createElement("div");
-                div.className = "driver-card";
-                div.innerHTML = `
-                    <div class="driver-left">
-                        <div class="avatar-placeholder">
-                            👤
-                            <span class="status-dot ${dotClass}"></span>
-                        </div>
-                        <div>
-                            <strong>${driver.name}</strong><br>
-                            <span style="font-size: 11px; opacity: 0.6;">OČ: ${driver.oc}</span>
-                        </div>
-                    </div>
-                    <button class="btn-manage" onclick="handleDriverClick('${driver.email}')">Sprava turnusu uzivatele</button>
-                `;
-                container.appendChild(div);
+        try {
+            await addDoc(collection(db, "announcements_general"), {
+                sender: dispatcherName,
+                text: text,
+                createdAt: new Date().toISOString()
             });
-        });
+            document.getElementById("globalText").value = "";
+            alert("Hromadné oznámení bylo úspěšně odesláno všem řidičům.");
+        } catch(e) {
+            alert("Chyba: " + e.message);
+        }
+    });
 
-    } catch (e) {
-        console.error(e);
-    }
+    // 4. Odeslání soukromé zprávy řidiči
+    document.getElementById("privateMsgForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const targetEmail = document.getElementById("targetDriverSelect").value;
+        const text = document.getElementById("privateText").value.trim();
+        if (!targetEmail || !text) {
+            alert("Vyber řidiče a napiš text zprávy.");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, `drivers_private_msg_${targetEmail}`), {
+                sender: `Dispečink (${dispatcherName})`,
+                text: text,
+                createdAt: new Date().toISOString()
+            });
+            document.getElementById("privateText").value = "";
+            alert("Soukromá zpráva byla řidiči doručena.");
+        } catch(e) {
+            alert("Chyba: " + e.message);
+        }
+    });
 }
-
-// Kliknutí na "Sprava turnusu uzivatele" - pokud neexistuje ježdění, otevře popup pro vytvoření
-window.handleDriverClick = async function(email) {
-    const ref = doc(db, "active_turnusy", email);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-        // Ježdění neexistuje -> otevřeme popup pro vytvoření
-        document.getElementById("modalDriverSelect").value = email;
-        document.getElementById("turnusModal").style.display = "flex";
-    } else {
-        // Ježdění existuje -> lze přesměrovat nebo upravit
-        alert(`Řidič ${email} již má aktivní turnus: ${snap.data().nazevTurnusu}`);
-    }
-}
-
-window.openNewTurnusModal = function() {
-    document.getElementById("turnusModal").style.display = "flex";
-}
-
-window.openNewNotifModal = function() {
-    document.getElementById("notifModal").style.display = "flex";
-}
-
-window.closeModals = function() {
-    document.getElementById("turnusModal").style.display = "none";
-    document.getElementById("notifModal").style.display = "none";
-}
-
-// Uložení nového turnusu z popupu
-document.getElementById("turnusForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("modalDriverSelect").value;
-    const datum = document.getElementById("modalDate").value;
-    const nazev = document.getElementById("modalTurnusName").value;
-
-    try {
-        await setDoc(doc(db, "active_turnusy", email), {
-            nazevTurnusu: nazev,
-            datum: datum,
-            stav: "jidem",
-            spoje: [
-                { typ: "Začátek směny", casOdjezdu: "06:00", casPrichodu: "06:15", popis: "Nástup" },
-                { typ: "Linkový spoj", casOdjezdu: "06:30", casPrichodu: "08:00", popis: "Linka 1" }
-            ]
-        });
-        alert("Turnus byl úspěšně vytvořen!");
-        closeModals();
-    } catch (err) {
-        alert("Chyba: " + err.message);
-    }
-});
-
-// Odeslání oznámení (spustí u řidičů Windows notifikaci a zvuk)[cite: 8]
-document.getElementById("notifForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nadpis = document.getElementById("modalNotifTitle").value;
-    const text = document.getElementById("modalNotifBody").value;
-
-    try {
-        await setDoc(doc(db, "broadcast_notifications", "global"), {
-            nadpis: nadpis,
-            text: text,
-            timestamp: Date.now()
-        });
-        alert("Oznámení bylo úspěšně odesláno!");
-        closeModals();
-        document.getElementById("notifForm").reset();
-    } catch (err) {
-        alert("Chyba: " + err.message);
-    }
-});
-
-loadDrivers();
 </script>
 </body>
 </html>
