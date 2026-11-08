@@ -68,7 +68,6 @@
 
 <div id="error-screen">Ověřuji oprávnění a dostupnost dispečinku...</div>
 
-<!-- MODÁL POKUD JE DISPEČINK OBSAZEN NĚKÝM JINÝM -->
 <div id="busyModal" class="modal-overlay" style="display: none;">
     <div class="modal-box" style="background: rgba(25,25,25,0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 30px; width: 90%; max-width: 400px;">
         <h2 style="color: #ff4d4d; margin-top: 0;">Dispečink je obsazen</h2>
@@ -78,8 +77,7 @@
 </div>
 
 <div class="content" id="mainDashboard" style="display: none;">
-    
-    <!-- LEVÝ SLOUPEC: Aktivní řidiči & Příchozí zprávy -->
+
     <div>
         <div class="panel">
             <h2>Aktivní řidiči v provozu</h2>
@@ -107,7 +105,6 @@
         </div>
     </div>
 
-    <!-- PRAVÝ SLOUPEC: Odesílání zpráv (Všem / Konkrétnímu) -->
     <div>
         <!-- Hromadné oznámení -->
         <div class="panel">
@@ -121,7 +118,6 @@
             </form>
         </div>
 
-        <!-- Soukromá zpráva konkrétnímu řidiči -->
         <div class="panel">
             <h2>Zpráva konkrétnímu řidiči</h2>
             <form id="privateMsgForm">
@@ -168,8 +164,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     const email = user.email.toLowerCase();
-    
-    // Zjisti uživatelské údaje z DB (pro kontrolu hodnosti a OČ)
+
     const uSnap = await getDoc(doc(db, "users", email));
     if (!uSnap.exists()) {
         showError("Účet nemá oprávnění.");
@@ -185,27 +180,23 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // LOGIKA EXKLUZIVITY DISPEČERA (Může být pouze 1, výjimka OČ 7001)
     const activeDispatcherRef = doc(db, "system_state", "active_dispatcher");
     const dispatcherSnap = await getDoc(activeDispatcherRef);
 
     const nowTimestamp = Date.now();
     let currentDispatcher = dispatcherSnap.exists() ? dispatcherSnap.data() : null;
 
-    // Pokud je někdo zapsaný, ale nebyl aktivní posledních 30 sekund (heartbeat), považujeme ho za odpojeného
     if (currentDispatcher && (nowTimestamp - currentDispatcher.lastHeartbeat > 30000) && currentDispatcher.email !== email) {
         currentDispatcher = null;
     }
 
     if (currentDispatcher && currentDispatcher.email !== email && oc !== "7001") {
-        // Obsazeno někým jiným a nejsme OČ 7001
         document.getElementById("error-screen").style.display = "none";
         document.getElementById("busyModal").style.display = "flex";
         document.getElementById("busyModalText").innerHTML = `Na dispečinku je aktuálně aktivní: <strong>${currentDispatcher.name}</strong>. Přístup má pouze 1 dispečer v jeden moment.`;
         return;
     }
 
-    // Jinak zapsat sebe jako aktivního dispečera
     await setDoc(activeDispatcherRef, {
         email: email,
         name: userName,
@@ -213,7 +204,6 @@ onAuthStateChanged(auth, async (user) => {
         lastHeartbeat: nowTimestamp
     });
 
-    // Spuštění intervalu (heartbeat každých 10 sekund, aby držel zámek)
     setInterval(async () => {
         try {
             await setDoc(activeDispatcherRef, {
@@ -225,12 +215,10 @@ onAuthStateChanged(auth, async (user) => {
         } catch(e) {}
     }, 10000);
 
-    // Odstranění zámku při zavření okna
     window.addEventListener("beforeunload", () => {
         navigator.sendBeacon ? null : deleteDoc(activeDispatcherRef); // fallback
     });
 
-    // Vše OK, ukážeme dashboard
     document.getElementById("error-screen").style.display = "none";
     document.getElementById("mainDashboard").style.display = "grid";
     initDispatcherListeners(userName);
@@ -243,13 +231,11 @@ function showError(msg) {
 }
 
 function initDispatcherListeners(dispatcherName) {
-    // 1. Posluchač aktivních řidičů
     onSnapshot(collection(db, "active_drivers"), (snapshot) => {
         const tbody = document.getElementById("activeDriversTbody");
         const select = document.getElementById("targetDriverSelect");
         
         tbody.innerHTML = "";
-        // Zachováme první defaultní možnost v selectu
         select.innerHTML = `<option value="">-- Vyber aktivního řidiče --</option>`;
 
         if (snapshot.empty) {
@@ -269,12 +255,10 @@ function initDispatcherListeners(dispatcherName) {
                 </tr>
             `;
 
-            // Naplnění selectu pro soukromé zprávy
             select.innerHTML += `<option value="${data.email}">${data.name} (OČ: ${data.oc || '-'})</option>`;
         });
     });
 
-    // 2. Příchozí zprávy od řidičů
     onSnapshot(query(collection(db, "dispatcher_messages"), orderBy("createdAt", "desc"), limit(30)), (snapshot) => {
         const box = document.getElementById("incomingDispatcherMsgs");
         box.innerHTML = "";
@@ -293,7 +277,6 @@ function initDispatcherListeners(dispatcherName) {
         });
     });
 
-    // 3. Odeslání hromadného oznámení
     document.getElementById("globalAnnounceForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const text = document.getElementById("globalText").value.trim();
@@ -312,7 +295,6 @@ function initDispatcherListeners(dispatcherName) {
         }
     });
 
-    // 4. Odeslání soukromé zprávy řidiči
     document.getElementById("privateMsgForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const targetEmail = document.getElementById("targetDriverSelect").value;

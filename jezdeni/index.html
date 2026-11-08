@@ -84,7 +84,6 @@
 
 <div class="content" id="mainDashboard" style="display: none;">
     
-    <!-- OZNÁMENÍ VŠEM -->
     <div class="panel">
         <h2>Obecná oznámení z dispečinku</h2>
         <div class="chat-box" id="generalAnnouncementsList">
@@ -92,7 +91,6 @@
         </div>
     </div>
 
-    <!-- SOUKROMÉ ZPRÁVY ŘIDIČI -->
     <div class="panel">
         <h2>Přímé zprávy</h2>
         <div class="chat-box" id="privateMessagesList">
@@ -100,7 +98,7 @@
         </div>
     </div>
 
-    <!-- ODESLAT ŽÁDOST / ZPRÁVU DISPEČEROVI -->
+
     <div class="panel">
         <h2>Napsat aktivnímu dispečerovi</h2>
         <form id="msgToDispatcherForm">
@@ -112,7 +110,6 @@
         </form>
     </div>
 
-    <!-- OVLÁDÁNÍ STAVU A ODCHOD -->
     <div class="panel">
         <h2>Aktivní stav</h2>
         <div class="form-group">
@@ -160,15 +157,12 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUserEmail = user.email.toLowerCase();
     
-    // Zjištění profilu řidiče z DB
     const uSnap = await getDoc(doc(db, "users", currentUserEmail));
     if (uSnap.exists()) {
         const data = uSnap.data();
         currentUserName = data.name || data.username || currentUserEmail;
         currentUserOc = String(data.oc || data.osobniCislo || "0000");
     }
-
-    // Zkontroluj, jestli už řidič náhodou nemá aktivní relaci
     const activeRef = doc(db, "active_drivers", currentUserEmail);
     const activeSnap = await getDoc(activeRef);
     if (activeSnap.exists()) {
@@ -181,7 +175,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Potvrzení úvodního modálu
 document.getElementById("modalConfirmBtn").addEventListener("click", async () => {
     const shiftVal = document.getElementById("modalShiftInput").value.trim();
     if (!shiftVal) {
@@ -208,7 +201,6 @@ document.getElementById("modalConfirmBtn").addEventListener("click", async () =>
     }
 });
 
-// Změna stavu (Aktivní / AFK) nebo změna textu směny
 document.getElementById("driverStatusSelect").addEventListener("change", updateDriverPresence);
 document.getElementById("activeShiftInput").addEventListener("input", updateDriverPresence);
 
@@ -227,7 +219,6 @@ async function updateDriverPresence() {
     } catch(e) { console.error(e); }
 }
 
-// Odeslání zprávy dispečerovi
 document.getElementById("msgToDispatcherForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = document.getElementById("dispatcherMsgText").value.trim();
@@ -249,7 +240,6 @@ document.getElementById("msgToDispatcherForm").addEventListener("submit", async 
     }
 });
 
-// Odchod z ježdění
 document.getElementById("leaveDrivingBtn").addEventListener("click", async () => {
     if (!confirm("Opravdu chceš ukončit a odejít z ježdění?")) return;
     try {
@@ -260,7 +250,6 @@ document.getElementById("leaveDrivingBtn").addEventListener("click", async () =>
     }
 });
 
-// Real-time listenery pro oznámení a zprávy
 function initLiveListeners() {
     // 1. Obecná oznámení
     onSnapshot(query(collection(db, "announcements_general"), orderBy("createdAt", "desc"), limit(20)), (snapshot) => {
@@ -276,7 +265,6 @@ function initLiveListeners() {
         });
     });
 
-    // 2. Soukromé zprávy pro tohoto řidiče
     onSnapshot(query(collection(db, `drivers_private_msg_${currentUserEmail}`), orderBy("createdAt", "desc"), limit(20)), (snapshot) => {
         const box = document.getElementById("privateMessagesList");
         box.innerHTML = "";
